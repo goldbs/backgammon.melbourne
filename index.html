@@ -110,7 +110,7 @@
     </button>
   </div>
 
-  <!-- Modal 1: Join / Register Member -->
+  <!-- Modal 1: Join Association (Streamlined 3 Fields) -->
   <div id="joinModal" class="fixed inset-0 z-50 hidden bg-espresso/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
     <div class="bg-parchment-light w-full max-w-lg rounded-t-3xl sm:rounded-3xl border border-parchment-border shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
       <div class="p-5 border-b border-parchment-border flex items-center justify-between bg-parchment-card">
@@ -135,11 +135,6 @@
         </div>
 
         <div>
-          <label class="block text-espresso-soft mb-1">Display / Preferred First Name</label>
-          <input type="text" id="regDisplayName" placeholder="e.g. Sam B." class="w-full px-3.5 py-2.5 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
-        </div>
-
-        <div>
           <label class="block text-espresso-soft mb-1">Email Address</label>
           <input type="email" id="regEmail" required placeholder="name@example.com" class="w-full px-3.5 py-2.5 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
         </div>
@@ -150,7 +145,7 @@
         </div>
 
         <div class="p-3 rounded-xl bg-parchment-card border border-parchment-border text-[11px] text-espresso-soft font-normal leading-relaxed">
-          <span class="font-bold text-espresso">Privacy:</span> Your email and phone are stored strictly in the association register and will never be published on the website.
+          <span class="font-bold text-espresso">Privacy:</span> Your email and phone number are stored strictly in the association register and will never be published on the website.
         </div>
 
         <button type="submit" id="submitJoinBtn" class="w-full py-3.5 mt-2 rounded-xl bg-slateNavy text-white font-bold text-xs uppercase tracking-wider hover:bg-slateNavy-dark transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer">
@@ -160,7 +155,7 @@
     </div>
   </div>
 
-  <!-- Modal 2: Submit Match Result with Autocomplete -->
+  <!-- Modal 2: Submit Match Result with Instant Autocomplete -->
   <div id="uploadModal" class="fixed inset-0 z-50 hidden bg-espresso/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
     <div class="bg-parchment-light w-full max-w-lg rounded-t-3xl sm:rounded-3xl border border-parchment-border shadow-2xl overflow-visible max-h-[92vh] flex flex-col">
       <div class="p-5 border-b border-parchment-border flex items-center justify-between bg-parchment-card">
@@ -183,7 +178,6 @@
             <div class="relative">
               <label class="block text-espresso-soft mb-1">Name</label>
               <input type="text" id="player1Input" autocomplete="off" required placeholder="Type name..." class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-terracotta">
-              <!-- Autocomplete suggestions dropdown -->
               <div id="p1Suggestions" class="absolute left-0 right-0 top-full mt-1 bg-parchment-light border border-parchment-border rounded-xl shadow-xl overflow-hidden hidden z-30 max-h-48 overflow-y-auto"></div>
             </div>
             <div>
@@ -204,7 +198,6 @@
             <div class="relative">
               <label class="block text-espresso-soft mb-1">Name</label>
               <input type="text" id="player2Input" autocomplete="off" required placeholder="Type name..." class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
-              <!-- Autocomplete suggestions dropdown -->
               <div id="p2Suggestions" class="absolute left-0 right-0 top-full mt-1 bg-parchment-light border border-parchment-border rounded-xl shadow-xl overflow-hidden hidden z-30 max-h-48 overflow-y-auto"></div>
             </div>
             <div>
@@ -496,7 +489,7 @@
     let registeredMembers = [...defaultMembers];
     let currentMatches = [];
 
-    // Nickname / Shorthand normalization
+    // Map nicknames / shorthand to official member list
     function normalizeName(inputName) {
       const clean = (inputName || '').trim().toLowerCase();
       if (!clean) return inputName;
@@ -587,7 +580,6 @@
         
         dropdownEl.classList.remove('hidden');
 
-        // Click selection handler
         dropdownEl.querySelectorAll('div[data-value]').forEach(row => {
           row.addEventListener('click', function() {
             inputEl.value = this.getAttribute('data-value');
@@ -596,7 +588,6 @@
         });
       });
 
-      // Show recent members on focus if input is empty
       inputEl.addEventListener('focus', function() {
         if (!this.value.trim() && registeredMembers.length > 0) {
           dropdownEl.innerHTML = registeredMembers.slice(0, 5).map(name => `
@@ -619,7 +610,6 @@
     setupAutocomplete(p1Input, p1Box);
     setupAutocomplete(p2Input, p2Box);
 
-    // Dismiss suggestions when clicking elsewhere in the form
     document.addEventListener('click', (e) => {
       if (!p1Input.contains(e.target) && !p1Box.contains(e.target)) {
         p1Box.classList.add('hidden');
@@ -700,8 +690,8 @@
     function renderApp(matches = [], fetchedMembers = []) {
       const allMembersSet = new Set([...defaultMembers]);
       fetchedMembers.forEach(m => {
-        if (m.fullName) allMembersSet.add(m.fullName);
-        else if (typeof m === 'string') allMembersSet.add(m);
+        if (typeof m === 'string' && m.trim()) allMembersSet.add(m.trim());
+        else if (m && m.fullName) allMembersSet.add(m.fullName.trim());
       });
       registeredMembers = Array.from(allMembersSet);
 
@@ -869,14 +859,12 @@
       btn.disabled = true;
 
       const fullName = document.getElementById('regFullName').value.trim();
-      const displayName = document.getElementById('regDisplayName').value.trim() || fullName;
       const email = document.getElementById('regEmail').value.trim();
       const phone = document.getElementById('regPhone').value.trim();
 
       const payload = {
         action: "registerMember",
         fullName: fullName,
-        displayName: displayName,
         email: email,
         phone: phone
       };
@@ -946,7 +934,7 @@
       setTimeout(fetchAppData, 1500);
     });
 
-    // Interactive Leaflet Map
+    // Leaflet Map Initialization
     const map = L.map('melbourneMap', { center: [-37.835, 144.99], zoom: 12, scrollWheelZoom: false });
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
