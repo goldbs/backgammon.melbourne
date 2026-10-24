@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Melbourne Backgammon Association Inc. | Backgammon, Brews, Beats and Bevs</title>
+
+  <!-- Google Fonts: Space Grotesk (Modern Display), Plus Jakarta Sans (Clean Modern Sans), Bungee (Comic Badge Plates) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            espresso: {
+              DEFAULT: '#1D1612',
+              deep: '#140E0C',
+              surface: '#291F19',
+              border: '#3F2C23',
+              soft: '#543D32'
+            },
+            parchment: {
+              DEFAULT: '#F7F4EE',
+              light: '#FCFAF6',
+              card: '#F2EDE3',
+              border: '#E5DCce',
+              muted: '#ECE3D5'
+            },
+            terracotta: {
+              DEFAULT: '#C2593F',
+              dark: '#9F4028',
+              light: '#E06F55',
+              soft: '#F8E9E5'
+            },
+            slateNavy: {
+              DEFAULT: '#2E4A62',
+              dark: '#1D3446',
+              light: '#42698C',
+              soft: '#E3EAF0'
+            },
+            brass: {
+              DEFAULT: '#C3992F',
+              gold: '#D8AE43',
+              light: '#F3D481',
+              dark: '#8E6B18'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+            display: ['"Space Grotesk"', '"Plus Jakarta Sans"', 'sans-serif'],
+            badge: ['Bungee', 'Impact', 'sans-serif']
+          },
+          boxShadow: {
+            'brass-plate': '0 4px 14px rgba(29, 22, 18, 0.28), inset 0 1px 2px rgba(255, 255, 255, 0.4), inset 0 -2px 3px rgba(0, 0, 0, 0.3)',
+            'card-lift': '0 16px 32px -8px rgba(29, 22, 18, 0.14), 0 0 0 1px rgba(195, 153, 47, 0.2)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Full-width continuous repeating elongated tournament backgammon board triangles */
+    .bg-top-spears {
+      width: 100%;
+      height: 78px;
+      background-color: #F7F4EE;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 78' preserveAspectRatio='none'%3E%3Cpolygon points='0,0 22,0 11,78' fill='%23C2593F'/%3E%3Cpolygon points='22,0 44,0 33,78' fill='%232E4A62'/%3E%3C/svg%3E");
+      background-repeat: repeat-x;
+      background-size: 44px 78px;
+      border-bottom: 2px solid rgba(195, 153, 47, 0.35);
+    }
+
+    /* Badge card hover dynamics */
+    .badge-card {
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .badge-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 35px -8px rgba(29, 22, 18, 0.22), 0 0 0 2px rgba(195, 153, 47, 0.4);
+    }
+  </style>
+</head>
+<body class="bg-parchment text-espresso font-sans antialiased selection:bg-terracotta selection:text-white">
+
+  <!-- ==================== 1. FULL-WIDTH ELONGATED BACKGAMMON TRIANGLES BORDER ==================== -->
+  <div class="bg-top-spears relative z-50"></div>
+
+  <!-- ==================== 2. HEADER / NAVIGATION ==================== -->
+  <header class="sticky top-0 z-40 bg-parchment-light/95 backdrop-blur-md border-b border-parchment-border transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Modern Space Grotesk Header Banner Title -->
+        <a href="#" class="group py-1 text-left">
+          <span class="font-display font-extrabold text-xl sm:text-2xl md:text-3xl tracking-[-0.03em] text-espresso leading-none group-hover:text-terracotta transition-colors">
+            Melbourne Backgammon Association Inc.
+          </span>
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav class="hidden lg:flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-espresso/80">
+          <a href="#why-we-play" class="hover:text-terracotta transition-colors">Why We Play</a>
+          <a href="#sessions" class="hover:text-terracotta transition-colors">Tuesday Sessions</a>
+          <a href="#committee" class="hover:text-terracotta transition-colors">The Committee</a>
+          <a href="mailto:contact@melbournebackgammon.org" class="px-5 py-2.5 rounded-full bg-espresso text-parchment font-extrabold text-xs uppercase tracking-wider hover:bg-terracotta transition-all shadow-sm">
+            Contact MBA
+          </a>
+        </nav>
+
+        <!-- Mobile Drawer Toggle Button -->
+        <button id="mobileMenuBtn" aria-label="Toggle Navigation Menu" class="lg:hidden p-2 rounded-lg text-espresso hover:bg-parchment-border transition">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Mobile Drawer Navigation -->
+    <div id="mobileDrawer" class="hidden lg:hidden border-t border-parchment-border bg-parchment-light px-4 pt-3 pb-6 space-y-3">
+      <a href="#why-we-play" class="block px-3 py-2 text-sm font-bold text-espresso hover:bg-parchment-card rounded-lg" onclick="toggleMenu()">Why We Play</a>
+      <a href="#sessions" class="block px-3 py-2 text-sm font-bold text-espresso hover:bg-parchment-card rounded-lg" onclick="toggleMenu()">Tuesday Sessions</a>
+      <a href="#committee" class="block px-3 py-2 text-sm font-bold text-espresso hover:bg-parchment-card rounded-lg" onclick="toggleMenu()">The Committee</a>
+      <a href="mailto:contact@melbournebackgammon.org" class="block text-center mt-3 px-5 py-3 rounded-full bg-terracotta text-white font-extrabold text-xs uppercase tracking-wider" onclick="toggleMenu()">
+        Contact MBA
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <!-- ==================== 3. HERO SECTION WITH CREST EMBLEM ==================== -->
+    <section class="relative pt-10 pb-16 md:pt-14 md:pb-20 border-b border-parchment-border bg-gradient-to-b from-parchment-light via-parchment to-parchment-muted/30">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+
+        <!-- Authentic Coffee & Backgammon Association Emblem Crest -->
+        <div class="flex flex-col items-center justify-center mb-5">
+          <div class="relative group">
+            <svg viewBox="0 0 380 380" class="w-48 h-48 sm:w-56 sm:h-56 lg:w-64 lg:h-64 drop-shadow-2xl transition-transform duration-500 group-hover:scale-105" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="crestGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#F5DB88"/>
+                  <stop offset="35%" stop-color="#C3992F"/>
+                  <stop offset="70%" stop-color="#D8AE43"/>
+                  <stop offset="100%" stop-color="#8E6B18"/>
+                </linearGradient>
+                <linearGradient id="coffeeRim" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#3A241A"/>
+                  <stop offset="70%" stop-color="#24150F"/>
+                  <stop offset="100%" stop-color="#140C08"/>
+                </linearGradient>
+                <radialGradient id="cremaGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="30%" stop-color="#FDE8C5"/>
+                  <stop offset="75%" stop-color="#CF9D68"/>
+                  <stop offset="100%" stop-color="#8C5728"/>
+                </radialGradient>
+                <path id="topArcText" d="M 50,190 A 140,140 0 1,1 330,190" fill="none"/>
+                <path id="bottomArcText" d="M 330,190 A 140,140 0 0,1 50,190" fill="none"/>
+              </defs>
+
+              <!-- Outer Studded Brass Ring -->
+              <circle cx="190" cy="190" r="182" fill="#1D1612" stroke="url(#crestGold)" stroke-width="7"/>
+              <circle cx="190" cy="190" r="172" fill="none" stroke="url(#crestGold)" stroke-width="1.8" stroke-dasharray="3,5" opacity="0.8"/>
+
+              <!-- Brass Studs / Rivets -->
+              <circle cx="190" cy="14" r="3.5" fill="#F5DB88"/>
+              <circle cx="314" cy="65" r="3.5" fill="#F5DB88"/>
+              <circle cx="366" cy="190" r="3.5" fill="#F5DB88"/>
+              <circle cx="314" cy="315" r="3.5" fill="#F5DB88"/>
+              <circle cx="190" cy="366" r="3.5" fill="#F5DB88"/>
+              <circle cx="66" cy="315" r="3.5" fill="#F5DB88"/>
+              <circle cx="14" cy="190" r="3.5" fill="#F5DB88"/>
+              <circle cx="66" cy="65" r="3.5" fill="#F5DB88"/>
+
+              <!-- Ribbon Track -->
+              <circle cx="190" cy="190" r="154" fill="#291F19"/>
+
+              <!-- Arched Typography -->
+              <text font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="16" fill="#F5DB88" letter-spacing="4">
+                <textPath href="#topArcText" startOffset="50%" text-anchor="middle">
+                  MELBOURNE BACKGAMMON
+                </textPath>
+              </text>
+              <text font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="12" fill="#D8AE43" letter-spacing="5">
+                <textPath href="#bottomArcText" startOffset="50%" text-anchor="middle">
+                  ★ ASSOCIATION INC. ★
+                </textPath>
+              </text>
+
+              <!-- Inner Brass Border -->
+              <circle cx="190" cy="190" r="118" fill="#F7F4EE" stroke="url(#crestGold)" stroke-width="4"/>
+
+              <!-- Ceramic Cup Outer Rim & Coffee Surface -->
+              <circle cx="190" cy="190" r="108" fill="#F2EDE3" stroke="#D8CEBD" stroke-width="2.5"/>
+              <circle cx="190" cy="190" r="100" fill="url(#coffeeRim)"/>
+
+              <!-- Radiating Alternating Backgammon Board Points (Top & Bottom) -->
+              <polygon points="126,98 136,155 146,98" fill="#C2593F"/>
+              <polygon points="146,98 156,155 166,98" fill="#2E4A62"/>
+              <polygon points="166,98 176,155 186,98" fill="#C2593F"/>
+              <polygon points="186,98 196,155 206,98" fill="#2E4A62"/>
+              <polygon points="206,98 216,155 226,98" fill="#C2593F"/>
+              <polygon points="226,98 236,155 246,98" fill="#2E4A62"/>
+
+              <polygon points="126,282 136,225 146,282" fill="#2E4A62"/>
+              <polygon points="146,282 156,225 166,282" fill="#C2593F"/>
+              <polygon points="166,282 176,225 186,282" fill="#2E4A62"/>
+              <polygon points="186,282 196,225 206,282" fill="#C2593F"/>
+              <polygon points="206,282 216,225 226,282" fill="#2E4A62"/>
+              <polygon points="226,282 236,225 246,282" fill="#C2593F"/>
+
+              <!-- Rosetta Latte Art Foam Center -->
+              <ellipse cx="190" cy="190" rx="38" ry="34" fill="url(#cremaGlow)"/>
+              <path d="M190,165 C183,158 170,163 173,176 C176,186 190,200 190,200 C190,200 204,186 207,176 C210,163 197,158 190,165 Z" fill="#FFFBF5" opacity="0.95"/>
+              <path d="M190,175 C185,170 176,174 178,182 C180,189 190,199 190,199 C190,199 200,189 202,182 C204,174 195,170 190,175 Z" fill="#FFFBF5" opacity="0.9"/>
+              <line x1="190" y1="160" x2="190" y2="208" stroke="#D8AE43" stroke-width="2" stroke-linecap="round"/>
+
+              <!-- Doubling Cube ('64') Isometric Base Anchor -->
+              <g transform="translate(190, 292)">
+                <polygon points="0,-18 20,-8 0,3 -20,-8" fill="#F7F4EE" stroke="#1D1612" stroke-width="1.8"/>
+                <polygon points="-20,-8 0,3 0,25 -20,15" fill="#D8AE43" stroke="#1D1612" stroke-width="1.8"/>
+                <polygon points="0,3 20,-8 20,15 0,25" fill="#8E6B18" stroke="#1D1612" stroke-width="1.8"/>
+                <text x="-10" y="14" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="11" fill="#1D1612" text-anchor="middle" transform="skewY(22)">64</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Modern Minimalist Sans-Serif Tagline Pill (No icons) -->
+        <div class="my-5 flex justify-center">
+          <div class="inline-flex items-center px-6 sm:px-9 py-2.5 rounded-full bg-espresso/[0.04] border border-espresso/15 shadow-sm">
+            <span class="text-xs sm:text-sm md:text-base font-bold tracking-[0.28em] sm:tracking-[0.32em] text-espresso uppercase font-sans select-none">
+              BACKGAMMON, BREWS, BEATS AND BEVS
+            </span>
+          </div>
+        </div>
+
+        <!-- Session Link Anchor -->
+        <div class="mt-8 flex items-center justify-center gap-4">
+          <a href="#sessions" class="px-8 py-3.5 rounded-full bg-terracotta text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider hover:bg-terracotta-dark transition-all shadow-md flex items-center gap-2">
+            <span>Tuesday Session Details</span>
+            <i data-lucide="arrow-down" class="w-4 h-4"></i>
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== 4. WHY WE PLAY (2x2 GRID) ==================== -->
+    <section id="why-we-play" class="py-16 md:py-20 bg-parchment border-b border-parchment-border">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center mb-12">
+          <span class="text-[11px] font-extrabold tracking-[0.25em] text-brass-dark uppercase font-mono">OUR PURPOSE</span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-espresso tracking-tight mt-1.5">
+            Why We Play
+          </h2>
+          <p class="text-xs sm:text-sm text-espresso-soft mt-2 max-w-xl mx-auto leading-relaxed">
+            Dedicated to growing backgammon culture across Melbourne—from first rolls to masterclass analysis.
+          </p>
+        </div>
+
+        <!-- Symmetrical 2x2 Grid with 4 Tenets -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mx-auto">
+          
+          <!-- 1. Grow the Game -->
+          <div class="p-6 rounded-2xl bg-parchment-card/80 border border-parchment-border hover:border-terracotta/40 transition-colors shadow-sm flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-terracotta/10 text-terracotta flex items-center justify-center shrink-0 mt-0.5">
+              <i data-lucide="compass" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-base text-espresso font-display tracking-tight">Grow the Game</h3>
+              <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">
+                Promote the play, study, and enjoyment of backgammon across Melbourne.
+              </p>
+            </div>
+          </div>
+
+          <!-- 2. Welcome Beginners -->
+          <div class="p-6 rounded-2xl bg-parchment-card/80 border border-parchment-border hover:border-brass/50 transition-colors shadow-sm flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-brass/15 text-brass-dark flex items-center justify-center shrink-0 mt-0.5">
+              <i data-lucide="sparkles" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-base text-espresso font-display tracking-tight">Welcome Beginners</h3>
+              <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">
+                Teach newcomers and provide a low-pressure place to learn.
+              </p>
+            </div>
+          </div>
+
+          <!-- 3. Elevate Play -->
+          <div class="p-6 rounded-2xl bg-parchment-card/80 border border-parchment-border hover:border-slateNavy/40 transition-colors shadow-sm flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-slateNavy/10 text-slateNavy flex items-center justify-center shrink-0 mt-0.5">
+              <i data-lucide="line-chart" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-base text-espresso font-display tracking-tight">Elevate Play</h3>
+              <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">
+                Deepen strategic understanding through match transcription, analysis, and PR evaluation.
+              </p>
+            </div>
+          </div>
+
+          <!-- 4. Run Fair Competition -->
+          <div class="p-6 rounded-2xl bg-parchment-card/80 border border-parchment-border hover:border-terracotta/40 transition-colors shadow-sm flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-terracotta/10 text-terracotta flex items-center justify-center shrink-0 mt-0.5">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-base text-espresso font-display tracking-tight">Run Fair Competition</h3>
+              <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">
+                Host regular club tournaments, leagues, and rated events.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== 5. TUESDAY CLUB NIGHTS ==================== -->
+    <section id="sessions" class="py-16 md:py-20 bg-parchment-light border-b border-parchment-border">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="bg-parchment rounded-3xl border border-parchment-border shadow-sm overflow-hidden">
+          <div class="p-6 sm:p-8 bg-espresso text-parchment-light flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <span class="text-xs font-bold text-brass uppercase tracking-widest">Weekly Gathering</span>
+              <h2 class="text-2xl sm:text-3xl font-extrabold font-display tracking-tight">Tuesday Club Nights</h2>
+              <p class="text-xs sm:text-sm text-parchment-muted mt-1">German Club Tivoli • 291 Dandenong Rd, Windsor VIC 3181</p>
+            </div>
+            <span class="px-4 py-2 rounded-full bg-terracotta text-white font-extrabold text-xs uppercase tracking-wider shrink-0">
+              Every Tuesday • 6:30 PM Onwards
+            </span>
+          </div>
+
+          <div class="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2 text-terracotta font-extrabold text-xs uppercase tracking-wider">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                <span>All Levels Welcome</span>
+              </div>
+              <h3 class="font-bold text-espresso text-base">Social Play & Chouettes</h3>
+              <p class="text-xs text-espresso-soft leading-relaxed">
+                Whether you're picking up dice for the first time or love multi-player chouette tables, you'll find warm games and boards ready to play.
+              </p>
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex items-center gap-2 text-slateNavy font-extrabold text-xs uppercase tracking-wider">
+                <i data-lucide="timer" class="w-4 h-4"></i>
+                <span>Clock & Match Play</span>
+              </div>
+              <h3 class="font-bold text-espresso text-base">Tournament Action</h3>
+              <p class="text-xs text-espresso-soft leading-relaxed">
+                Rated match play with digital chess clocks, doubling cubes, and Swiss brackets for players looking to sharpen competitive match play.
+              </p>
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex items-center gap-2 text-brass-dark font-extrabold text-xs uppercase tracking-wider">
+                <i data-lucide="beer" class="w-4 h-4"></i>
+                <span>Food & Drink</span>
+              </div>
+              <h3 class="font-bold text-espresso text-base">Brews & Tivoli Bistro</h3>
+              <p class="text-xs text-espresso-soft leading-relaxed">
+                Enjoy German tap beers, schnitzels, café refreshments, and great soul/lo-fi music throughout the evening.
+              </p>
+            </div>
+          </div>
+
+          <div class="p-5 bg-parchment-card border-t border-parchment-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-semibold text-espresso">
+            <div class="flex items-center gap-2">
+              <i data-lucide="map-pin" class="w-4 h-4 text-terracotta"></i>
+              <span>Free venue parking on-site • 4-minute walk from Windsor Railway Station</span>
+            </div>
+            <a href="mailto:contact@melbournebackgammon.org" class="text-terracotta hover:underline font-bold">Have questions? Reach out to the committee →</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== 6. THE COMMITTEE (ALL 7 BADGES) ==================== -->
+    <section id="committee" class="py-20 bg-parchment border-b border-parchment-border relative">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center space-y-3 max-w-3xl mx-auto mb-16">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-brass/20 border border-brass text-xs font-extrabold uppercase tracking-widest text-espresso">
+            <i data-lucide="award" class="w-4 h-4 text-brass-dark"></i>
+            Official Leadership Committee
+          </div>
+          <h2 class="text-3xl sm:text-5xl font-extrabold text-espresso font-display tracking-[-0.03em]">
+            The Board Behind the Boards
+          </h2>
+          <p class="text-base text-espresso-soft leading-relaxed">
+            The founding committee of Melbourne Backgammon Association Inc.
+          </p>
+        </div>
+
+        <!-- TIER 1: EXECUTIVE OFFICERS -->
+        <div class="mb-20">
+          <div class="flex items-center justify-center gap-4 mb-10">
+            <span class="h-0.5 w-12 bg-brass"></span>
+            <h3 class="text-xs sm:text-sm font-extrabold tracking-widest text-espresso uppercase font-badge">
+              ★ Executive Officers ★
+            </h3>
+            <span class="h-0.5 w-12 bg-brass"></span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+
+            <!-- 1. ERIC BERKHINFAND (PRESIDENT) -->
+            <div class="badge-card bg-parchment-light rounded-3xl p-6 sm:p-7 border-2 border-parchment-border hover:border-brass/70 shadow-sm flex flex-col items-center text-center relative">
+              <div class="relative w-56 h-56 sm:w-64 sm:h-64 mb-6 shrink-0">
+                <svg viewBox="0 0 400 400" class="w-full h-full drop-shadow-xl" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="brassGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#F5DB88"/>
+                      <stop offset="40%" stop-color="#C3992F"/>
+                      <stop offset="70%" stop-color="#D8AE43"/>
+                      <stop offset="100%" stop-color="#8E6B18"/>
+                    </linearGradient>
+                    <clipPath id="clipEric">
+                      <circle cx="200" cy="185" r="150" />
+                    </clipPath>
+                  </defs>
+                  <circle cx="200" cy="185" r="172" fill="#1D1612" stroke="url(#brassGrad1)" stroke-width="8"/>
+                  <circle cx="200" cy="185" r="160" fill="none" stroke="url(#brassGrad1)" stroke-width="2.5" stroke-dasharray="4,6" />
+                  <circle cx="200" cy="19" r="3.5" fill="#F5DB88"/><circle cx="317" cy="67" r="3.5" fill="#F5DB88"/><circle cx="366" cy="185" r="3.5" fill="#F5DB88"/><circle cx="317" cy="302" r="3.5" fill="#F5DB88"/>
+                  <circle cx="200" cy="351" r="3.5" fill="#F5DB88"/><circle cx="83" cy="302" r="3.5" fill="#F5DB88"/><circle cx="34" cy="185" r="3.5" fill="#F5DB88"/><circle cx="83" cy="67" r="3.5" fill="#F5DB88"/>
+
+                  <g clip-path="url(#clipEric)">
+                    <rect x="0" y="0" width="400" height="400" fill="#F7F4EE"/>
+                    <polygon points="60,335 85,80 110,335" fill="#C2593F"/>
+                    <polygon points="110,335 135,80 160,335" fill="#2E4A62"/>
+                    <polygon points="160,335 185,80 210,335" fill="#C2593F"/>
+                    <polygon points="210,335 235,80 260,335" fill="#2E4A62"/>
+                    <polygon points="260,335 285,80 310,335" fill="#C2593F"/>
+                    <polygon points="310,335 335,80 360,335" fill="#2E4A62"/>
+                    <path d="M70,400 L85,285 Q140,250 200,250 Q260,250 315,285 L330,400 Z" fill="#21354A" stroke="#1D1612" stroke-width="4.5"/>
+                    <path d="M165,255 L200,305 L150,270 Z" fill="#172635" stroke="#1D1612" stroke-width="3"/>
+                    <path d="M235,255 L200,305 L250,270 Z" fill="#172635" stroke="#1D1612" stroke-width="3"/>
+                    <path d="M172,215 L172,265 Q200,272 228,265 L228,215 Z" fill="#DEB18C" stroke="#1D1612" stroke-width="4"/>
+                    <path d="M140,165 C135,230 165,255 200,255 C235,255 265,230 260,165 C255,105 145,105 140,165 Z" fill="#ECC3A0" stroke="#1D1612" stroke-width="4.5"/>
+                    <path d="M142,165 Q140,248 200,252 Q260,248 258,165 Q252,205 235,232 Q200,248 165,232 Q148,205 142,165 Z" fill="#1F1511" stroke="#1D1612" stroke-width="4"/>
+                    <path d="M168,198 Q200,186 232,198 Q200,210 168,198 Z" fill="#1F1511" stroke="#1D1612" stroke-width="3"/>
+                    <path d="M174,204 Q200,230 226,204 Z" fill="#1D1612"/>
+                    <path d="M178,205 Q200,220 222,205 Q200,211 178,205 Z" fill="#FFFFFF"/>
+                    <ellipse cx="174" cy="154" rx="7" ry="5.5" fill="#1F1511"/><circle cx="176" cy="152" r="2" fill="#FFFFFF"/>
+                    <ellipse cx="226" cy="154" rx="7" ry="5.5" fill="#1F1511"/><circle cx="228" cy="152" r="2" fill="#FFFFFF"/>
+                    <path d="M136,160 Q128,105 160,85 Q175,68 205,72 Q235,68 250,85 Q272,105 264,160 Q256,115 230,105 Q200,98 170,105 Q144,115 136,160 Z" fill="#1F1511" stroke="#1D1612" stroke-width="4.5"/>
+                    <circle cx="168" cy="80" r="14" fill="#1F1511"/><circle cx="195" cy="74" r="16" fill="#1F1511"/><circle cx="224" cy="78" r="15" fill="#1F1511"/>
+                  </g>
+
+                  <circle cx="200" cy="185" r="150" fill="none" stroke="url(#brassGrad1)" stroke-width="6"/>
+
+                  <path d="M50,335 L65,325 L335,325 L350,335 L345,385 L330,395 L70,395 L55,385 Z" fill="url(#brassGrad1)" stroke="#1D1612" stroke-width="4"/>
+                  <text x="200" y="358" font-family="'Bungee', sans-serif" font-size="21" font-weight="900" fill="#1D1612" text-anchor="middle">ERIC BERKHINFAND</text>
+                  <text x="200" y="378" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="800" fill="#543D32" text-anchor="middle" letter-spacing="3">PRESIDENT</text>
+                </svg>
+              </div>
+
+              <div class="space-y-1 mb-4">
+                <span class="inline-block px-3 py-1 rounded-full bg-terracotta/15 text-terracotta text-xs font-black uppercase tracking-wider">
+                  Association President
+                </span>
+                <h4 class="text-xl font-extrabold text-espresso font-display tracking-tight">Eric Berkhinfand</h4>
+                <p class="text-xs font-semibold text-espresso-soft">Executive Board & Governance</p>
+              </div>
+              <p class="text-xs text-espresso/80 leading-relaxed font-normal mb-6">
+                Directing the Melbourne Backgammon Association vision, community outreach, and welcoming beginners.
+              </p>
+              <div class="mt-auto w-full pt-4 border-t border-parchment-border flex items-center justify-between text-[11px] font-bold text-espresso/70">
+                <span><i data-lucide="shield" class="w-3.5 h-3.5 inline mr-1 text-terracotta"></i> 3-1 Golden Point</span>
+                <span class="text-brass-dark font-black">Executive</span>
+              </div>
+            </div>
+
+            <!-- 2. DANIEL WROBY (VICE-PRESIDENT) -->
+            <div class="badge-card bg-parchment-light rounded-3xl p-6 sm:p-7 border-2 border-parchment-border hover:border-brass/70 shadow-sm flex flex-col items-center text-center relative">
+              <div class="relative w-56 h-56 sm:w-64 sm:h-64 mb-6 shrink-0">
+                <svg viewBox="0 0 400 400" class="w-full h-full drop-shadow-xl" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <clipPath id="clipDanielW">
+                      <circle cx="200" cy="185" r="150" />
+                    </clipPath>
+                  </defs>
+                  <circle cx="200" cy="185" r="172" fill="#1D1612" stroke="url(#brassGrad1)" stroke-width="8"/>
+                  <circle cx="200" cy="185" r="160" fill="none" stroke="url(#brassGrad1)" stroke-width="2.5" stroke-dasharray="4,6" />
+                  <circle cx="200" cy="19" r="3.5" fill="#F5DB88"/><circle cx="317" cy="67" r="3.5" fill="#F5DB88"/><circle cx="366" cy="185" r="3.5" fill="#F5DB88"/><circle cx="317" cy="302" r="3.5" fill="#F5DB88"/>
+                  <circle cx="200" cy="351" r="3.5" fill="#F5DB88"/><circle cx="83" cy="302" r="3.5" fill="#F5DB88"/><circle cx="34" cy="185" r="3.5" fill="#F5DB88"/><circle cx="83" cy="67" r="3.5" fill="#F5DB88"/>
+
+                  <g clip-path="url(#clipDanielW)">
+                    <rect x="0" y="0" width="400" height="400" fill="#F7F4EE"/>
+                    <polygon points="60,335 85,80 110,335" fill="#2E4A62"/>
+                    <polygon points="110,335 135,80 160,335" fill="#C2593F"/>
+                    <polygon points="160,335 185,80 210,335" fill="#2E4A62"/>
+                    <polygon points="210,335 235,80 260,335" fill="#C2593F"/>
+                    <polygon points="260,335 285,80 310,335" fill="#2E4A62"/>
+                    <polygon points="310,335 335,80 360,335" fill="#C2593F"/>
+                    <path d="M70,400 L85,285 Q140,250 200,250 Q260,250 315,285 L330,400 Z" fill="#D3D7DC" stroke="#1D1612" stroke-width="4.5"/>
+                    <path d="M165,255 Q200,278 235,255" stroke="#B4BAC2" stroke-width="3" fill="none"/>
+                    <path d="M172,210 L172,260 Q200,270 228,260 L228,210 Z" fill="#E2B795" stroke="#1D1612" stroke-width="4"/>
+                    <path d="M138,175 C132,100 155,75 200,75 C245,75 268,100 262,175 C260,235 235,252 200,252 C165,252 140,235 138,175 Z" fill="#ECC3A0" stroke="#1D1612" stroke-width="4.5"/>
+                    <path d="M166,206 Q200,242 234,206 Z" fill="#1D1612" stroke="#1D1612" stroke-width="3.5"/>
+                    <path d="M172,208 Q200,230 228,208 Z" fill="#FFFFFF"/>
+                    <ellipse cx="172" cy="154" rx="7" ry="5.5" fill="#1F1511"/><circle cx="174" cy="152" r="2" fill="#FFFFFF"/>
+                    <ellipse cx="228" cy="154" rx="7" ry="5.5" fill="#1F1511"/><circle cx="230" cy="152" r="2" fill="#FFFFFF"/>
+                  </g>
+
+                  <circle cx="200" cy="185" r="150" fill="none" stroke="url(#brassGrad1)" stroke-width="6"/>
+
+                  <path d="M50,335 L65,325 L335,325 L350,335 L345,385 L330,395 L70,395 L55,385 Z" fill="url(#brassGrad1)" stroke="#1D1612" stroke-width="4"/>
+                  <text x="200" y="358" font-family="'Bungee', sans-serif" font-size="22" font-weight="900" fill="#1D1612" text-anchor="middle">DANIEL WROBY</text>
+                  <text x="200" y="378" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="800" fill="#543D32" text-anchor="middle" letter-spacing="3">VICE-PRESIDENT</text>
+                </svg>
+              </div>
+
+              <div class="space-y-1 mb-4">
+                <span class="inline-block px-3 py-1 rounded-full bg-slateNavy/15 text-slateNavy text-xs font-black uppercase tracking-wider">
+                  Vice-President
+                </span>
+                <h4 class="text-xl font-extrabold text-espresso font-display tracking-tight">Daniel Wroby</h4>
+                <p class="text-xs font-semibold text-espresso-soft">Tournament Director & Rules</p>
+              </div>
+              <p class="text-xs text-espresso/80 leading-relaxed font-normal mb-6">
+                Overseeing Swiss brackets, digital chess clocks, and tournament regulations on Tuesday nights.
+              </p>
+              <div class="mt-auto w-full pt-4 border-t border-parchment-border flex items-center justify-between text-[11px] font-bold text-espresso/70">
+                <span><i data-lucide="timer" class="w-3.5 h-3.5 inline mr-1 text-slateNavy"></i> Clock Master</span>
+                <span class="text-brass-dark font-black">Executive</span>
+              </div>
+            </div>
+
+            <!-- 3. STEVEN GOLDBERG (SECRETARY & TREASURER) -->
+            <div class="badge-card bg-parchment-light rounded-3xl p-6 sm:p-7 border-2 border-parchment-border hover:border-brass/70 shadow-sm flex flex-col items-center text-center relative">
+              <div class="relative w-56 h-56 sm:w-64 sm:h-64 mb-6 shrink-0">
+                <svg viewBox="0 0 400 400" class="w-full h-full drop-shadow-xl" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <clipPath id="clipSteven">
+                      <circle cx="200" cy="185" r="150" />
+                    </clipPath>
+                  </defs>
+                  <circle cx="200" cy="185" r="172" fill="#1D1612" stroke="url(#brassGrad1)" stroke-width="8"/>
+                  <circle cx="200" cy="185" r="160" fill="none" stroke="url(#brassGrad1)" stroke-width="2.5" stroke-dasharray="4,6" />
+                  <circle cx="200" cy="19" r="3.5" fill="#F5DB88"/><circle cx="317" cy="67" r="3.5" fill="#F5DB88"/><circle cx="366" cy="185" r="3.5" fill="#F5DB88"/><circle cx="317" cy="302" r="3.5" fill="#F5DB88"/>
+                  <circle cx="200" cy="351" r="3.5" fill="#F5DB88"/><circle cx="83" cy="302" r="3.5" fill="#F5DB88"/><circle cx="34" cy="185" r="3.5" fill="#F5DB88"/><circle cx="83" cy="67" r="3.5" fill="#F5DB88"/>
+
+                  <g clip-path="url(#clipSteven)">
+                    <rect x="0" y="0" width="400" height="400" fill="#F7F4EE"/>
+                    <polygon points="60,335 85,80 110,335" fill="#C2593F"/>
+                    <polygon points="110,335 135,80 160,335" fill="#2E4A62"/>
+                    <polygon points="160,335 185,80 210,335" fill="#C2593F"/>
+                    <polygon points="210,335 235,80 260,335" fill="#2E4A62"/>
+                    <polygon points="260,335 285,80 310,335" fill="#C2593F"/>
+                    <polygon points="310,335 335,80 360,335" fill="#2E4A62"/>
+                    <path d="M70,400 L85,285 Q140,250 200,250 Q260,250 315,285 L330,400 Z" fill="#181311" stroke="#1D1612" stroke-width="4.5"/>
+                    <path d="M172,215 L172,265 Q200,272 228,265 L228,215 Z" fill="#E2B795" stroke="#1D1612" stroke-width="4"/>
+                    <path d="M138,170 C135,235 165,255 200,255 C235,255 265,235 262,170 C258,110 142,110 138,170 Z" fill="#ECC3A0" stroke="#1D1612" stroke-width="4.5"/>
+                    <!-- Amber Yellow Glasses -->
+                    <circle cx="168" cy="156" r="28" fill="#FFFFFF" fill-opacity="0.3" stroke="#DDA83B" stroke-width="7"/>
+                    <circle cx="232" cy="156" r="28" fill="#FFFFFF" fill-opacity="0.3" stroke="#DDA83B" stroke-width="7"/>
+                    <path d="M196,152 Q200,146 204,152" stroke="#DDA83B" stroke-width="7" fill="none"/>
+                    <!-- Big Smile with Tongue -->
+                    <path d="M164,198 Q200,248 236,198 Z" fill="#1D1612" stroke="#1D1612" stroke-width="4"/>
+                    <path d="M170,200 Q200,215 230,200 Z" fill="#FFFFFF"/>
+                    <path d="M182,228 Q200,218 218,228 Q200,244 182,228 Z" fill="#D36B6B"/>
+                    <path d="M136,150 Q130,90 155,75 L165,85 L175,65 L188,80 L200,58 L212,80 L225,65 L235,85 L245,75 Q270,90 264,150 Z" fill="#1F1511" stroke="#1D1612" stroke-width="4.5"/>
+                  </g>
+
+                  <circle cx="200" cy="185" r="150" fill="none" stroke="url(#brassGrad1)" stroke-width="6"/>
+
+                  <path d="M45,335 L60,325 L340,325 L355,335 L350,385 L335,395 L65,395 L50,385 Z" fill="url(#brassGrad1)" stroke="#1D1612" stroke-width="4"/>
+                  <text x="200" y="358" font-family="'Bungee', sans-serif" font-size="20" font-weight="900" fill="#1D1612" text-anchor="middle">STEVEN GOLDBERG</text>
+                  <text x="200" y="378" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="800" fill="#543D32" text-anchor="middle" letter-spacing="2">SECRETARY & TREASURER</text>
+                </svg>
+              </div>
+
+              <div class="space-y-1 mb-4">
+                <span class="inline-block px-3 py-1 rounded-full bg-brass/20 text-brass-dark text-xs font-black uppercase tracking-wider">
+                  Secretary & Treasurer
+                </span>
+                <h4 class="text-xl font-extrabold text-espresso font-display tracking-tight">Steven Goldberg</h4>
+                <p class="text-xs font-semibold text-espresso-soft">Finances, Records & Energy</p>
+              </div>
+              <p class="text-xs text-espresso/80 leading-relaxed font-normal mb-6">
+                Managing MBA association books, memberships, filings, and lighting up the energy at every club session.
+              </p>
+              <div class="mt-auto w-full pt-4 border-t border-parchment-border flex items-center justify-between text-[11px] font-bold text-espresso/70">
+                <span><i data-lucide="sparkles" class="w-3.5 h-3.5 inline mr-1 text-brass"></i> Double 6 Enthusiast</span>
+                <span class="text-brass-dark font-black">Executive</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- TIER 2: FOUNDING MEMBERS -->
+        <div>
+          <div class="flex items-center justify-center gap-4 mb-10">
+            <span class="h-0.5 w-12 bg-brass"></span>
+            <h3 class="text-xs sm:text-sm font-extrabold tracking-widest text-espresso uppercase font-badge">
+              ★ Founding Members ★
+            </h3>
+            <span class="h-0.5 w-12 bg-brass"></span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+
+            <!-- 4. BRYCE ADAMS (FOUNDING MEMBER) -->
+            <div class="badge-card bg-parchment-light rounded-3xl p-5 border-2 border-parchment-border hover:border-brass/70 shadow-sm flex flex-col items-center text-center relative">
+              <div class="relative w-48 h-48 sm:w-52 sm:h-52 mb-5 shrink-0">
+                <svg viewBox="0 0 400 400" class="w-full h-full drop-shadow-xl" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <clipPath id="clipBryce">
+                      <circle cx="200" cy="185" r="150" />
+                    </clipPath>
+                  </defs>
+                  <circle cx="200" cy="185" r="172" fill="#1D1612" stroke="url(#brassGrad1)" stroke-width="8"/>
+                  <circle cx="200" cy="185" r="160" fill="none" stroke="url(#brassGrad1)" stroke-width="2.5" stroke-dasharray="4,6" />
+                  <circle cx="200" cy="19" r="3.5" fill="#F5DB88"/><circle cx="317" cy="67" r="3.5" fill="#F5DB88"/><circle cx="366" cy="185" r="3.5" fill="#F5DB88"/><circle cx="317" cy="302" r="3.5" fill="#F5DB88"/>
+                  <circle cx="200" cy="351" r="3.5" fill="#F5DB88"/><circle cx="83" cy="302" r="3.5" fill="#F5DB88"/><circle cx="34" cy="185" r="3.5" fill="#F5DB88"/><circle cx="83" cy="67" r="3.5" fill="#F5DB88"/>
+
+                  <g clip-path="url(#clipBryce)">
+                    <rect x="0" y="0" width="400" height="400" fill="#F7F4EE"/>
+                    <polygon points="60,335 85,80 110,335" fill="#2E4A62"/>
+                    <polygon points="110,335 135,80 160,335" fill="#C2593F"/>
+                    <polygon points="160,335 185,80 210,335" fill="#2E4A62"/>
+                    <polygon points="210,335 235,80 260,335" fill="#C2593F"/>
+                    <polygon points="260,335 285,80 310,335" fill="#2E4A62"/>
+                    <polygon points="310,335 335,80 360,335" fill="#C2593F"/>
+                    <!-- Clean Royal Blue Tee (No lanyard/straps) -->
+                    <path d="M70,400 L85,285 Q140,250 200,250 Q260,250 315,285 L330,400 Z" fill="#294B7A" stroke="#1D1612" stroke-width="4.5"/>
+                    <path d="M165,255 Q200,274 235,255" stroke="#1C3252" stroke-width="3" fill="none"/>
+                    <!-- Face & Teeth Smile -->
+                    <path d="M172,215 L172,265 Q200,272 228,265 L228,215 Z" fill="#DEB18C" stroke="#1D1612" stroke-width="4"/>
+                    <path d="M138,170 C135,235 165,255 200,255 C235,255 265,235 262,170 C258,110 142,110 138,170 Z" fill="#ECC3A0" stroke="#1D1612" stroke-width="4.5"/>
+                    <path d="M168,206 Q200,240 232,206 Z" fill="#1D1612" stroke="#1D1612" stroke-width="3.5"/>
+                    <path d="M172,208 Q200,225 228,208 Z" fill="#FFFFFF"/>
+                    <!-- Round Black Glasses -->
+                    <circle cx="168" cy="156" r="26" fill="#FFFFFF" fill-opacity="0.25" stroke="#181311" stroke-width="6"/>
+                    <circle cx="232" cy="156" r="26" fill="#FFFFFF" fill-opacity="0.25" stroke="#181311" stroke-width="6"/>
+                    <path d="M194,154 Q200,150 206,154" stroke="#181311" stroke-width="6" fill="none"/>
+                    <!-- Olive Cap (Clean, without words/logos) -->
+                    <path d="M140,125 Q140,65 200,65 Q260,65 260,125 Z" fill="#6A7A66" stroke="#1D1612" stroke-width="4.5"/>
+                    <path d="M125,125 Q200,105 275,125 Q245,142 200,140 Q155,142 125,125 Z" fill="#586755" stroke="#1D1612" stroke-width="4.5"/>
+                  </g>
+
+                  <circle cx="200" cy="185" r="150" fill="none" stroke="url(#brassGrad1)" stroke-width="6"/>
+
+                  <path d="M50,335 L65,325 L335,325 L350,335 L345,385 L330,395 L70,395 L55,385 Z" fill="url(#brassGrad1)" stroke="#1D1612" stroke-width="4"/>
+                  <text x="200" y="358" font-family="'Bungee', sans-serif" font-size="22" font-weight="900" fill="#1D1612" text-anchor="middle">BRYCE ADAMS</text>
+                  <text x="200" y="378" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="800" fill="#543D32" text-anchor="middle" letter-spacing="2">FOUNDING MEMBER</text>
+                </svg>
+              </div>
+
+              <div class="space-y-1 mb-3">
+                <span class="inline-block px-2.5 py-0.5 rounded-full bg-emerald-800/15 text-emerald-800 text-[10px] font-black uppercase tracking-wider">
+                  Founding Member
+                </span>
+                <h4 class="text-lg font-extrabold text-espresso font-display tracking-tight">Bryce Adams</h4>
+                <p class="text-[11px] font-semibold text-espresso-soft">Digital Systems & Community</p>
+              </div>
+              <p class="text-xs text-espresso/80 leading-relaxed font-normal mb-5">
+                Technical infrastructure, digital tournament registration, and driving community participation.
+              </p>
+              <div class="mt-auto w-full pt-3 border-t border-parchment-border flex items-center justify-between text-[11px] font-bold text-espresso/70">
+                <span><i data-lucide="laptop" class="w-3.5 h-3.5 inline mr-1 text-emerald-700"></i> Digital Ops</span>
+                <span>4-2 Play</span>
+              </div>
+            </div>
+
+            <!-- 5. GREG SACKS (FOUNDING MEMBER) -->
+            <div class="badge-card bg-parchment-light rounded-3xl p-5 border-2 border-parchment-border hover:border-brass/70 shadow-sm flex flex-col items-center text-center relative">
+              <div class="relative w-48 h-48 sm:w-52 sm:h-52 mb-5 shrink-0">
+                <svg viewBox="0 0 400 400" class="w-full h-full drop-shadow-xl" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <clipPath id="clipGreg">
+                      <circle cx="200" cy="185" r="150" />
+                    </clipPath>
+                  </defs>
+                  <circle cx="200" cy="185" r="172" fill="#1D1612" stroke="url(#brassGrad1)" stroke-width="8"/>
+                  <circle cx="200" cy="185" r="160" fill="none" stroke="url(#brassGrad1)" stroke-width="2.5" stroke-dasharray="4,6" />
+                  <circle cx="200" cy="19" r="3.5" fill="#F5DB88"/><circle cx="317" cy="67" r="3.5" fill="#F5DB88"/><circle cx="366" cy="185" r="3.5" fill="#F5DB88"/><circle cx="317" cy="302" r="3.5" fill="#F5DB88"/>
+                  <circle cx="200" cy="351" r="3.5" fill="#F5DB88"/><circle cx="83" cy="302" r="3.5" fill="#F5DB88"/><circle cx="34" cy="185" r="3.5" fill="#F5DB88"/><circle cx="83" cy="67" r="3.5" fill="#F5DB88"/>
+
+                  <g clip-path="url(#clipGreg)">
+                    <rect x="0" y="0" width="400" height="400" fill="#F7F4EE"/>
+                    <polygon points="60,335 85,80 110,335" fill="#C2593F"/>
+                    <polygon points="110,335 135,80 160,335" fill="#2E4A62"/>
+                    <polygon points="160,335 185,80 210,335" fill="#C2593F"/>
+                    <polygon points="210,335 235,80 260,335" fill="#2E4A62"/>
+                    <polygon points="260,335 285,80 310,335" fill="#C2593F"/>
+                    <polygon points="310,335 335,80 360,335" fill="#2E4A62"/>
+                    <!-- Sage Green Overshirt over White Tee -->
+                    <path d="M70,400 L85,285 Q140,250 200,250 Q260,250 315,285 L330,400 Z" fill="#7C9985" stroke="#1D1612" stroke-width="4.5"/>
+                    <path d="M165,250 L200,310 L235,250 Z" fill="#FFFFFF" stroke="#1D1612" stroke-width="3"/>
+                    <!-- Buzz Cut & Stubble -->
+                    <path d="M172,215 L172,265 Q200,272 228,265 L228,215 Z" fill="#DEB18C" stroke="#1D1612" stroke-width="4"/>
+                    <path d="M140,165 C135,230 165,255 200,255 C235,255 265,230 260,165 C255,100 145,100 140,165 Z" fill="#ECC3A0" stroke="#1D1612" stroke-width="4.5"/>
+                    <path d="M142,160 Q138,98 200,92 Q262,98 258,160 Q250,118 200,115 Q150,118 142,160 Z" fill="#2C231E" stroke="#1D1612" stroke-width="3.5"/>
+                    <path d="M144,175 Q144,245 200,248 Q256,245 256,175 Q245,220 200,234 Q155,220 144,175 Z" fill="#2C231E" opacity="0.45"/>
+                    <path d="M174,212 Q200,224 226,212" stroke="#1D1612" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+                    <ellipse cx="170" cy="154" rx="6.5" ry="5" fill="#1F1511"/><circle cx="172" cy="152" r="1.8" fill="#FFFFFF"/>
+                    <ellipse cx="230" cy="154" rx="6.5" ry="5" fill="#1F1511"/><circle cx="232" cy="152" r="1.8" fill="#FFFFFF"/>
+                  </g>
+
+                  <circle cx="200" cy="185" r="150" fill="none" stroke="url(#brassGrad1)" stroke-width="6"/>
+
+                  <path d="M50,335 L65,325 L335,325 L350,335 L345,385 L330,395 L70,395 L55,385 Z" fill="url(#brassGrad1)" stroke="#1D1612" stroke-width="4"/>
+                  <text x="200" y="358" font-family="'Bungee', sans-serif" font-size="22" font-weight="900" fill="#1D1612" text-anchor="middle">GREG SACKS</text>
+                  <text x="200" y="378" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="800" fill="#543D32" text-anchor="middle" letter-spacing="2">FOUNDING MEMBER</text>
+                </svg>
+              </div>
+
+              <div class="space-y-1 mb-3">
+                <span class="inline-block px-2.5 py-0.5 rounded-full bg-emerald-800/15 text-emerald-800 text-[10px] font-black uppercase tracking-wider">
+                  Founding Member
+                </span>
+                <h4 class="text-lg font-extrabold text-espresso font-display tracking-tight">Greg Sacks</h4>
+                <p class="text-[11px] font-semibold text-espresso-soft">Culture & Strategic Growth</p>
+              </div>
+              <p class="text-xs text-espresso/80 leading-relaxed font-normal mb-5">
+                Hospitality, social atmosphere, and building long-term partnerships across the Melbourne board game scene.
+              </p>
+              <div class="mt-auto w-full pt-3 border-t border-parchment-border flex items-center justify-between text-[11px] font-bold text-espresso/70">
+                <span><i data-lucide="handshake" class="w-3.5 h-3.5 inline mr-1 text-brass"></i> Culture</span>
+                <span>Prime Builder</span>
+              </div>
+            </div>
+
+            <!-- 6. DANIEL KOBRIN (FOUNDING MEMBER) -->
+            <div class="badge-card bg-parchment-light rounded-3xl p-5 border-2 border-parchment-border hover:border-brass/70 shadow-sm flex flex-col items-center text-center relative">
+              <div class="relative w-48 h-48 sm:w-52 sm:h-52 mb-5 shrink-0">
+                <svg viewBox="0 0 400 400" class="w-full h-full drop-shadow-xl" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <clipPath id="clipKobrin">
+                      <circle cx="200" cy="185" r="150" />
+                    </clipPath>
+                  </defs>
+                  <circle cx="200" cy="185" r="172" fill="#1D1612" stroke="url(#brassGrad1)" stroke-width="8"/>
+                  <circle cx="200" cy="185" r="160" fill="none" stroke="url(#brassGrad1)" stroke-width="2.5" stroke-dasharray="4,6" />
+                  <circle cx="200" cy="19" r="3.5" fill="#F5DB88"/><circle cx="317" cy="67" r="3.5" fill="#F5DB88"/><circle cx="366" cy="185" r="3.5" fill="#F5DB88"/><circle cx="317" cy="302" r="3.5" fill="#F5DB88"/>
+                  <circle cx="200" cy="351" r="3.5" fill="#F5DB88"/><circle cx="83" cy="302" r="3.5" fill="#F5DB88"/><circle cx="34" cy="185" r="3.5" fill="#F5DB88"/><circle cx="83" cy="67" r="3.5" fill="#F5DB88"/>
+
+                  <g clip-path="url(#clipKobrin)">
+                    <rect x="0" y="0" width="400" height="400" fill="#F7F4EE"/>
+                    <polygon points="60,335 85,80 110,335" fill="#2E4A62"/>
+                    <polygon points="110,335 135,80 160,335" fill="#C2593F"/>
+                    <polygon points="160,335 185,80 210,335" fill="#2E4A62"/>
+                    <polygon points="210,335 235,80 260,335" fill="#C2593F"/>
+                    <polygon points="260,335 285,80 310,335" fill="#2E4A62"/>
+                    <polygon points="310,335 335,80 360,335" fill="#C2593F"/>
+                    <path d="M70,400 L85,285 Q140,250 200,250 Q260,250 315,285 L330,400 Z" fill="#181311" stroke="#1D1612" stroke-width="4.5"/>
+                    <path d="M172,215 L172,265 Q200,272 228,265 L228,215 Z" fill="#ECC3A0" stroke="#1D1612" stroke-width="4"/>
+                    <path d="M138,170 C135,235 165,255 200,255 C235,255 265,235 262,170 C258,105 142,105 138,170 Z" fill="#F4D3BC" stroke="#1D1612" stroke-width="4.5"/>
+                    <!-- Auburn Beard & Strawberry Blonde Hair -->
+                    <path d="M140,170 Q138,252 200,256 Q262,252 260,170 Q252,212 232,236 Q200,250 168,236 Q148,212 140,170 Z" fill="#A84C24" stroke="#1D1612" stroke-width="4"/>
+                    <path d="M170,205 Q200,236 230,205 Z" fill="#1D1612"/>
+                    <path d="M174,206 Q200,222 226,206 Z" fill="#FFFFFF"/>
+                    <ellipse cx="168" cy="154" rx="6.5" ry="5.5" fill="#1F1511"/><circle cx="170" cy="152" r="1.8" fill="#FFFFFF"/>
+                    <ellipse cx="232" cy="154" rx="6.5" ry="5.5" fill="#1F1511"/><circle cx="234" cy="152" r="1.8" fill="#FFFFFF"/>
+                    <path d="M138,155 Q135,88 170,72 Q200,68 230,72 Q265,88 262,155 Q250,105 225,95 Q200,88 175,95 Q150,105 138,155 Z" fill="#BA5A2F" stroke="#1D1612" stroke-width="4"/>
+                  </g>
+
+                  <circle cx="200" cy="185" r="150" fill="none" stroke="url(#brassGrad1)" stroke-width="6"/>
+
+                  <path d="M45,335 L60,325 L340,325 L355,335 L350,385 L335,395 L65,395 L50,385 Z" fill="url(#brassGrad1)" stroke="#1D1612" stroke-width="4"/>
+                  <text x="200" y="358" font-family="'Bungee', sans-serif" font-size="20" font-weight="900" fill="#1D1612" text-anchor="middle">DANIEL KOBRIN</text>
+                  <text x="200" y="378" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="800" fill="#543D32" text-anchor="middle" letter-spacing="2">FOUNDING MEMBER</text>
+                </svg>
+              </div>
+
+              <div class="space-y-1 mb-3">
+                <span class="inline-block px-2.5 py-0.5 rounded-full bg-emerald-800/15 text-emerald-800 text-[10px] font-black uppercase tracking-wider">
+                  Founding Member
+                </span>
+                <h4 class="text-lg font-extrabold text-espresso font-display tracking-tight">Daniel Kobrin</h4>
+                <p class="text-[11px] font-semibold text-espresso-soft">Member Engagement & Chouettes</p>
+              </div>
+              <p class="text-xs text-espresso/80 leading-relaxed font-normal mb-5">
+                Coordinating fast-paced multi-player chouette tables and introducing newcomers to the doubling cube.
+              </p>
+              <div class="mt-auto w-full pt-3 border-t border-parchment-border flex items-center justify-between text-[11px] font-bold text-espresso/70">
+                <span><i data-lucide="users" class="w-3.5 h-3.5 inline mr-1 text-terracotta"></i> Chouette Captain</span>
+                <span>Cube Tactician</span>
+              </div>
+            </div>
+
+            <!-- 7. YONA TAKAC (FOUNDING MEMBER) -->
+            <div class="badge-card bg-parchment-light rounded-3xl p-5 border-2 border-parchment-border hover:border-brass/70 shadow-sm flex flex-col items-center text-center relative">
+              <div class="relative w-48 h-48 sm:w-52 sm:h-52 mb-5 shrink-0">
+                <svg viewBox="0 0 400 400" class="w-full h-full drop-shadow-xl" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <clipPath id="clipYona">
+                      <circle cx="200" cy="185" r="150" />
+                    </clipPath>
+                  </defs>
+                  <circle cx="200" cy="185" r="172" fill="#1D1612" stroke="url(#brassGrad1)" stroke-width="8"/>
+                  <circle cx="200" cy="185" r="160" fill="none" stroke="url(#brassGrad1)" stroke-width="2.5" stroke-dasharray="4,6" />
+                  <circle cx="200" cy="19" r="3.5" fill="#F5DB88"/><circle cx="317" cy="67" r="3.5" fill="#F5DB88"/><circle cx="366" cy="185" r="3.5" fill="#F5DB88"/><circle cx="317" cy="302" r="3.5" fill="#F5DB88"/>
+                  <circle cx="200" cy="351" r="3.5" fill="#F5DB88"/><circle cx="83" cy="302" r="3.5" fill="#F5DB88"/><circle cx="34" cy="185" r="3.5" fill="#F5DB88"/><circle cx="83" cy="67" r="3.5" fill="#F5DB88"/>
+
+                  <g clip-path="url(#clipYona)">
+                    <rect x="0" y="0" width="400" height="400" fill="#F7F4EE"/>
+                    <polygon points="60,335 85,80 110,335" fill="#C2593F"/>
+                    <polygon points="110,335 135,80 160,335" fill="#2E4A62"/>
+                    <polygon points="160,335 185,80 210,335" fill="#C2593F"/>
+                    <polygon points="210,335 235,80 260,335" fill="#2E4A62"/>
+                    <polygon points="260,335 285,80 310,335" fill="#C2593F"/>
+                    <polygon points="310,335 335,80 360,335" fill="#2E4A62"/>
+                    <path d="M70,400 L85,285 Q140,250 200,250 Q260,250 315,285 L330,400 Z" fill="#1C2735" stroke="#1D1612" stroke-width="4.5"/>
+                    <path d="M185,255 L200,295 L215,255 Z" fill="#E4BA97"/>
+                    <circle cx="200" cy="315" r="3.5" fill="#D4AF37"/>
+                    <circle cx="200" cy="345" r="3.5" fill="#D4AF37"/>
+                    <path d="M172,215 L172,265 Q200,272 228,265 L228,215 Z" fill="#DEB18C" stroke="#1D1612" stroke-width="4"/>
+                    <path d="M138,165 C135,230 165,255 200,255 C235,255 265,230 262,165 C258,105 142,105 138,165 Z" fill="#ECC3A0" stroke="#1D1612" stroke-width="4.5"/>
+                    <path d="M166,204 Q200,238 234,204 Z" fill="#1D1612" stroke="#1D1612" stroke-width="3.5"/>
+                    <path d="M172,206 Q200,224 228,206 Z" fill="#FFFFFF"/>
+                    <ellipse cx="170" cy="154" rx="7" ry="5.5" fill="#1F1511"/><circle cx="172" cy="152" r="2" fill="#FFFFFF"/>
+                    <ellipse cx="230" cy="154" rx="7" ry="5.5" fill="#1F1511"/><circle cx="232" cy="152" r="2" fill="#FFFFFF"/>
+                    <!-- Dark Curls -->
+                    <path d="M136,155 Q125,95 160,75 Q175,60 205,65 Q235,60 250,75 Q275,95 264,155 Z" fill="#1C1410" stroke="#1D1612" stroke-width="4.5"/>
+                    <circle cx="155" cy="85" r="15" fill="#1C1410"/><circle cx="178" cy="70" r="16" fill="#1C1410"/><circle cx="205" cy="66" r="17" fill="#1C1410"/>
+                  </g>
+
+                  <circle cx="200" cy="185" r="150" fill="none" stroke="url(#brassGrad1)" stroke-width="6"/>
+
+                  <path d="M50,335 L65,325 L335,325 L350,335 L345,385 L330,395 L70,395 L55,385 Z" fill="url(#brassGrad1)" stroke="#1D1612" stroke-width="4"/>
+                  <text x="200" y="358" font-family="'Bungee', sans-serif" font-size="22" font-weight="900" fill="#1D1612" text-anchor="middle">YONA TAKAC</text>
+                  <text x="200" y="378" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="800" fill="#543D32" text-anchor="middle" letter-spacing="2">FOUNDING MEMBER</text>
+                </svg>
+              </div>
+
+              <div class="space-y-1 mb-3">
+                <span class="inline-block px-2.5 py-0.5 rounded-full bg-emerald-800/15 text-emerald-800 text-[10px] font-black uppercase tracking-wider">
+                  Founding Member
+                </span>
+                <h4 class="text-lg font-extrabold text-espresso font-display tracking-tight">Yona Takac</h4>
+                <p class="text-[11px] font-semibold text-espresso-soft">Match Play & Strategy</p>
+              </div>
+              <p class="text-xs text-espresso/80 leading-relaxed font-normal mb-5">
+                Match analysis, opening rollout strategies, and building friendly rivalries across association events.
+              </p>
+              <div class="mt-auto w-full pt-3 border-t border-parchment-border flex items-center justify-between text-[11px] font-bold text-espresso/70">
+                <span><i data-lucide="trophy" class="w-3.5 h-3.5 inline mr-1 text-slateNavy"></i> Tournament Rep</span>
+                <span>Tactician</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== 7. MINIMAL MODERN FOOTER ==================== -->
+  <footer class="bg-espresso text-parchment-muted pt-12 pb-8 border-t border-espresso-border text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-espresso-surface text-center md:text-left">
+        <div class="space-y-1">
+          <div class="flex items-center justify-center md:justify-start gap-3">
+            <div class="w-8 h-8 rounded-full bg-espresso-surface border border-brass flex items-center justify-center font-black text-brass text-xs">
+              64
+            </div>
+            <span class="font-extrabold text-white text-base tracking-tight font-display">Melbourne Backgammon Association Inc.</span>
+          </div>
+          <p class="text-brass font-bold text-xs uppercase tracking-wider">
+            "Backgammon, Brews, Beats and Bevs"
+          </p>
+        </div>
+
+        <div class="text-xs text-parchment-muted/80">
+          <span class="block text-white font-bold">Every Tuesday • 6:30 PM Onwards</span>
+          German Club Tivoli, 291 Dandenong Rd, Windsor VIC 3181
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-parchment-muted/60">
+        <div>
+          © 2026 Melbourne Backgammon Association Inc. Incorporated in Victoria under the Associations Incorporation Reform Act 2012.
+        </div>
+        <div>
+          <a href="mailto:contact@melbournebackgammon.org" class="text-brass hover:underline">contact@melbournebackgammon.org</a>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ==================== JAVASCRIPT ==================== -->
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Mobile Navigation Toggle
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    function toggleMenu() {
+      mobileDrawer.classList.toggle('hidden');
+    }
+    mobileMenuBtn.addEventListener('click', toggleMenu);
+  </script>
+</body>
+</html>
