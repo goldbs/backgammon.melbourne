@@ -92,16 +92,16 @@
 <body class="bg-parchment text-espresso font-sans antialiased selection:bg-terracotta selection:text-white pb-20 md:pb-0">
 
   <!-- Floating Mobile Action Button -->
-  <div class="fixed bottom-6 right-6 z-40">
-    <button onclick="openModal()" class="flex items-center gap-2 px-5 py-3.5 rounded-full bg-terracotta text-white font-extrabold text-sm uppercase tracking-wider shadow-2xl hover:bg-terracotta-dark active:scale-95 transition-all">
+  <div class="fixed bottom-6 right-6 z-50">
+    <button type="button" id="recordMatchFab" class="flex items-center gap-2 px-5 py-3.5 rounded-full bg-terracotta text-white font-extrabold text-sm uppercase tracking-wider shadow-2xl hover:bg-terracotta-dark active:scale-95 transition-all cursor-pointer">
       <i data-lucide="plus-circle" class="w-5 h-5"></i>
       <span>Record Match</span>
     </button>
   </div>
 
-  <!-- Modal / Drawer for Mobile Match Upload -->
-  <div id="uploadModal" class="fixed inset-0 z-50 hidden bg-espresso/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity">
-    <div class="bg-parchment-light w-full max-w-lg rounded-t-3xl sm:rounded-3xl border border-parchment-border shadow-2xl overflow-hidden max-h-[92vh] flex flex-col animate-in slide-in-from-bottom duration-200">
+  <!-- Modal / Drawer for Match Upload -->
+  <div id="uploadModal" class="fixed inset-0 z-50 hidden bg-espresso/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+    <div class="bg-parchment-light w-full max-w-lg rounded-t-3xl sm:rounded-3xl border border-parchment-border shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
       
       <div class="p-5 border-b border-parchment-border flex items-center justify-between bg-parchment-card">
         <div class="flex items-center gap-2">
@@ -110,12 +110,12 @@
           </div>
           <h3 class="font-display font-bold text-lg text-espresso">Submit Match Result</h3>
         </div>
-        <button onclick="closeModal()" class="p-2 rounded-full hover:bg-parchment text-espresso-soft">
+        <button type="button" id="closeModalBtn" class="p-2 rounded-full hover:bg-parchment text-espresso-soft cursor-pointer">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <form id="matchForm" onsubmit="submitMatch(event)" class="p-5 overflow-y-auto space-y-4 text-xs font-semibold">
+      <form id="matchForm" class="p-5 overflow-y-auto space-y-4 text-xs font-semibold">
         
         <!-- Player 1 & Score -->
         <div class="p-4 rounded-xl bg-parchment-card border border-parchment-border space-y-3">
@@ -177,7 +177,7 @@
           </div>
         </div>
 
-        <button type="submit" id="submitBtn" class="w-full py-3.5 mt-2 rounded-xl bg-espresso text-parchment font-bold text-xs uppercase tracking-wider hover:bg-terracotta transition-colors shadow-md flex items-center justify-center gap-2">
+        <button type="submit" id="submitBtn" class="w-full py-3.5 mt-2 rounded-xl bg-espresso text-parchment font-bold text-xs uppercase tracking-wider hover:bg-terracotta transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer">
           <span>Submit Result</span>
         </button>
       </form>
@@ -202,11 +202,11 @@
           <a href="#stats" class="hover:text-terracotta transition-colors">Standings</a>
           <a href="#events" class="hover:text-terracotta transition-colors">Events & Map</a>
           <a href="#matches" class="hover:text-terracotta transition-colors">Match Archive</a>
-          <button onclick="openModal()" class="px-5 py-2.5 rounded-full bg-terracotta text-white font-extrabold text-xs uppercase tracking-wider hover:bg-terracotta-dark transition-all shadow-sm">
+          <button type="button" id="recordMatchNav" class="px-5 py-2.5 rounded-full bg-terracotta text-white font-extrabold text-xs uppercase tracking-wider hover:bg-terracotta-dark transition-all shadow-sm cursor-pointer">
             + Record Match
           </button>
         </nav>
-        <button id="mobileMenuBtn" aria-label="Toggle Menu" class="xl:hidden p-2 rounded-lg text-espresso hover:bg-parchment-border transition">
+        <button id="mobileMenuBtn" aria-label="Toggle Menu" class="xl:hidden p-2 rounded-lg text-espresso hover:bg-parchment-border transition cursor-pointer">
           <i data-lucide="menu" class="w-6 h-6"></i>
         </button>
       </div>
@@ -276,7 +276,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 class="text-3xl sm:text-5xl font-extrabold text-espresso font-display tracking-tight mb-14">Founding Committee</h2>
         <div class="relative max-w-sm sm:max-w-md mx-auto">
-          <button id="carouselPrevBtn" class="absolute left-0 sm:-left-16 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-all shadow-md">
+          <button id="carouselPrevBtn" class="absolute left-0 sm:-left-16 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-all shadow-md cursor-pointer">
             <i data-lucide="chevron-left" class="w-6 h-6"></i>
           </button>
           <div id="carouselTrack" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth">
@@ -288,7 +288,7 @@
             <div class="snap-center shrink-0 w-full flex items-center justify-center p-4"><div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center"><img src="kobrin.jpeg" class="w-full h-full object-contain"></div></div>
             <div class="snap-center shrink-0 w-full flex items-center justify-center p-4"><div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center"><img src="yona.jpeg" class="w-full h-full object-contain"></div></div>
           </div>
-          <button id="carouselNextBtn" class="absolute right-0 sm:-right-16 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-all shadow-md">
+          <button id="carouselNextBtn" class="absolute right-0 sm:-right-16 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-all shadow-md cursor-pointer">
             <i data-lucide="chevron-right" class="w-6 h-6"></i>
           </button>
           <div id="carouselDots" class="flex justify-center items-center gap-2 mt-6">
@@ -400,8 +400,8 @@
   <script>
     lucide.createIcons();
 
-    // PASTE YOUR GOOGLE APPS SCRIPT URL HERE:
-    const https://script.google.com/macros/s/AKfycbyOBLAPmwyTMyJUbDHj6OCKZmOJmqkwvLdQRXVOLb2WqVkNgnlA5NmqATBTfrZjXvth/exec = ""; 
+    // SCRIPT URL (Leave blank to use local state, or paste your Google Apps Script URL here)
+    const SCRIPT_URL = ""; 
 
     // Initial Committee Members List
     const defaultMembers = [
@@ -409,13 +409,34 @@
       "Bryce Adams", "Greg Sacks", "Daniel Kobrin", "Yona Takac"
     ];
 
-    // Modal controls
+    // Local in-memory matches fallback
+    let currentMatches = [];
+
+    // Modal elements and listeners
+    const uploadModal = document.getElementById('uploadModal');
+    const recordMatchFab = document.getElementById('recordMatchFab');
+    const recordMatchNav = document.getElementById('recordMatchNav');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
     function openModal() {
-      document.getElementById('uploadModal').classList.remove('hidden');
+      uploadModal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
     }
+
     function closeModal() {
-      document.getElementById('uploadModal').classList.add('hidden');
+      uploadModal.classList.add('hidden');
+      document.body.style.overflow = '';
     }
+
+    if (recordMatchFab) recordMatchFab.addEventListener('click', openModal);
+    if (recordMatchNav) recordMatchNav.addEventListener('click', openModal);
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+
+    uploadModal.addEventListener('click', (e) => {
+      if (e.target === uploadModal) {
+        closeModal();
+      }
+    });
 
     // Carousel logic
     const track = document.getElementById('carouselTrack');
@@ -437,15 +458,19 @@
       updateDots(currentIndex);
     }
 
-    prevBtn.addEventListener('click', () => {
-      currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
-      goToSlide(currentIndex);
-    });
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+        goToSlide(currentIndex);
+      });
+    }
 
-    nextBtn.addEventListener('click', () => {
-      currentIndex = (currentIndex + 1) % totalSlides;
-      goToSlide(currentIndex);
-    });
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        currentIndex = (currentIndex + 1) % totalSlides;
+        goToSlide(currentIndex);
+      });
+    }
 
     // Render Standings & Match Archive
     function renderApp(matches = []) {
@@ -545,20 +570,21 @@
     // Load matches
     async function fetchMatches() {
       if (!SCRIPT_URL) {
-        renderApp([]);
+        renderApp(currentMatches);
         return;
       }
       try {
         const res = await fetch(SCRIPT_URL);
         const data = await res.json();
+        currentMatches = data;
         renderApp(data);
       } catch (e) {
-        renderApp([]);
+        renderApp(currentMatches);
       }
     }
 
-    // Submit match from phone
-    async function submitMatch(e) {
+    // Handle form submit
+    document.getElementById('matchForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const btn = document.getElementById('submitBtn');
       btn.innerText = "Submitting...";
@@ -586,12 +612,13 @@
         } catch (err) {}
       }
 
+      currentMatches.unshift(payload);
       closeModal();
       document.getElementById('matchForm').reset();
       btn.innerText = "Submit Result";
       btn.disabled = false;
-      setTimeout(fetchMatches, 1200);
-    }
+      renderApp(currentMatches);
+    });
 
     // Interactive Map
     const map = L.map('melbourneMap', { center: [-37.835, 144.99], zoom: 12, scrollWheelZoom: false });
