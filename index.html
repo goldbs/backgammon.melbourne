@@ -685,7 +685,7 @@
     if (prevBtn) prevBtn.addEventListener('click', prevSlide);
 
     // ==========================================
-    // Render Standings & Match Archive
+    // Render Standings & Match Archive (Fixed Ranking Order)
     // ==========================================
     function renderApp(matches = [], fetchedMembers = []) {
       const allMembersSet = new Set([...defaultMembers]);
@@ -737,13 +737,28 @@
         };
       });
 
-      // Sort: Wins -> Win Ratio -> Avg PR -> Name
+      // Strict Standings Hierarchy:
+      // 1. Most Wins (descending)
+      // 2. Win Ratio (descending)
+      // 3. Unrated (0-0) ranks ABOVE players with 0 wins and active losses (0-1, 0-2)
+      // 4. Fewest Losses for players tied on wins
+      // 5. Lowest PR (ascending)
+      // 6. Alphabetical fallback
       membersArray.sort((a, b) => {
         if (b.wins !== a.wins) return b.wins - a.wins;
-        if (b.winRatio !== a.winRatio) return b.winRatio - a.winRatio;
+
+        if (a.total > 0 && b.total > 0) {
+          if (b.winRatio !== a.winRatio) return b.winRatio - a.winRatio;
+          if (a.losses !== b.losses) return a.losses - b.losses;
+        }
+
+        if (a.total === 0 && b.total > 0 && b.wins === 0) return -1;
+        if (b.total === 0 && a.total > 0 && a.wins === 0) return 1;
+
         if (a.avgPrNum !== null && b.avgPrNum !== null) return a.avgPrNum - b.avgPrNum;
         if (a.avgPrNum !== null) return -1;
         if (b.avgPrNum !== null) return 1;
+
         return a.name.localeCompare(b.name);
       });
 
