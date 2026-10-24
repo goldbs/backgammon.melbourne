@@ -96,20 +96,76 @@
     .leaflet-popup-tip { background-color: #1D1612; }
   </style>
 </head>
-<body class="bg-parchment text-espresso font-sans antialiased selection:bg-terracotta selection:text-white pb-20 md:pb-0">
+<body class="bg-parchment text-espresso font-sans antialiased selection:bg-terracotta selection:text-white pb-24 md:pb-0">
 
-  <!-- Floating Mobile Action Button -->
-  <div class="fixed bottom-6 right-6 z-50">
-    <button type="button" id="recordMatchFab" class="flex items-center gap-2 px-5 py-3.5 rounded-full bg-terracotta text-white font-extrabold text-sm uppercase tracking-wider shadow-2xl hover:bg-terracotta-dark active:scale-95 transition-all cursor-pointer">
-      <i data-lucide="plus-circle" class="w-5 h-5"></i>
+  <!-- Floating Mobile Action Bar -->
+  <div class="fixed bottom-6 right-4 sm:right-6 z-50 flex items-center gap-2">
+    <button type="button" id="joinFab" class="flex items-center gap-1.5 px-4 py-3 rounded-full bg-slateNavy text-white font-extrabold text-xs uppercase tracking-wider shadow-2xl hover:bg-slateNavy-dark active:scale-95 transition-all cursor-pointer">
+      <i data-lucide="user-plus" class="w-4 h-4"></i>
+      <span>Join MBA</span>
+    </button>
+    <button type="button" id="recordMatchFab" class="flex items-center gap-1.5 px-4 py-3 rounded-full bg-terracotta text-white font-extrabold text-xs uppercase tracking-wider shadow-2xl hover:bg-terracotta-dark active:scale-95 transition-all cursor-pointer">
+      <i data-lucide="plus-circle" class="w-4 h-4"></i>
       <span>Record Match</span>
     </button>
   </div>
 
-  <!-- Modal / Drawer for Match Upload -->
+  <!-- Datalist for Auto-Completing Player Names -->
+  <datalist id="membersDatalist"></datalist>
+
+  <!-- Modal 1: Join / Register Member -->
+  <div id="joinModal" class="fixed inset-0 z-50 hidden bg-espresso/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+    <div class="bg-parchment-light w-full max-w-lg rounded-t-3xl sm:rounded-3xl border border-parchment-border shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
+      <div class="p-5 border-b border-parchment-border flex items-center justify-between bg-parchment-card">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-slateNavy/10 text-slateNavy flex items-center justify-center">
+            <i data-lucide="user-plus" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="font-display font-bold text-lg text-espresso leading-none">Join the Association</h3>
+            <span class="text-[10px] text-espresso-soft font-normal">Registered under Associations Incorporation Reform Act 2012</span>
+          </div>
+        </div>
+        <button type="button" id="closeJoinBtn" class="p-2 rounded-full hover:bg-parchment text-espresso-soft cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="joinForm" class="p-5 overflow-y-auto space-y-4 text-xs font-semibold">
+        <div>
+          <label class="block text-espresso-soft mb-1">Full Name (Legal Name)</label>
+          <input type="text" id="regFullName" required placeholder="e.g. Samuel Bennett" class="w-full px-3.5 py-2.5 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
+        </div>
+
+        <div>
+          <label class="block text-espresso-soft mb-1">Display / Preferred First Name</label>
+          <input type="text" id="regDisplayName" placeholder="e.g. Sam B." class="w-full px-3.5 py-2.5 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
+        </div>
+
+        <div>
+          <label class="block text-espresso-soft mb-1">Email Address</label>
+          <input type="email" id="regEmail" required placeholder="name@example.com" class="w-full px-3.5 py-2.5 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
+        </div>
+
+        <div>
+          <label class="block text-espresso-soft mb-1">Mobile Phone (Australia)</label>
+          <input type="tel" id="regPhone" required placeholder="0400 000 000" class="w-full px-3.5 py-2.5 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
+        </div>
+
+        <div class="p-3 rounded-xl bg-parchment-card border border-parchment-border text-[11px] text-espresso-soft font-normal leading-relaxed">
+          <span class="font-bold text-espresso">Privacy Guarantee:</span> Your email and phone are stored strictly in the private association register and will never be published on the website.
+        </div>
+
+        <button type="submit" id="submitJoinBtn" class="w-full py-3.5 mt-2 rounded-xl bg-slateNavy text-white font-bold text-xs uppercase tracking-wider hover:bg-slateNavy-dark transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer">
+          <span>Complete Registration</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Submit Match Result -->
   <div id="uploadModal" class="fixed inset-0 z-50 hidden bg-espresso/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
     <div class="bg-parchment-light w-full max-w-lg rounded-t-3xl sm:rounded-3xl border border-parchment-border shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
-      
       <div class="p-5 border-b border-parchment-border flex items-center justify-between bg-parchment-card">
         <div class="flex items-center gap-2">
           <div class="w-8 h-8 rounded-lg bg-terracotta/10 text-terracotta flex items-center justify-center">
@@ -123,14 +179,13 @@
       </div>
 
       <form id="matchForm" class="p-5 overflow-y-auto space-y-4 text-xs font-semibold">
-        
         <!-- Player 1 & Score -->
         <div class="p-4 rounded-xl bg-parchment-card border border-parchment-border space-y-3">
           <div class="text-[11px] font-bold uppercase tracking-wider text-terracotta">Player 1</div>
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-espresso-soft mb-1">Name</label>
-              <input type="text" id="player1Input" required placeholder="e.g. Eric B." class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-terracotta">
+              <input type="text" id="player1Input" list="membersDatalist" required placeholder="Choose or type name" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-terracotta">
             </div>
             <div>
               <label class="block text-espresso-soft mb-1">Score</label>
@@ -149,7 +204,7 @@
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-espresso-soft mb-1">Name</label>
-              <input type="text" id="player2Input" required placeholder="e.g. Steve G." class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
+              <input type="text" id="player2Input" list="membersDatalist" required placeholder="Choose or type name" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
             </div>
             <div>
               <label class="block text-espresso-soft mb-1">Score</label>
@@ -181,7 +236,7 @@
   <!-- Top Point Border -->
   <div class="bg-top-spears relative z-30"></div>
 
-  <!-- Simple Header (No Menu) -->
+  <!-- Header -->
   <header class="sticky top-0 z-30 bg-parchment-light/95 backdrop-blur-md border-b border-parchment-border transition-all">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-20">
@@ -190,9 +245,14 @@
             Melbourne Backgammon Association Inc.
           </span>
         </a>
-        <button type="button" id="recordMatchNav" class="hidden sm:inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-terracotta text-white font-extrabold text-xs uppercase tracking-wider hover:bg-terracotta-dark transition-all shadow-sm cursor-pointer">
-          + Record Match
-        </button>
+        <div class="hidden sm:flex items-center gap-3">
+          <button type="button" id="joinNav" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-slateNavy text-white font-extrabold text-xs uppercase tracking-wider hover:bg-slateNavy-dark transition-all shadow-sm cursor-pointer">
+            + Join MBA
+          </button>
+          <button type="button" id="recordMatchNav" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-terracotta text-white font-extrabold text-xs uppercase tracking-wider hover:bg-terracotta-dark transition-all shadow-sm cursor-pointer">
+            + Record Match
+          </button>
+        </div>
       </div>
     </div>
   </header>
@@ -216,12 +276,10 @@
       </div>
     </section>
 
-    <!-- 4 Tiles with De-emphasized Heading After -->
+    <!-- 4 Tiles -->
     <section class="py-16 md:py-20 bg-parchment border-b border-parchment-border">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mx-auto">
-          <!-- 1. Grow the Game -->
           <div class="p-6 rounded-2xl bg-parchment-card/80 border border-parchment-border hover:border-terracotta/40 transition-colors shadow-sm flex items-start gap-4">
             <div class="w-10 h-10 rounded-xl bg-terracotta/10 text-terracotta flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="compass" class="w-5 h-5"></i></div>
             <div>
@@ -229,8 +287,6 @@
               <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">Promote the play, study, and enjoyment of backgammon across Melbourne.</p>
             </div>
           </div>
-
-          <!-- 2. Welcome New Players -->
           <div class="p-6 rounded-2xl bg-parchment-card/80 border border-parchment-border hover:border-brass/50 transition-colors shadow-sm flex items-start gap-4">
             <div class="w-10 h-10 rounded-xl bg-brass/15 text-brass-dark flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="sparkles" class="w-5 h-5"></i></div>
             <div>
@@ -238,8 +294,6 @@
               <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">Teach newcomers and provide a comfortable place to play and learn.</p>
             </div>
           </div>
-
-          <!-- 3. Elevate Play -->
           <div class="p-6 rounded-2xl bg-parchment-card/80 border border-parchment-border hover:border-slateNavy/40 transition-colors shadow-sm flex items-start gap-4">
             <div class="w-10 h-10 rounded-xl bg-slateNavy/10 text-slateNavy flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="line-chart" class="w-5 h-5"></i></div>
             <div>
@@ -247,8 +301,6 @@
               <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">Deepen strategic understanding through match transcription, analysis, and PR evaluation.</p>
             </div>
           </div>
-
-          <!-- 4. Compete -->
           <div class="p-6 rounded-2xl bg-parchment-card/80 border border-parchment-border hover:border-terracotta/40 transition-colors shadow-sm flex items-start gap-4">
             <div class="w-10 h-10 rounded-xl bg-terracotta/10 text-terracotta flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
             <div>
@@ -258,13 +310,11 @@
           </div>
         </div>
 
-        <!-- De-emphasized Heading Below The Tiles -->
         <div class="text-center mt-10">
           <p class="text-xs font-extrabold uppercase tracking-[0.3em] text-espresso-soft/60">
             that's why we play
           </p>
         </div>
-
       </div>
     </section>
 
@@ -297,87 +347,64 @@
         <h2 class="text-3xl sm:text-5xl font-extrabold text-espresso font-display tracking-tight mb-14">Members</h2>
         
         <div class="relative max-w-sm sm:max-w-md mx-auto">
-          <!-- Prev Button -->
           <button id="carouselPrevBtn" aria-label="Previous Member" class="absolute left-0 sm:-left-16 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-all shadow-md cursor-pointer">
             <i data-lucide="chevron-left" class="w-6 h-6"></i>
           </button>
 
-          <!-- Carousel Viewport & Slider Track -->
           <div class="overflow-hidden rounded-3xl w-full">
             <div id="carouselTrack" class="flex" style="transform: translateX(-100%);">
-              
-              <!-- Clone of Last Member (for backwards seamless loop) -->
               <div class="shrink-0 w-full flex items-center justify-center p-4">
                 <div class="w-60 h-60 sm:w-68 sm:h-68 rounded-full overflow-hidden drop-shadow-2xl flex items-center justify-center bg-transparent">
                   <img src="yona.jpeg" alt="Yona Takac" class="w-full h-full object-cover rounded-full">
                 </div>
               </div>
-
-              <!-- 1. Eric Berkhinfand -->
               <div class="shrink-0 w-full flex items-center justify-center p-4">
                 <div class="w-60 h-60 sm:w-68 sm:h-68 rounded-full overflow-hidden drop-shadow-2xl flex items-center justify-center bg-transparent">
                   <img src="ezza.jpeg" alt="Eric Berkhinfand" class="w-full h-full object-cover rounded-full">
                 </div>
               </div>
-
-              <!-- 2. Daniel Wroby -->
               <div class="shrink-0 w-full flex items-center justify-center p-4">
                 <div class="w-60 h-60 sm:w-68 sm:h-68 rounded-full overflow-hidden drop-shadow-2xl flex items-center justify-center bg-transparent">
                   <img src="wroby.jpeg" alt="Daniel Wroby" class="w-full h-full object-cover rounded-full">
                 </div>
               </div>
-
-              <!-- 3. Steven Goldberg -->
               <div class="shrink-0 w-full flex items-center justify-center p-4">
                 <div class="w-60 h-60 sm:w-68 sm:h-68 rounded-full overflow-hidden drop-shadow-2xl flex items-center justify-center bg-transparent">
                   <img src="steve.jpeg" alt="Steven Goldberg" class="w-full h-full object-cover rounded-full">
                 </div>
               </div>
-
-              <!-- 4. Bryce Adams -->
               <div class="shrink-0 w-full flex items-center justify-center p-4">
                 <div class="w-60 h-60 sm:w-68 sm:h-68 rounded-full overflow-hidden drop-shadow-2xl flex items-center justify-center bg-transparent">
                   <img src="bryce.jpeg" alt="Bryce Adams" class="w-full h-full object-cover rounded-full">
                 </div>
               </div>
-
-              <!-- 5. Greg Sacks -->
               <div class="shrink-0 w-full flex items-center justify-center p-4">
                 <div class="w-60 h-60 sm:w-68 sm:h-68 rounded-full overflow-hidden drop-shadow-2xl flex items-center justify-center bg-transparent">
                   <img src="greg.jpeg" alt="Greg Sacks" class="w-full h-full object-cover rounded-full">
                 </div>
               </div>
-
-              <!-- 6. Daniel Kobrin -->
               <div class="shrink-0 w-full flex items-center justify-center p-4">
                 <div class="w-60 h-60 sm:w-68 sm:h-68 rounded-full overflow-hidden drop-shadow-2xl flex items-center justify-center bg-transparent">
                   <img src="kobrin.jpeg" alt="Daniel Kobrin" class="w-full h-full object-cover rounded-full">
                 </div>
               </div>
-
-              <!-- 7. Yona Takac -->
               <div class="shrink-0 w-full flex items-center justify-center p-4">
                 <div class="w-60 h-60 sm:w-68 sm:h-68 rounded-full overflow-hidden drop-shadow-2xl flex items-center justify-center bg-transparent">
                   <img src="yona.jpeg" alt="Yona Takac" class="w-full h-full object-cover rounded-full">
                 </div>
               </div>
-
-              <!-- Clone of First Member (for forwards seamless loop) -->
               <div class="shrink-0 w-full flex items-center justify-center p-4">
                 <div class="w-60 h-60 sm:w-68 sm:h-68 rounded-full overflow-hidden drop-shadow-2xl flex items-center justify-center bg-transparent">
                   <img src="ezza.jpeg" alt="Eric Berkhinfand" class="w-full h-full object-cover rounded-full">
                 </div>
               </div>
-
             </div>
           </div>
 
-          <!-- Next Button -->
           <button id="carouselNextBtn" aria-label="Next Member" class="absolute right-0 sm:-right-16 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-all shadow-md cursor-pointer">
             <i data-lucide="chevron-right" class="w-6 h-6"></i>
           </button>
 
-          <!-- 7 Member Dots (0 to 6) -->
           <div id="carouselDots" class="flex justify-center items-center gap-2 mt-6">
             <button class="w-2.5 h-2.5 rounded-full bg-terracotta transition-all cursor-pointer" onclick="goToOriginalSlide(0)"></button>
             <button class="w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all cursor-pointer" onclick="goToOriginalSlide(1)"></button>
@@ -388,7 +415,6 @@
             <button class="w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all cursor-pointer" onclick="goToOriginalSlide(6)"></button>
           </div>
         </div>
-
       </div>
     </section>
 
@@ -460,13 +486,16 @@
     // LIVE GOOGLE APPS SCRIPT ENDPOINT
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyOBLAPmwyTMyJUbDHj6OCKZmOJmqkwvLdQRXVOLb2WqVkNgnlA5NmqATBTfrZjXvth/exec"; 
 
-    // Initial Committee Members List
+    // Founding Committee Baseline
     const defaultMembers = [
       "Eric Berkhinfand", "Daniel Wroby", "Steven Goldberg",
       "Bryce Adams", "Greg Sacks", "Daniel Kobrin", "Yona Takac"
     ];
 
-    // Map shorthand / nicknames to official member list
+    let registeredMembers = [...defaultMembers];
+    let currentMatches = [];
+
+    // Nickname / Shorthand normalization
     function normalizeName(inputName) {
       const clean = (inputName || '').trim().toLowerCase();
       if (!clean) return inputName;
@@ -477,48 +506,65 @@
       if (clean === 'greg' || clean === 'greg s') return 'Greg Sacks';
       if (clean === 'daniel k' || clean === 'dan k' || clean === 'kobrin') return 'Daniel Kobrin';
       if (clean === 'yona' || clean === 'yona t') return 'Yona Takac';
-      return inputName.trim();
-    }
 
-    // Local in-memory matches fallback
-    let currentMatches = [];
+      // Check against dynamically registered members
+      const match = registeredMembers.find(m => m.toLowerCase() === clean);
+      return match || inputName.trim();
+    }
 
     // Modal elements and listeners
     const uploadModal = document.getElementById('uploadModal');
+    const joinModal = document.getElementById('joinModal');
     const recordMatchFab = document.getElementById('recordMatchFab');
     const recordMatchNav = document.getElementById('recordMatchNav');
+    const joinFab = document.getElementById('joinFab');
+    const joinNav = document.getElementById('joinNav');
     const closeModalBtn = document.getElementById('closeModalBtn');
+    const closeJoinBtn = document.getElementById('closeJoinBtn');
 
-    function openModal() {
-      uploadModal.classList.remove('hidden');
+    function openModal(modal) {
+      modal.classList.remove('hidden');
       document.body.style.overflow = 'hidden';
     }
 
-    function closeModal() {
-      uploadModal.classList.add('hidden');
+    function closeModal(modal) {
+      modal.classList.add('hidden');
       document.body.style.overflow = '';
     }
 
-    if (recordMatchFab) recordMatchFab.addEventListener('click', openModal);
-    if (recordMatchNav) recordMatchNav.addEventListener('click', openModal);
-    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+    if (recordMatchFab) recordMatchFab.addEventListener('click', () => openModal(uploadModal));
+    if (recordMatchNav) recordMatchNav.addEventListener('click', () => openModal(uploadModal));
+    if (closeModalBtn) closeModalBtn.addEventListener('click', () => closeModal(uploadModal));
 
-    uploadModal.addEventListener('click', (e) => {
-      if (e.target === uploadModal) {
-        closeModal();
-      }
+    if (joinFab) joinFab.addEventListener('click', () => openModal(joinModal));
+    if (joinNav) joinNav.addEventListener('click', () => openModal(joinModal));
+    if (closeJoinBtn) closeJoinBtn.addEventListener('click', () => closeModal(joinModal));
+
+    [uploadModal, joinModal].forEach(m => {
+      m.addEventListener('click', (e) => {
+        if (e.target === m) closeModal(m);
+      });
     });
 
-    // ==========================================
-    // Continuous Infinite Loop Carousel
-    // ==========================================
+    // Populate Datalist for autocomplete in match inputs
+    function updateMembersDatalist() {
+      const dl = document.getElementById('membersDatalist');
+      dl.innerHTML = '';
+      registeredMembers.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        dl.appendChild(opt);
+      });
+    }
+
+    // Carousel logic
     const track = document.getElementById('carouselTrack');
     const prevBtn = document.getElementById('carouselPrevBtn');
     const nextBtn = document.getElementById('carouselNextBtn');
     const dots = document.querySelectorAll('#carouselDots button');
     
     const totalOriginalSlides = 7;
-    let trackIndex = 1; // Starts at 1 (first real item, because 0 is the cloned last item)
+    let trackIndex = 1;
     let isTransitioning = false;
 
     function updateDots(activeMemberIndex) {
@@ -530,14 +576,9 @@
     }
 
     function moveCarousel(smooth = true) {
-      if (smooth) {
-        track.style.transition = 'transform 450ms cubic-bezier(0.25, 1, 0.5, 1)';
-      } else {
-        track.style.transition = 'none';
-      }
+      track.style.transition = smooth ? 'transform 450ms cubic-bezier(0.25, 1, 0.5, 1)' : 'none';
       track.style.transform = `translateX(-${trackIndex * 100}%)`;
 
-      // Active dot mapping
       let memberDot = trackIndex - 1;
       if (memberDot < 0) memberDot = totalOriginalSlides - 1;
       if (memberDot >= totalOriginalSlides) memberDot = 0;
@@ -565,15 +606,12 @@
       moveCarousel(true);
     }
 
-    // Seamless loop reset on boundary
     track.addEventListener('transitionend', () => {
       isTransitioning = false;
       if (trackIndex === 0) {
-        // Jumped left past first item -> reset instantly to real last item
         trackIndex = totalOriginalSlides;
         moveCarousel(false);
       } else if (trackIndex === totalOriginalSlides + 1) {
-        // Jumped right past last item -> reset instantly to real first item
         trackIndex = 1;
         moveCarousel(false);
       }
@@ -582,10 +620,19 @@
     if (nextBtn) nextBtn.addEventListener('click', nextSlide);
     if (prevBtn) prevBtn.addEventListener('click', prevSlide);
 
-    // Render Standings & Match Archive with true Sorting & Rank assignment
-    function renderApp(matches = []) {
+    // Render Standings & Matches
+    function renderApp(matches = [], members = []) {
+      // Build unique list of all known members
+      const allMembersSet = new Set([...defaultMembers]);
+      members.forEach(m => {
+        if (m.fullName) allMembersSet.add(m.fullName);
+        else if (typeof m === 'string') allMembersSet.add(m);
+      });
+      registeredMembers = Array.from(allMembersSet);
+      updateMembersDatalist();
+
       const statsMap = {};
-      defaultMembers.forEach(name => {
+      registeredMembers.forEach(name => {
         statsMap[name] = { name: name, wins: 0, losses: 0, prList: [] };
       });
 
@@ -609,7 +656,6 @@
         if (m.pr2) statsMap[p2].prList.push(Number(m.pr2));
       });
 
-      // Convert to array and calculate stats
       const membersArray = Object.values(statsMap).map(item => {
         const total = item.wins + item.losses;
         const winRatio = total > 0 ? (item.wins / total) : 0;
@@ -627,7 +673,7 @@
         };
       });
 
-      // Sort: Wins (desc) -> Win Ratio (desc) -> Avg PR (asc if present)
+      // Sort: Wins -> Win Ratio -> Avg PR -> Name
       membersArray.sort((a, b) => {
         if (b.wins !== a.wins) return b.wins - a.wins;
         if (b.winRatio !== a.winRatio) return b.winRatio - a.winRatio;
@@ -714,23 +760,71 @@
       lucide.createIcons();
     }
 
-    // Load matches
-    async function fetchMatches() {
+    // Load matches and members
+    async function fetchAppData() {
       if (!SCRIPT_URL) {
-        renderApp(currentMatches);
+        renderApp(currentMatches, registeredMembers);
         return;
       }
       try {
         const res = await fetch(SCRIPT_URL);
         const data = await res.json();
-        currentMatches = data;
-        renderApp(data);
+        if (data.matches && data.members) {
+          currentMatches = data.matches;
+          renderApp(data.matches, data.members);
+        } else if (Array.isArray(data)) {
+          currentMatches = data;
+          renderApp(data, []);
+        }
       } catch (e) {
-        renderApp(currentMatches);
+        renderApp(currentMatches, registeredMembers);
       }
     }
 
-    // Handle form submit
+    // Handle Member Registration
+    document.getElementById('joinForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitJoinBtn');
+      btn.innerText = "Registering...";
+      btn.disabled = true;
+
+      const fullName = document.getElementById('regFullName').value.trim();
+      const displayName = document.getElementById('regDisplayName').value.trim() || fullName;
+      const email = document.getElementById('regEmail').value.trim();
+      const phone = document.getElementById('regPhone').value.trim();
+
+      const payload = {
+        action: "registerMember",
+        fullName: fullName,
+        displayName: displayName,
+        email: email,
+        phone: phone
+      };
+
+      if (SCRIPT_URL) {
+        try {
+          await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        } catch (err) {}
+      }
+
+      // Add to local state immediately
+      if (!registeredMembers.includes(fullName)) {
+        registeredMembers.push(fullName);
+      }
+      closeModal(joinModal);
+      document.getElementById('joinForm').reset();
+      btn.innerText = "Complete Registration";
+      btn.disabled = false;
+      renderApp(currentMatches, registeredMembers);
+      setTimeout(fetchAppData, 1500);
+    });
+
+    // Handle Match Submit
     document.getElementById('matchForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const btn = document.getElementById('submitBtn');
@@ -742,6 +836,7 @@
       const inferredLength = Math.max(s1, s2);
 
       const payload = {
+        action: "submitMatch",
         player1: document.getElementById('player1Input').value.trim(),
         player2: document.getElementById('player2Input').value.trim(),
         score1: s1,
@@ -764,14 +859,15 @@
       }
 
       currentMatches.unshift(payload);
-      closeModal();
+      closeModal(uploadModal);
       document.getElementById('matchForm').reset();
       btn.innerText = "Submit Result";
       btn.disabled = false;
-      renderApp(currentMatches);
+      renderApp(currentMatches, registeredMembers);
+      setTimeout(fetchAppData, 1500);
     });
 
-    // Interactive Map
+    // Map Init
     const map = L.map('melbourneMap', { center: [-37.835, 144.99], zoom: 12, scrollWheelZoom: false });
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
@@ -799,7 +895,7 @@
       marker.bindPopup(`<b>${evt.title}</b><br>${evt.venue}`);
     });
 
-    fetchMatches();
+    fetchAppData();
   </script>
 </body>
 </html>
