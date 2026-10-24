@@ -891,7 +891,7 @@
       setTimeout(fetchAppData, 1500);
     });
 
-    // Handle Match Submit
+    // Handle Match Submit (1-Click Email Verification workflow)
     document.getElementById('matchForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const btn = document.getElementById('submitBtn');
@@ -925,12 +925,11 @@
         } catch (err) {}
       }
 
-      currentMatches.unshift(payload);
       closeModal(uploadModal);
       document.getElementById('matchForm').reset();
       btn.innerText = "Submit Result";
       btn.disabled = false;
-      renderApp(currentMatches, registeredMembers);
+      alert("Match recorded! A 1-click confirmation email has been dispatched to verify the score.");
       setTimeout(fetchAppData, 1500);
     });
 
