@@ -105,12 +105,11 @@
       <span>Join MBA</span>
     </button>
     <button type="button" id="recordMatchFab" class="flex items-center gap-1.5 px-4 py-3 rounded-full bg-terracotta text-white font-extrabold text-xs uppercase tracking-wider shadow-2xl hover:bg-terracotta-dark active:scale-95 transition-all cursor-pointer">
-      <i data-lucide="plus-circle" class="w-4 h-4"></i>
+      <i data-lucide="plus-circle" class="w-5 h-5"></i>
       <span>Record Match</span>
     </button>
   </div>
 
-  <!-- Datalist for Auto-Completing Player Names -->
   <datalist id="membersDatalist"></datalist>
 
   <!-- Modal 1: Join / Register Member -->
@@ -123,7 +122,7 @@
           </div>
           <div>
             <h3 class="font-display font-bold text-lg text-espresso leading-none">Join the Association</h3>
-            <span class="text-[10px] text-espresso-soft font-normal">Registered under Associations Incorporation Reform Act 2012</span>
+            <span class="text-[10px] text-espresso-soft font-normal">Melbourne Backgammon Association Inc.</span>
           </div>
         </div>
         <button type="button" id="closeJoinBtn" class="p-2 rounded-full hover:bg-parchment text-espresso-soft cursor-pointer">
@@ -133,7 +132,7 @@
 
       <form id="joinForm" class="p-5 overflow-y-auto space-y-4 text-xs font-semibold">
         <div>
-          <label class="block text-espresso-soft mb-1">Full Name (Legal Name)</label>
+          <label class="block text-espresso-soft mb-1">Full Name</label>
           <input type="text" id="regFullName" required placeholder="e.g. Samuel Bennett" class="w-full px-3.5 py-2.5 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
         </div>
 
@@ -148,12 +147,12 @@
         </div>
 
         <div>
-          <label class="block text-espresso-soft mb-1">Mobile Phone (Australia)</label>
+          <label class="block text-espresso-soft mb-1">Mobile Phone</label>
           <input type="tel" id="regPhone" required placeholder="0400 000 000" class="w-full px-3.5 py-2.5 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
         </div>
 
         <div class="p-3 rounded-xl bg-parchment-card border border-parchment-border text-[11px] text-espresso-soft font-normal leading-relaxed">
-          <span class="font-bold text-espresso">Privacy Guarantee:</span> Your email and phone are stored strictly in the private association register and will never be published on the website.
+          <span class="font-bold text-espresso">Privacy:</span> Your email and phone are stored strictly in the association register and will never be published on the website.
         </div>
 
         <button type="submit" id="submitJoinBtn" class="w-full py-3.5 mt-2 rounded-xl bg-slateNavy text-white font-bold text-xs uppercase tracking-wider hover:bg-slateNavy-dark transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer">
@@ -486,7 +485,7 @@
     // LIVE GOOGLE APPS SCRIPT ENDPOINT
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyOBLAPmwyTMyJUbDHj6OCKZmOJmqkwvLdQRXVOLb2WqVkNgnlA5NmqATBTfrZjXvth/exec"; 
 
-    // Founding Committee Baseline
+    // Initial Committee Baseline
     const defaultMembers = [
       "Eric Berkhinfand", "Daniel Wroby", "Steven Goldberg",
       "Bryce Adams", "Greg Sacks", "Daniel Kobrin", "Yona Takac"
@@ -495,7 +494,7 @@
     let registeredMembers = [...defaultMembers];
     let currentMatches = [];
 
-    // Nickname / Shorthand normalization
+    // Map nicknames / shorthand to recognized names
     function normalizeName(inputName) {
       const clean = (inputName || '').trim().toLowerCase();
       if (!clean) return inputName;
@@ -507,7 +506,6 @@
       if (clean === 'daniel k' || clean === 'dan k' || clean === 'kobrin') return 'Daniel Kobrin';
       if (clean === 'yona' || clean === 'yona t') return 'Yona Takac';
 
-      // Check against dynamically registered members
       const match = registeredMembers.find(m => m.toLowerCase() === clean);
       return match || inputName.trim();
     }
@@ -546,7 +544,6 @@
       });
     });
 
-    // Populate Datalist for autocomplete in match inputs
     function updateMembersDatalist() {
       const dl = document.getElementById('membersDatalist');
       dl.innerHTML = '';
@@ -620,11 +617,10 @@
     if (nextBtn) nextBtn.addEventListener('click', nextSlide);
     if (prevBtn) prevBtn.addEventListener('click', prevSlide);
 
-    // Render Standings & Matches
-    function renderApp(matches = [], members = []) {
-      // Build unique list of all known members
+    // Render Standings & Match Archive
+    function renderApp(matches = [], fetchedMembers = []) {
       const allMembersSet = new Set([...defaultMembers]);
-      members.forEach(m => {
+      fetchedMembers.forEach(m => {
         if (m.fullName) allMembersSet.add(m.fullName);
         else if (typeof m === 'string') allMembersSet.add(m);
       });
@@ -769,13 +765,19 @@
       try {
         const res = await fetch(SCRIPT_URL);
         const data = await res.json();
-        if (data.matches && data.members) {
-          currentMatches = data.matches;
-          renderApp(data.matches, data.members);
-        } else if (Array.isArray(data)) {
-          currentMatches = data;
-          renderApp(data, []);
+        
+        let matches = [];
+        let members = [];
+
+        if (Array.isArray(data)) {
+          matches = data;
+        } else if (data && typeof data === 'object') {
+          matches = data.matches || [];
+          members = data.members || [];
         }
+
+        currentMatches = matches;
+        renderApp(matches, members);
       } catch (e) {
         renderApp(currentMatches, registeredMembers);
       }
@@ -812,7 +814,6 @@
         } catch (err) {}
       }
 
-      // Add to local state immediately
       if (!registeredMembers.includes(fullName)) {
         registeredMembers.push(fullName);
       }
@@ -867,7 +868,7 @@
       setTimeout(fetchAppData, 1500);
     });
 
-    // Map Init
+    // Interactive Leaflet Map
     const map = L.map('melbourneMap', { center: [-37.835, 144.99], zoom: 12, scrollWheelZoom: false });
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
