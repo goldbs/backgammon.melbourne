@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Melbourne Backgammon Association Inc.</title>
 
+  <!-- Favicon / Browser Tab Thumbnail -->
+  <link rel="icon" type="image/jpeg" href="logo_graphic.jpeg">
+
   <!-- Google Fonts: Space Grotesk, Plus Jakarta Sans, Bungee -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -105,7 +108,7 @@
       <span>Join MBA</span>
     </button>
     <button type="button" id="recordMatchFab" class="flex items-center gap-1.5 px-4 py-3 rounded-full bg-terracotta text-white font-extrabold text-xs uppercase tracking-wider shadow-2xl hover:bg-terracotta-dark active:scale-95 transition-all cursor-pointer">
-      <i data-lucide="plus-circle" class="w-4 h-4"></i>
+      <i data-lucide="plus-circle" class="w-5 h-5"></i>
       <span>Record Match</span>
     </button>
   </div>
@@ -230,19 +233,16 @@
   <!-- Top Point Border -->
   <div class="bg-top-spears relative z-30"></div>
 
-  <!-- Header -->
+  <!-- Header (Navbar with logo_graphic.jpeg) -->
   <header class="sticky top-0 z-30 bg-parchment-light/95 backdrop-blur-md border-b border-parchment-border transition-all">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-20">
-        <a href="#" class="group py-1 text-left flex items-center gap-3">
-          <div class="w-9 h-9 rounded-full overflow-hidden border border-brass/40 shadow-sm shrink-0">
-            <img src="logo.jpeg" alt="MBA Emblem" class="w-full h-full object-cover">
+        <a href="#" class="group py-1 flex items-center">
+          <div class="w-11 h-11 rounded-full overflow-hidden border border-brass/40 shadow-sm transition-transform duration-300 group-hover:scale-105">
+            <img src="logo_graphic.jpeg" alt="MBA Emblem" class="w-full h-full object-cover">
           </div>
-          <span class="font-display font-extrabold text-lg sm:text-2xl tracking-[-0.03em] text-espresso leading-none group-hover:text-terracotta transition-colors">
-            Melbourne Backgammon Association Inc.
-          </span>
         </a>
-        <div class="hidden sm:flex items-center gap-3">
+        <div class="flex items-center gap-3">
           <button type="button" id="joinNav" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-slateNavy text-white font-extrabold text-xs uppercase tracking-wider hover:bg-slateNavy-dark transition-all shadow-sm cursor-pointer">
             + Join MBA
           </button>
@@ -255,57 +255,38 @@
   </header>
 
   <main>
-    <!-- Editorial Split-Hero: Emblem + Mission + Square Crisloid Board -->
-    <section class="relative pt-12 pb-16 md:pt-20 md:pb-24 border-b border-parchment-border bg-gradient-to-b from-parchment-light via-parchment to-parchment-muted/30">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-14 items-center">
-          
-          <!-- Left Column: Identity, refined text, and primary actions -->
-          <div class="md:col-span-7 flex flex-col items-center md:items-start text-center md:text-left space-y-6">
-            
-            <div class="relative group">
-              <img 
-                src="logo.jpeg" 
-                alt="Melbourne Backgammon Association Emblem" 
-                class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover shadow-xl border-2 border-brass/40 p-1 bg-parchment-light transition-transform duration-300 group-hover:scale-105"
-              >
-            </div>
-
-            <div class="space-y-4 max-w-xl">
-              <h1 class="font-display font-black text-3xl sm:text-4xl lg:text-5xl tracking-[-0.03em] text-espresso leading-[1.12]">
-                Melbourne Backgammon Association
-              </h1>
-              <p class="text-base sm:text-lg lg:text-xl text-espresso-soft font-medium leading-relaxed">
-                Growing Melbourne’s backgammon community through analysis, study, and play.
-              </p>
-            </div>
-
-            <div class="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-3">
-              <button type="button" id="heroJoinBtn" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-slateNavy text-white font-bold text-xs uppercase tracking-wider hover:bg-slateNavy-dark transition-all shadow-md active:scale-95 cursor-pointer">
-                <i data-lucide="user-plus" class="w-4 h-4"></i>
-                <span>Join Association</span>
-              </button>
-              <button type="button" id="heroRecordBtn" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-terracotta text-white font-bold text-xs uppercase tracking-wider hover:bg-terracotta-dark transition-all shadow-md active:scale-95 cursor-pointer">
-                <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                <span>Record Match</span>
-              </button>
-            </div>
-
-          </div>
-
-          <!-- Right Column: crisloid.jpeg square board presentation -->
-          <div class="md:col-span-5 flex justify-center md:justify-end">
-            <div class="relative w-full max-w-[320px] sm:max-w-[380px] lg:max-w-[410px] aspect-square rounded-3xl overflow-hidden border border-parchment-border shadow-2xl bg-espresso-surface group">
-              <img 
-                src="crisloid.jpeg" 
-                alt="Backgammon Board" 
-                class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-              >
-              <div class="absolute inset-0 rounded-3xl ring-1 ring-inset ring-brass/25 pointer-events-none"></div>
-            </div>
-          </div>
-
+    <!-- Focused Single-Image Hero Section -->
+    <section class="relative pt-12 pb-16 md:pt-16 md:pb-20 border-b border-parchment-border bg-gradient-to-b from-parchment-light via-parchment to-parchment-muted/30">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
+        
+        <!-- Single JPEG Emblem -->
+        <div class="relative group mb-6">
+          <img 
+            src="logo_real.jpeg" 
+            alt="Melbourne Backgammon Association Inc." 
+            class="w-36 h-36 sm:w-44 sm:h-44 md:w-52 md:h-52 rounded-full object-cover shadow-2xl border-4 border-brass/40 p-1.5 bg-parchment-light transition-transform duration-500 group-hover:scale-105"
+          >
         </div>
+
+        <!-- Association Name -->
+        <h1 class="font-display font-black text-3xl sm:text-4xl md:text-5xl tracking-[-0.03em] text-espresso leading-[1.12]">
+          Melbourne Backgammon Association Inc.
+        </h1>
+
+        <!-- Purpose Statement -->
+        <p class="mt-4 text-base sm:text-lg md:text-xl text-espresso-soft font-medium max-w-2xl leading-relaxed">
+          Growing Melbourne’s backgammon community through analysis, learning, and play.
+        </p>
+
+        <!-- Catchphrase Pill -->
+        <div class="mt-6 flex justify-center">
+          <div class="inline-flex items-center px-6 sm:px-8 py-2.5 rounded-full bg-espresso/[0.05] border border-espresso/15 shadow-sm">
+            <span class="text-xs sm:text-sm font-extrabold tracking-[0.25em] text-espresso uppercase font-sans select-none">
+              Backgammon | Beats | Brews
+            </span>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -503,7 +484,7 @@
             <div class="w-8 h-8 rounded-full bg-espresso-surface border border-brass flex items-center justify-center font-black text-brass text-xs">64</div>
             <span class="font-extrabold text-white text-base tracking-tight font-display">Melbourne Backgammon Association Inc.</span>
           </div>
-          <p class="text-parchment-muted/80 text-xs">Growing Melbourne’s backgammon community through analysis, study, and play.</p>
+          <p class="text-parchment-muted/80 text-xs">Growing Melbourne’s backgammon community through analysis, learning, and play.</p>
         </div>
       </div>
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-parchment-muted/60">
@@ -549,10 +530,8 @@
     const joinModal = document.getElementById('joinModal');
     const recordMatchFab = document.getElementById('recordMatchFab');
     const recordMatchNav = document.getElementById('recordMatchNav');
-    const heroRecordBtn = document.getElementById('heroRecordBtn');
     const joinFab = document.getElementById('joinFab');
     const joinNav = document.getElementById('joinNav');
-    const heroJoinBtn = document.getElementById('heroJoinBtn');
     const closeModalBtn = document.getElementById('closeModalBtn');
     const closeJoinBtn = document.getElementById('closeJoinBtn');
 
@@ -569,12 +548,10 @@
 
     if (recordMatchFab) recordMatchFab.addEventListener('click', () => openModal(uploadModal));
     if (recordMatchNav) recordMatchNav.addEventListener('click', () => openModal(uploadModal));
-    if (heroRecordBtn) heroRecordBtn.addEventListener('click', () => openModal(uploadModal));
     if (closeModalBtn) closeModalBtn.addEventListener('click', () => closeModal(uploadModal));
 
     if (joinFab) joinFab.addEventListener('click', () => openModal(joinModal));
     if (joinNav) joinNav.addEventListener('click', () => openModal(joinModal));
-    if (heroJoinBtn) heroJoinBtn.addEventListener('click', () => openModal(joinModal));
     if (closeJoinBtn) closeJoinBtn.addEventListener('click', () => closeModal(joinModal));
 
     [uploadModal, joinModal].forEach(m => {
