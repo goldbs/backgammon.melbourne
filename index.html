@@ -162,26 +162,13 @@
           </div>
         </div>
 
-        <!-- Match Context -->
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-espresso-soft mb-1">Match Length</label>
-            <select id="matchLengthSelect" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-espresso">
-              <option value="3">3 Points</option>
-              <option value="5" selected>5 Points</option>
-              <option value="7">7 Points</option>
-              <option value="9">9 Points</option>
-              <option value="11">11 Points</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-espresso-soft mb-1">Format</label>
-            <select id="formatSelect" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-espresso">
-              <option value="Club Night">Club Night</option>
-              <option value="Tournament">Tournament</option>
-              <option value="Casual Rated">Casual Rated</option>
-            </select>
-          </div>
+        <!-- Match Format -->
+        <div>
+          <label class="block text-espresso-soft mb-1">Format</label>
+          <select id="formatSelect" class="w-full px-3 py-2.5 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-espresso">
+            <option value="Casual" selected>Casual</option>
+            <option value="Tournament">Tournament</option>
+          </select>
         </div>
 
         <button type="submit" id="submitBtn" class="w-full py-3.5 mt-2 rounded-xl bg-espresso text-parchment font-bold text-xs uppercase tracking-wider hover:bg-terracotta transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer">
@@ -304,7 +291,7 @@
       </div>
     </section>
 
-    <!-- Members (Carousel) -->
+    <!-- Members (Carousel with Circular Cropping) -->
     <section id="committee" class="py-20 bg-parchment border-b border-parchment-border">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 class="text-3xl sm:text-5xl font-extrabold text-espresso font-display tracking-tight mb-14">Members</h2>
@@ -313,13 +300,41 @@
             <i data-lucide="chevron-left" class="w-6 h-6"></i>
           </button>
           <div id="carouselTrack" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth">
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4"><div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center"><img src="ezza.jpeg" class="w-full h-full object-contain"></div></div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4"><div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center"><img src="wroby.jpeg" class="w-full h-full object-contain"></div></div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4"><div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center"><img src="steve.jpeg" class="w-full h-full object-contain"></div></div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4"><div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center"><img src="bryce.jpeg" class="w-full h-full object-contain"></div></div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4"><div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center"><img src="greg.jpeg" class="w-full h-full object-contain"></div></div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4"><div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center"><img src="kobrin.jpeg" class="w-full h-full object-contain"></div></div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4"><div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center"><img src="yona.jpeg" class="w-full h-full object-contain"></div></div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
+              <div class="w-60 h-60 sm:w-68 sm:h-68 rounded-full overflow-hidden drop-shadow-2xl flex items-center justify-center bg-transparent">
+                <img src="ezza.jpeg" class="w-full h-full object-cover rounded-full">
+              </div>
+            </div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
+              <div class="w-60 h-60 sm:w-68 sm:h-68 rounded-full overflow-hidden drop-shadow-2xl flex items-center justify-center bg-transparent">
+                <img src="wroby.jpeg" class="w-full h-full object-cover rounded-full">
+              </div>
+            </div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
+              <div class="w-60 h-60 sm:w-68 sm:h-68 rounded-full overflow-hidden drop-shadow-2xl flex items-center justify-center bg-transparent">
+                <img src="steve.jpeg" class="w-full h-full object-cover rounded-full">
+              </div>
+            </div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
+              <div class="w-60 h-60 sm:w-68 sm:h-68 rounded-full overflow-hidden drop-shadow-2xl flex items-center justify-center bg-transparent">
+                <img src="bryce.jpeg" class="w-full h-full object-cover rounded-full">
+              </div>
+            </div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
+              <div class="w-60 h-60 sm:w-68 sm:h-68 rounded-full overflow-hidden drop-shadow-2xl flex items-center justify-center bg-transparent">
+                <img src="greg.jpeg" class="w-full h-full object-cover rounded-full">
+              </div>
+            </div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
+              <div class="w-60 h-60 sm:w-68 sm:h-68 rounded-full overflow-hidden drop-shadow-2xl flex items-center justify-center bg-transparent">
+                <img src="kobrin.jpeg" class="w-full h-full object-cover rounded-full">
+              </div>
+            </div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
+              <div class="w-60 h-60 sm:w-68 sm:h-68 rounded-full overflow-hidden drop-shadow-2xl flex items-center justify-center bg-transparent">
+                <img src="yona.jpeg" class="w-full h-full object-cover rounded-full">
+              </div>
+            </div>
           </div>
           <button id="carouselNextBtn" class="absolute right-0 sm:-right-16 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-all shadow-md cursor-pointer">
             <i data-lucide="chevron-right" class="w-6 h-6"></i>
@@ -548,7 +563,6 @@
 
       let currentRank = 1;
       membersArray.forEach((item, index) => {
-        // Calculate ties
         if (index > 0) {
           const prev = membersArray[index - 1];
           const isTied = (item.wins === prev.wins) && (item.losses === prev.losses) && (item.avgPrText === prev.avgPrText);
@@ -644,14 +658,18 @@
       btn.innerText = "Submitting...";
       btn.disabled = true;
 
+      const s1 = Number(document.getElementById('score1Input').value);
+      const s2 = Number(document.getElementById('score2Input').value);
+      const inferredLength = Math.max(s1, s2);
+
       const payload = {
         player1: document.getElementById('player1Input').value.trim(),
         player2: document.getElementById('player2Input').value.trim(),
-        score1: document.getElementById('score1Input').value,
-        score2: document.getElementById('score2Input').value,
+        score1: s1,
+        score2: s2,
         pr1: document.getElementById('pr1Input').value,
         pr2: document.getElementById('pr2Input').value,
-        matchLength: document.getElementById('matchLengthSelect').value,
+        matchLength: inferredLength,
         format: document.getElementById('formatSelect').value
       };
 
