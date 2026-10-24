@@ -73,13 +73,6 @@
       background-size: 44px 78px;
       border-bottom: 2px solid rgba(195, 153, 47, 0.35);
     }
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
   </style>
 </head>
 <body class="bg-parchment text-espresso font-sans antialiased selection:bg-terracotta selection:text-white">
@@ -223,7 +216,7 @@
       </div>
     </section>
 
-    <!-- ==================== 5. FOUNDING COMMITTEE (CAROUSEL) ==================== -->
+    <!-- ==================== 5. FOUNDING COMMITTEE (STREAMLINED) ==================== -->
     <section id="committee" class="py-20 bg-parchment border-b border-parchment-border">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         
@@ -231,67 +224,76 @@
           Founding Committee
         </h2>
 
-        <!-- Single-Item Carousel Container -->
-        <div class="relative max-w-sm sm:max-w-md mx-auto">
-          
-          <!-- Prev Button -->
-          <button id="carouselPrevBtn" aria-label="Previous Slide" class="absolute left-0 sm:-left-16 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-all shadow-md">
-            <i data-lucide="chevron-left" class="w-6 h-6"></i>
-          </button>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 max-w-6xl mx-auto justify-items-center">
 
-          <!-- Slides Wrapper -->
-          <div id="carouselTrack" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth">
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
-              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
-                <img src="ezza.jpeg" alt="Founding Committee Badge" class="w-full h-full object-contain">
-              </div>
+          <!-- 1. Eric Berkhinfand -->
+          <div class="flex flex-col items-center group">
+            <div class="w-52 h-52 sm:w-56 sm:h-56 transition-transform duration-300 group-hover:scale-105 drop-shadow-xl flex items-center justify-center">
+              <img src="ezza.jpeg" alt="Eric Berkhinfand Badge" class="w-full h-full object-contain">
             </div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
-              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
-                <img src="wroby.jpeg" alt="Founding Committee Badge" class="w-full h-full object-contain">
-              </div>
-            </div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
-              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
-                <img src="steve.jpeg" alt="Founding Committee Badge" class="w-full h-full object-contain">
-              </div>
-            </div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
-              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
-                <img src="bryce.jpeg" alt="Founding Committee Badge" class="w-full h-full object-contain">
-              </div>
-            </div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
-              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
-                <img src="greg.jpeg" alt="Founding Committee Badge" class="w-full h-full object-contain">
-              </div>
-            </div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
-              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
-                <img src="kobrin.jpeg" alt="Founding Committee Badge" class="w-full h-full object-contain">
-              </div>
-            </div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
-              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
-                <img src="yona.jpeg" alt="Founding Committee Badge" class="w-full h-full object-contain">
-              </div>
-            </div>
+            <span class="mt-4 font-display font-extrabold text-lg sm:text-xl text-espresso tracking-tight">
+              Eric Berkhinfand
+            </span>
           </div>
 
-          <!-- Next Button -->
-          <button id="carouselNextBtn" aria-label="Next Slide" class="absolute right-0 sm:-right-16 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-all shadow-md">
-            <i data-lucide="chevron-right" class="w-6 h-6"></i>
-          </button>
+          <!-- 2. Daniel Wroby -->
+          <div class="flex flex-col items-center group">
+            <div class="w-52 h-52 sm:w-56 sm:h-56 transition-transform duration-300 group-hover:scale-105 drop-shadow-xl flex items-center justify-center">
+              <img src="wroby.jpeg" alt="Daniel Wroby Badge" class="w-full h-full object-contain">
+            </div>
+            <span class="mt-4 font-display font-extrabold text-lg sm:text-xl text-espresso tracking-tight">
+              Daniel Wroby
+            </span>
+          </div>
 
-          <!-- Dot Indicators -->
-          <div id="carouselDots" class="flex justify-center items-center gap-2 mt-6">
-            <button class="w-2.5 h-2.5 rounded-full bg-terracotta transition-all" onclick="goToSlide(0)"></button>
-            <button class="w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all" onclick="goToSlide(1)"></button>
-            <button class="w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all" onclick="goToSlide(2)"></button>
-            <button class="w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all" onclick="goToSlide(3)"></button>
-            <button class="w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all" onclick="goToSlide(4)"></button>
-            <button class="w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all" onclick="goToSlide(5)"></button>
-            <button class="w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all" onclick="goToSlide(6)"></button>
+          <!-- 3. Steven Goldberg -->
+          <div class="flex flex-col items-center group">
+            <div class="w-52 h-52 sm:w-56 sm:h-56 transition-transform duration-300 group-hover:scale-105 drop-shadow-xl flex items-center justify-center">
+              <img src="steve.jpeg" alt="Steven Goldberg Badge" class="w-full h-full object-contain">
+            </div>
+            <span class="mt-4 font-display font-extrabold text-lg sm:text-xl text-espresso tracking-tight">
+              Steven Goldberg
+            </span>
+          </div>
+
+          <!-- 4. Bryce Adams -->
+          <div class="flex flex-col items-center group">
+            <div class="w-52 h-52 sm:w-56 sm:h-56 transition-transform duration-300 group-hover:scale-105 drop-shadow-xl flex items-center justify-center">
+              <img src="bryce.jpeg" alt="Bryce Adams Badge" class="w-full h-full object-contain">
+            </div>
+            <span class="mt-4 font-display font-extrabold text-lg sm:text-xl text-espresso tracking-tight">
+              Bryce Adams
+            </span>
+          </div>
+
+          <!-- 5. Greg Sacks -->
+          <div class="flex flex-col items-center group">
+            <div class="w-52 h-52 sm:w-56 sm:h-56 transition-transform duration-300 group-hover:scale-105 drop-shadow-xl flex items-center justify-center">
+              <img src="greg.jpeg" alt="Greg Sacks Badge" class="w-full h-full object-contain">
+            </div>
+            <span class="mt-4 font-display font-extrabold text-lg sm:text-xl text-espresso tracking-tight">
+              Greg Sacks
+            </span>
+          </div>
+
+          <!-- 6. Daniel Kobrin -->
+          <div class="flex flex-col items-center group">
+            <div class="w-52 h-52 sm:w-56 sm:h-56 transition-transform duration-300 group-hover:scale-105 drop-shadow-xl flex items-center justify-center">
+              <img src="kobrin.jpeg" alt="Daniel Kobrin Badge" class="w-full h-full object-contain">
+            </div>
+            <span class="mt-4 font-display font-extrabold text-lg sm:text-xl text-espresso tracking-tight">
+              Daniel Kobrin
+            </span>
+          </div>
+
+          <!-- 7. Yona Takac -->
+          <div class="flex flex-col items-center group">
+            <div class="w-52 h-52 sm:w-56 sm:h-56 transition-transform duration-300 group-hover:scale-105 drop-shadow-xl flex items-center justify-center">
+              <img src="yona.jpeg" alt="Yona Takac Badge" class="w-full h-full object-contain">
+            </div>
+            <span class="mt-4 font-display font-extrabold text-lg sm:text-xl text-espresso tracking-tight">
+              Yona Takac
+            </span>
           </div>
 
         </div>
@@ -339,55 +341,6 @@
       mobileDrawer.classList.toggle('hidden');
     }
     mobileMenuBtn.addEventListener('click', toggleMenu);
-
-    // Carousel logic
-    const track = document.getElementById('carouselTrack');
-    const prevBtn = document.getElementById('carouselPrevBtn');
-    const nextBtn = document.getElementById('carouselNextBtn');
-    const dots = document.querySelectorAll('#carouselDots button');
-    let currentIndex = 0;
-    const totalSlides = 7;
-
-    function updateDots(index) {
-      dots.forEach((dot, i) => {
-        if (i === index) {
-          dot.className = 'w-2.5 h-2.5 rounded-full bg-terracotta transition-all';
-        } else {
-          dot.className = 'w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all';
-        }
-      });
-    }
-
-    function goToSlide(index) {
-      currentIndex = index;
-      const slideWidth = track.clientWidth;
-      track.scrollTo({
-        left: slideWidth * currentIndex,
-        behavior: 'smooth'
-      });
-      updateDots(currentIndex);
-    }
-
-    prevBtn.addEventListener('click', () => {
-      currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
-      goToSlide(currentIndex);
-    });
-
-    nextBtn.addEventListener('click', () => {
-      currentIndex = (currentIndex + 1) % totalSlides;
-      goToSlide(currentIndex);
-    });
-
-    track.addEventListener('scroll', () => {
-      const slideWidth = track.clientWidth;
-      if (slideWidth > 0) {
-        const newIndex = Math.round(track.scrollLeft / slideWidth);
-        if (newIndex !== currentIndex && newIndex >= 0 && newIndex < totalSlides) {
-          currentIndex = newIndex;
-          updateDots(currentIndex);
-        }
-      }
-    });
   </script>
 </body>
 </html>
