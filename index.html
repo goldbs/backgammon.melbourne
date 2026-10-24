@@ -411,6 +411,20 @@
       "Bryce Adams", "Greg Sacks", "Daniel Kobrin", "Yona Takac"
     ];
 
+    // Map shorthand / nicknames to official member list
+    function normalizeName(inputName) {
+      const clean = (inputName || '').trim().toLowerCase();
+      if (!clean) return inputName;
+      if (clean === 'eric' || clean === 'ezza') return 'Eric Berkhinfand';
+      if (clean === 'daniel w' || clean === 'wroby' || clean === 'dan w') return 'Daniel Wroby';
+      if (clean === 'steve' || clean === 'steven' || clean === 'steve g') return 'Steven Goldberg';
+      if (clean === 'bryce' || clean === 'bryce a') return 'Bryce Adams';
+      if (clean === 'greg' || clean === 'greg s') return 'Greg Sacks';
+      if (clean === 'daniel k' || clean === 'dan k' || clean === 'kobrin') return 'Daniel Kobrin';
+      if (clean === 'yona' || clean === 'yona t') return 'Yona Takac';
+      return inputName.trim();
+    }
+
     // Local in-memory matches fallback
     let currentMatches = [];
 
@@ -482,20 +496,23 @@
       });
 
       matches.forEach(m => {
-        [m.player1, m.player2].forEach(p => {
+        const p1 = normalizeName(m.player1);
+        const p2 = normalizeName(m.player2);
+
+        [p1, p2].forEach(p => {
           if (!statsMap[p]) statsMap[p] = { wins: 0, losses: 0, prList: [] };
         });
 
         if (Number(m.score1) > Number(m.score2)) {
-          statsMap[m.player1].wins++;
-          statsMap[m.player2].losses++;
+          statsMap[p1].wins++;
+          statsMap[p2].losses++;
         } else if (Number(m.score2) > Number(m.score1)) {
-          statsMap[m.player2].wins++;
-          statsMap[m.player1].losses++;
+          statsMap[p2].wins++;
+          statsMap[p1].losses++;
         }
 
-        if (m.pr1) statsMap[m.player1].prList.push(Number(m.pr1));
-        if (m.pr2) statsMap[m.player2].prList.push(Number(m.pr2));
+        if (m.pr1) statsMap[p1].prList.push(Number(m.pr1));
+        if (m.pr2) statsMap[p2].prList.push(Number(m.pr2));
       });
 
       const tbody = document.getElementById('standingsBody');
