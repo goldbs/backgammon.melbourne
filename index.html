@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Melbourne Backgammon Association Inc. | backgammon beats and Bevs</title>
+  <title>Melbourne Backgammon Association Inc. | Backgammon | Beats | Bevs</title>
 
   <!-- Google Fonts: Space Grotesk, Plus Jakarta Sans, Bungee -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -68,6 +68,13 @@
   </script>
 
   <style>
+    html {
+      scroll-snap-type: y proximity;
+    }
+    .snap-lock {
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+    }
     .bg-top-spears {
       width: 100%;
       height: 78px;
@@ -187,7 +194,7 @@
   <!-- Top Point Border -->
   <div class="bg-top-spears relative z-30"></div>
 
-  <!-- Navigation -->
+  <!-- Simple Header (No Menu) -->
   <header class="sticky top-0 z-30 bg-parchment-light/95 backdrop-blur-md border-b border-parchment-border transition-all">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-20">
@@ -196,18 +203,8 @@
             Melbourne Backgammon Association Inc.
           </span>
         </a>
-        <nav class="hidden xl:flex items-center gap-6 text-xs font-bold uppercase tracking-wider text-espresso/80">
-          <a href="#why-we-play" class="hover:text-terracotta transition-colors">Why We Play</a>
-          <a href="#committee" class="hover:text-terracotta transition-colors">Committee</a>
-          <a href="#stats" class="hover:text-terracotta transition-colors">Standings</a>
-          <a href="#events" class="hover:text-terracotta transition-colors">Events & Map</a>
-          <a href="#matches" class="hover:text-terracotta transition-colors">Match Archive</a>
-          <button type="button" id="recordMatchNav" class="px-5 py-2.5 rounded-full bg-terracotta text-white font-extrabold text-xs uppercase tracking-wider hover:bg-terracotta-dark transition-all shadow-sm cursor-pointer">
-            + Record Match
-          </button>
-        </nav>
-        <button id="mobileMenuBtn" aria-label="Toggle Menu" class="xl:hidden p-2 rounded-lg text-espresso hover:bg-parchment-border transition cursor-pointer">
-          <i data-lucide="menu" class="w-6 h-6"></i>
+        <button type="button" id="recordMatchNav" class="hidden sm:inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-terracotta text-white font-extrabold text-xs uppercase tracking-wider hover:bg-terracotta-dark transition-all shadow-sm cursor-pointer">
+          + Record Match
         </button>
       </div>
     </div>
@@ -224,21 +221,20 @@
         </div>
         <div class="my-5 flex justify-center">
           <div class="inline-flex items-center px-6 sm:px-9 py-2.5 rounded-full bg-espresso/[0.04] border border-espresso/15 shadow-sm">
-            <span class="text-xs sm:text-sm md:text-base font-bold tracking-[0.28em] sm:tracking-[0.32em] text-espresso uppercase font-sans select-none">
-              backgammon beats AND BEVS
+            <span class="text-xs sm:text-sm md:text-base font-bold tracking-[0.25em] sm:tracking-[0.3em] text-espresso uppercase font-sans select-none">
+              backgammon | beats | bevs
             </span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Why We Play -->
-    <section id="why-we-play" class="py-16 md:py-20 bg-parchment border-b border-parchment-border">
+    <!-- 4 Tiles with De-emphasized Heading After -->
+    <section class="py-16 md:py-20 bg-parchment border-b border-parchment-border">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-          <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-espresso tracking-tight">That's Why We Play</h2>
-        </div>
+        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mx-auto">
+          <!-- 1. Grow the Game -->
           <div class="p-6 rounded-2xl bg-parchment-card/80 border border-parchment-border hover:border-terracotta/40 transition-colors shadow-sm flex items-start gap-4">
             <div class="w-10 h-10 rounded-xl bg-terracotta/10 text-terracotta flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="compass" class="w-5 h-5"></i></div>
             <div>
@@ -246,6 +242,8 @@
               <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">Promote the play, study, and enjoyment of backgammon across Melbourne.</p>
             </div>
           </div>
+
+          <!-- 2. Welcome New Players -->
           <div class="p-6 rounded-2xl bg-parchment-card/80 border border-parchment-border hover:border-brass/50 transition-colors shadow-sm flex items-start gap-4">
             <div class="w-10 h-10 rounded-xl bg-brass/15 text-brass-dark flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="sparkles" class="w-5 h-5"></i></div>
             <div>
@@ -253,6 +251,8 @@
               <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">Teach newcomers and provide a comfortable place to play and learn.</p>
             </div>
           </div>
+
+          <!-- 3. Elevate Play -->
           <div class="p-6 rounded-2xl bg-parchment-card/80 border border-parchment-border hover:border-slateNavy/40 transition-colors shadow-sm flex items-start gap-4">
             <div class="w-10 h-10 rounded-xl bg-slateNavy/10 text-slateNavy flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="line-chart" class="w-5 h-5"></i></div>
             <div>
@@ -260,6 +260,8 @@
               <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">Deepen strategic understanding through match transcription, analysis, and PR evaluation.</p>
             </div>
           </div>
+
+          <!-- 4. Compete -->
           <div class="p-6 rounded-2xl bg-parchment-card/80 border border-parchment-border hover:border-terracotta/40 transition-colors shadow-sm flex items-start gap-4">
             <div class="w-10 h-10 rounded-xl bg-terracotta/10 text-terracotta flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
             <div>
@@ -268,13 +270,44 @@
             </div>
           </div>
         </div>
+
+        <!-- De-emphasized Heading Below The Tiles -->
+        <div class="text-center mt-10">
+          <p class="text-xs font-extrabold uppercase tracking-[0.3em] text-espresso-soft/60">
+            that's why we play
+          </p>
+        </div>
+
       </div>
     </section>
 
-    <!-- Committee Carousel -->
+    <!-- Standings (No Heading + Momentary Scroll Lock Resistance) -->
+    <section id="stats" class="snap-lock py-20 bg-parchment-light border-b border-parchment-border">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="overflow-x-auto rounded-2xl border border-parchment-border bg-parchment-card shadow-sm">
+          <table class="w-full text-left text-sm text-espresso border-collapse">
+            <thead class="bg-espresso text-parchment font-display uppercase text-xs tracking-wider border-b border-espresso-border">
+              <tr>
+                <th class="py-4 px-4 text-center">Rank</th>
+                <th class="py-4 px-6">Member Name</th>
+                <th class="py-4 px-4 text-center">W - L</th>
+                <th class="py-4 px-4 text-center">Win %</th>
+                <th class="py-4 px-4 text-center">Avg PR</th>
+                <th class="py-4 px-4 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody id="standingsBody" class="divide-y divide-parchment-border font-medium">
+              <!-- Dynamically Populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Members (Carousel) -->
     <section id="committee" class="py-20 bg-parchment border-b border-parchment-border">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-3xl sm:text-5xl font-extrabold text-espresso font-display tracking-tight mb-14">Founding Committee</h2>
+        <h2 class="text-3xl sm:text-5xl font-extrabold text-espresso font-display tracking-tight mb-14">Members</h2>
         <div class="relative max-w-sm sm:max-w-md mx-auto">
           <button id="carouselPrevBtn" class="absolute left-0 sm:-left-16 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-all shadow-md cursor-pointer">
             <i data-lucide="chevron-left" class="w-6 h-6"></i>
@@ -304,40 +337,9 @@
       </div>
     </section>
 
-    <!-- Performance & Standings -->
-    <section id="stats" class="py-20 bg-parchment-light border-b border-parchment-border">
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-2xl mx-auto mb-10">
-          <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-espresso tracking-tight">Performance & Standings</h2>
-        </div>
-        <div class="overflow-x-auto rounded-2xl border border-parchment-border bg-parchment-card shadow-sm">
-          <table class="w-full text-left text-sm text-espresso border-collapse">
-            <thead class="bg-espresso text-parchment font-display uppercase text-xs tracking-wider border-b border-espresso-border">
-              <tr>
-                <th class="py-4 px-4 text-center">Rank</th>
-                <th class="py-4 px-6">Member Name</th>
-                <th class="py-4 px-4 text-center">W - L</th>
-                <th class="py-4 px-4 text-center">Win %</th>
-                <th class="py-4 px-4 text-center">Avg PR</th>
-                <th class="py-4 px-4 text-center">Status</th>
-              </tr>
-            </thead>
-            <tbody id="standingsBody" class="divide-y divide-parchment-border font-medium">
-              <!-- Dynamically Populated -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- Events & Map -->
-    <section id="events" class="py-20 bg-parchment border-b border-parchment-border">
+    <!-- Events & Map (Heading/Subtitles Removed) -->
+    <section id="events" class="py-16 md:py-20 bg-parchment border-b border-parchment-border">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-2xl mx-auto mb-10">
-          <span class="text-xs font-bold uppercase tracking-[0.25em] text-terracotta">Where to Play</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-espresso tracking-tight mt-1">Upcoming Nights & Events</h2>
-          <p class="text-sm text-espresso-soft mt-2">Click on any pin across Melbourne to inspect session dates, start times, formats, and venue locations.</p>
-        </div>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           <div class="lg:col-span-2 rounded-2xl overflow-hidden border border-parchment-border shadow-md h-[460px] relative z-10" id="melbourneMap"></div>
           <div class="rounded-2xl border border-parchment-border bg-parchment-card p-6 shadow-sm space-y-4">
@@ -387,7 +389,7 @@
             <div class="w-8 h-8 rounded-full bg-espresso-surface border border-brass flex items-center justify-center font-black text-brass text-xs">64</div>
             <span class="font-extrabold text-white text-base tracking-tight font-display">Melbourne Backgammon Association Inc.</span>
           </div>
-          <p class="text-brass font-bold text-xs uppercase tracking-wider">"backgammon beats and Bevs"</p>
+          <p class="text-brass font-bold text-xs uppercase tracking-wider">backgammon | beats | bevs</p>
         </div>
       </div>
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-parchment-muted/60">
