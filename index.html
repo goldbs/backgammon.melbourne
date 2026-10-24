@@ -13,7 +13,7 @@
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- Leaflet CSS & JS for Interactive Map -->
+  <!-- Leaflet CSS & JS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
@@ -77,13 +77,8 @@
       background-size: 44px 78px;
       border-bottom: 2px solid rgba(195, 153, 47, 0.35);
     }
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .leaflet-popup-content-wrapper {
       background-color: #1D1612;
       color: #F7F4EE;
@@ -91,77 +86,142 @@
       padding: 4px;
       border: 1px solid #C3992F;
     }
-    .leaflet-popup-tip {
-      background-color: #1D1612;
-    }
+    .leaflet-popup-tip { background-color: #1D1612; }
   </style>
 </head>
-<body class="bg-parchment text-espresso font-sans antialiased selection:bg-terracotta selection:text-white">
+<body class="bg-parchment text-espresso font-sans antialiased selection:bg-terracotta selection:text-white pb-20 md:pb-0">
 
-  <!-- ==================== 1. ELONGATED BACKGAMMON POINTS BORDER ==================== -->
-  <div class="bg-top-spears relative z-50"></div>
+  <!-- Floating Mobile Action Button -->
+  <div class="fixed bottom-6 right-6 z-40">
+    <button onclick="openModal()" class="flex items-center gap-2 px-5 py-3.5 rounded-full bg-terracotta text-white font-extrabold text-sm uppercase tracking-wider shadow-2xl hover:bg-terracotta-dark active:scale-95 transition-all">
+      <i data-lucide="plus-circle" class="w-5 h-5"></i>
+      <span>Record Match</span>
+    </button>
+  </div>
 
-  <!-- ==================== 2. HEADER / NAVIGATION ==================== -->
-  <header class="sticky top-0 z-40 bg-parchment-light/95 backdrop-blur-md border-b border-parchment-border transition-all">
+  <!-- Modal / Drawer for Mobile Match Upload -->
+  <div id="uploadModal" class="fixed inset-0 z-50 hidden bg-espresso/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity">
+    <div class="bg-parchment-light w-full max-w-lg rounded-t-3xl sm:rounded-3xl border border-parchment-border shadow-2xl overflow-hidden max-h-[92vh] flex flex-col animate-in slide-in-from-bottom duration-200">
+      
+      <div class="p-5 border-b border-parchment-border flex items-center justify-between bg-parchment-card">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-terracotta/10 text-terracotta flex items-center justify-center">
+            <i data-lucide="trophy" class="w-4 h-4"></i>
+          </div>
+          <h3 class="font-display font-bold text-lg text-espresso">Submit Match Result</h3>
+        </div>
+        <button onclick="closeModal()" class="p-2 rounded-full hover:bg-parchment text-espresso-soft">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="matchForm" onsubmit="submitMatch(event)" class="p-5 overflow-y-auto space-y-4 text-xs font-semibold">
+        
+        <!-- Player 1 & Score -->
+        <div class="p-4 rounded-xl bg-parchment-card border border-parchment-border space-y-3">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-terracotta">Player 1</div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-espresso-soft mb-1">Name</label>
+              <input type="text" id="player1Input" required placeholder="e.g. Eric B." class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-terracotta">
+            </div>
+            <div>
+              <label class="block text-espresso-soft mb-1">Score</label>
+              <input type="number" id="score1Input" min="0" required placeholder="Pts" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-terracotta">
+            </div>
+          </div>
+          <div>
+            <label class="block text-espresso-soft mb-1">Performance Rating (PR) <span class="font-normal text-espresso-soft/60">(Optional)</span></label>
+            <input type="number" step="0.01" id="pr1Input" placeholder="e.g. 5.42" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-terracotta">
+          </div>
+        </div>
+
+        <!-- Player 2 & Score -->
+        <div class="p-4 rounded-xl bg-parchment-card border border-parchment-border space-y-3">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-slateNavy">Player 2</div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-espresso-soft mb-1">Name</label>
+              <input type="text" id="player2Input" required placeholder="e.g. Steve G." class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
+            </div>
+            <div>
+              <label class="block text-espresso-soft mb-1">Score</label>
+              <input type="number" id="score2Input" min="0" required placeholder="Pts" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
+            </div>
+          </div>
+          <div>
+            <label class="block text-espresso-soft mb-1">Performance Rating (PR) <span class="font-normal text-espresso-soft/60">(Optional)</span></label>
+            <input type="number" step="0.01" id="pr2Input" placeholder="e.g. 6.18" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
+          </div>
+        </div>
+
+        <!-- Match Context -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-espresso-soft mb-1">Match Length</label>
+            <select id="matchLengthSelect" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-espresso">
+              <option value="3">3 Points</option>
+              <option value="5" selected>5 Points</option>
+              <option value="7">7 Points</option>
+              <option value="9">9 Points</option>
+              <option value="11">11 Points</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-espresso-soft mb-1">Format</label>
+            <select id="formatSelect" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-espresso">
+              <option value="Club Night">Club Night</option>
+              <option value="Tournament">Tournament</option>
+              <option value="Casual Rated">Casual Rated</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="w-full py-3.5 mt-2 rounded-xl bg-espresso text-parchment font-bold text-xs uppercase tracking-wider hover:bg-terracotta transition-colors shadow-md flex items-center justify-center gap-2">
+          <span>Submit Result</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Top Point Border -->
+  <div class="bg-top-spears relative z-30"></div>
+
+  <!-- Navigation -->
+  <header class="sticky top-0 z-30 bg-parchment-light/95 backdrop-blur-md border-b border-parchment-border transition-all">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-20">
-        
         <a href="#" class="group py-1 text-left">
           <span class="font-display font-extrabold text-xl sm:text-2xl md:text-3xl tracking-[-0.03em] text-espresso leading-none group-hover:text-terracotta transition-colors">
             Melbourne Backgammon Association Inc.
           </span>
         </a>
-
-        <!-- Desktop Navigation -->
         <nav class="hidden xl:flex items-center gap-6 text-xs font-bold uppercase tracking-wider text-espresso/80">
           <a href="#why-we-play" class="hover:text-terracotta transition-colors">Why We Play</a>
           <a href="#committee" class="hover:text-terracotta transition-colors">Committee</a>
-          <a href="#stats" class="hover:text-terracotta transition-colors">Leaderboard</a>
+          <a href="#stats" class="hover:text-terracotta transition-colors">Standings</a>
           <a href="#events" class="hover:text-terracotta transition-colors">Events & Map</a>
           <a href="#matches" class="hover:text-terracotta transition-colors">Match Archive</a>
-          <a href="mailto:contact@backgammon.melbourne" class="px-5 py-2.5 rounded-full bg-espresso text-parchment font-extrabold text-xs uppercase tracking-wider hover:bg-terracotta transition-all shadow-sm">
-            Contact MBA
-          </a>
+          <button onclick="openModal()" class="px-5 py-2.5 rounded-full bg-terracotta text-white font-extrabold text-xs uppercase tracking-wider hover:bg-terracotta-dark transition-all shadow-sm">
+            + Record Match
+          </button>
         </nav>
-
-        <!-- Mobile Drawer Toggle Button -->
-        <button id="mobileMenuBtn" aria-label="Toggle Navigation Menu" class="xl:hidden p-2 rounded-lg text-espresso hover:bg-parchment-border transition">
+        <button id="mobileMenuBtn" aria-label="Toggle Menu" class="xl:hidden p-2 rounded-lg text-espresso hover:bg-parchment-border transition">
           <i data-lucide="menu" class="w-6 h-6"></i>
         </button>
-
       </div>
-    </div>
-
-    <!-- Mobile Drawer Navigation -->
-    <div id="mobileDrawer" class="hidden xl:hidden border-t border-parchment-border bg-parchment-light px-4 pt-3 pb-6 space-y-2">
-      <a href="#why-we-play" class="block px-3 py-2 text-sm font-bold text-espresso hover:bg-parchment-card rounded-lg" onclick="toggleMenu()">Why We Play</a>
-      <a href="#committee" class="block px-3 py-2 text-sm font-bold text-espresso hover:bg-parchment-card rounded-lg" onclick="toggleMenu()">Founding Committee</a>
-      <a href="#stats" class="block px-3 py-2 text-sm font-bold text-espresso hover:bg-parchment-card rounded-lg" onclick="toggleMenu()">Leaderboard & Stats</a>
-      <a href="#events" class="block px-3 py-2 text-sm font-bold text-espresso hover:bg-parchment-card rounded-lg" onclick="toggleMenu()">Events Map</a>
-      <a href="#matches" class="block px-3 py-2 text-sm font-bold text-espresso hover:bg-parchment-card rounded-lg" onclick="toggleMenu()">Match Archive</a>
-      <a href="mailto:contact@backgammon.melbourne" class="block text-center mt-3 px-5 py-3 rounded-full bg-terracotta text-white font-extrabold text-xs uppercase tracking-wider" onclick="toggleMenu()">
-        Contact MBA
-      </a>
     </div>
   </header>
 
   <main>
-    <!-- ==================== 3. HERO SECTION ==================== -->
+    <!-- Hero Section -->
     <section class="relative pt-10 pb-16 md:pt-14 md:pb-20 border-b border-parchment-border bg-gradient-to-b from-parchment-light via-parchment to-parchment-muted/30">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-
-        <!-- Logo Image -->
         <div class="flex flex-col items-center justify-center mb-5">
           <div class="relative group">
-            <img 
-              src="logo.jpeg" 
-              alt="Melbourne Backgammon Association Emblem" 
-              class="w-48 h-48 sm:w-56 sm:h-56 lg:w-64 lg:h-64 object-contain rounded-full drop-shadow-2xl transition-transform duration-500 group-hover:scale-105"
-            >
+            <img src="logo.jpeg" alt="MBA Emblem" class="w-48 h-48 sm:w-56 sm:h-56 lg:w-64 lg:h-64 object-contain rounded-full drop-shadow-2xl transition-transform duration-500 group-hover:scale-105">
           </div>
         </div>
-
-        <!-- Tagline Pill -->
         <div class="my-5 flex justify-center">
           <div class="inline-flex items-center px-6 sm:px-9 py-2.5 rounded-full bg-espresso/[0.04] border border-espresso/15 shadow-sm">
             <span class="text-xs sm:text-sm md:text-base font-bold tracking-[0.28em] sm:tracking-[0.32em] text-espresso uppercase font-sans select-none">
@@ -169,136 +229,68 @@
             </span>
           </div>
         </div>
-
       </div>
     </section>
 
-    <!-- ==================== 4. THAT'S WHY WE PLAY (2x2 GRID) ==================== -->
+    <!-- Why We Play -->
     <section id="why-we-play" class="py-16 md:py-20 bg-parchment border-b border-parchment-border">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        
         <div class="text-center mb-12">
-          <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-espresso tracking-tight">
-            That's Why We Play
-          </h2>
+          <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-espresso tracking-tight">That's Why We Play</h2>
         </div>
-
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mx-auto">
-          
-          <!-- 1. Grow the Game -->
           <div class="p-6 rounded-2xl bg-parchment-card/80 border border-parchment-border hover:border-terracotta/40 transition-colors shadow-sm flex items-start gap-4">
-            <div class="w-10 h-10 rounded-xl bg-terracotta/10 text-terracotta flex items-center justify-center shrink-0 mt-0.5">
-              <i data-lucide="compass" class="w-5 h-5"></i>
-            </div>
+            <div class="w-10 h-10 rounded-xl bg-terracotta/10 text-terracotta flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="compass" class="w-5 h-5"></i></div>
             <div>
               <h3 class="font-bold text-base text-espresso font-display tracking-tight">Grow the Game</h3>
-              <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">
-                Promote the play, study, and enjoyment of backgammon across Melbourne.
-              </p>
+              <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">Promote the play, study, and enjoyment of backgammon across Melbourne.</p>
             </div>
           </div>
-
-          <!-- 2. Welcome New Players -->
           <div class="p-6 rounded-2xl bg-parchment-card/80 border border-parchment-border hover:border-brass/50 transition-colors shadow-sm flex items-start gap-4">
-            <div class="w-10 h-10 rounded-xl bg-brass/15 text-brass-dark flex items-center justify-center shrink-0 mt-0.5">
-              <i data-lucide="sparkles" class="w-5 h-5"></i>
-            </div>
+            <div class="w-10 h-10 rounded-xl bg-brass/15 text-brass-dark flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="sparkles" class="w-5 h-5"></i></div>
             <div>
               <h3 class="font-bold text-base text-espresso font-display tracking-tight">Welcome New Players</h3>
-              <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">
-                Teach newcomers and provide a comfortable place to play and learn.
-              </p>
+              <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">Teach newcomers and provide a comfortable place to play and learn.</p>
             </div>
           </div>
-
-          <!-- 3. Elevate Play -->
           <div class="p-6 rounded-2xl bg-parchment-card/80 border border-parchment-border hover:border-slateNavy/40 transition-colors shadow-sm flex items-start gap-4">
-            <div class="w-10 h-10 rounded-xl bg-slateNavy/10 text-slateNavy flex items-center justify-center shrink-0 mt-0.5">
-              <i data-lucide="line-chart" class="w-5 h-5"></i>
-            </div>
+            <div class="w-10 h-10 rounded-xl bg-slateNavy/10 text-slateNavy flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="line-chart" class="w-5 h-5"></i></div>
             <div>
               <h3 class="font-bold text-base text-espresso font-display tracking-tight">Elevate Play</h3>
-              <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">
-                Deepen strategic understanding through match transcription, analysis, and PR evaluation.
-              </p>
+              <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">Deepen strategic understanding through match transcription, analysis, and PR evaluation.</p>
             </div>
           </div>
-
-          <!-- 4. Compete -->
           <div class="p-6 rounded-2xl bg-parchment-card/80 border border-parchment-border hover:border-terracotta/40 transition-colors shadow-sm flex items-start gap-4">
-            <div class="w-10 h-10 rounded-xl bg-terracotta/10 text-terracotta flex items-center justify-center shrink-0 mt-0.5">
-              <i data-lucide="shield-check" class="w-5 h-5"></i>
-            </div>
+            <div class="w-10 h-10 rounded-xl bg-terracotta/10 text-terracotta flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
             <div>
               <h3 class="font-bold text-base text-espresso font-display tracking-tight">Compete</h3>
-              <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">
-                Host regular club matches, tournaments, and chouettes.
-              </p>
+              <p class="text-xs sm:text-sm text-espresso-soft mt-1 leading-relaxed">Host regular club matches, tournaments, and chouettes.</p>
             </div>
           </div>
-
         </div>
-
       </div>
     </section>
 
-    <!-- ==================== 5. FOUNDING COMMITTEE (CAROUSEL) ==================== -->
+    <!-- Committee Carousel -->
     <section id="committee" class="py-20 bg-parchment border-b border-parchment-border">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        
-        <h2 class="text-3xl sm:text-5xl font-extrabold text-espresso font-display tracking-tight mb-14">
-          Founding Committee
-        </h2>
-
-        <!-- Single-Item Carousel Container -->
+        <h2 class="text-3xl sm:text-5xl font-extrabold text-espresso font-display tracking-tight mb-14">Founding Committee</h2>
         <div class="relative max-w-sm sm:max-w-md mx-auto">
-          
-          <button id="carouselPrevBtn" aria-label="Previous Slide" class="absolute left-0 sm:-left-16 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-all shadow-md">
+          <button id="carouselPrevBtn" class="absolute left-0 sm:-left-16 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-all shadow-md">
             <i data-lucide="chevron-left" class="w-6 h-6"></i>
           </button>
-
           <div id="carouselTrack" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth">
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
-              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
-                <img src="ezza.jpeg" alt="Committee Badge" class="w-full h-full object-contain">
-              </div>
-            </div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
-              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
-                <img src="wroby.jpeg" alt="Committee Badge" class="w-full h-full object-contain">
-              </div>
-            </div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
-              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
-                <img src="steve.jpeg" alt="Committee Badge" class="w-full h-full object-contain">
-              </div>
-            </div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
-              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
-                <img src="bryce.jpeg" alt="Committee Badge" class="w-full h-full object-contain">
-              </div>
-            </div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
-              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
-                <img src="greg.jpeg" alt="Committee Badge" class="w-full h-full object-contain">
-              </div>
-            </div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
-              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
-                <img src="kobrin.jpeg" alt="Committee Badge" class="w-full h-full object-contain">
-              </div>
-            </div>
-            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
-              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
-                <img src="yona.jpeg" alt="Committee Badge" class="w-full h-full object-contain">
-              </div>
-            </div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4"><div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center"><img src="ezza.jpeg" class="w-full h-full object-contain"></div></div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4"><div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center"><img src="wroby.jpeg" class="w-full h-full object-contain"></div></div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4"><div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center"><img src="steve.jpeg" class="w-full h-full object-contain"></div></div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4"><div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center"><img src="bryce.jpeg" class="w-full h-full object-contain"></div></div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4"><div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center"><img src="greg.jpeg" class="w-full h-full object-contain"></div></div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4"><div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center"><img src="kobrin.jpeg" class="w-full h-full object-contain"></div></div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4"><div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center"><img src="yona.jpeg" class="w-full h-full object-contain"></div></div>
           </div>
-
-          <button id="carouselNextBtn" aria-label="Next Slide" class="absolute right-0 sm:-right-16 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-all shadow-md">
+          <button id="carouselNextBtn" class="absolute right-0 sm:-right-16 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-all shadow-md">
             <i data-lucide="chevron-right" class="w-6 h-6"></i>
           </button>
-
           <div id="carouselDots" class="flex justify-center items-center gap-2 mt-6">
             <button class="w-2.5 h-2.5 rounded-full bg-terracotta transition-all" onclick="goToSlide(0)"></button>
             <button class="w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all" onclick="goToSlide(1)"></button>
@@ -308,183 +300,59 @@
             <button class="w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all" onclick="goToSlide(5)"></button>
             <button class="w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all" onclick="goToSlide(6)"></button>
           </div>
-
         </div>
-
       </div>
     </section>
 
-    <!-- ==================== 6. MEMBER STATS & LEADERBOARD ==================== -->
+    <!-- Performance & Standings -->
     <section id="stats" class="py-20 bg-parchment-light border-b border-parchment-border">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div class="text-center max-w-2xl mx-auto mb-12">
-          <span class="text-xs font-bold uppercase tracking-[0.25em] text-brass">Performance & Standings</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-espresso tracking-tight mt-1">
-            Member Standings
-          </h2>
-          <p class="text-sm text-espresso-soft mt-2">
-            Official club ratings, win rates, and Performance Rating (PR) tracking across rated club encounters.
-          </p>
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-10">
+          <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-espresso tracking-tight">Performance & Standings</h2>
         </div>
-
         <div class="overflow-x-auto rounded-2xl border border-parchment-border bg-parchment-card shadow-sm">
           <table class="w-full text-left text-sm text-espresso border-collapse">
             <thead class="bg-espresso text-parchment font-display uppercase text-xs tracking-wider border-b border-espresso-border">
               <tr>
-                <th scope="col" class="py-4 px-4 text-center">Rank (AUS)</th>
-                <th scope="col" class="py-4 px-4 text-center">Rank (World)</th>
-                <th scope="col" class="py-4 px-6">Member Name</th>
-                <th scope="col" class="py-4 px-4 text-center">W - L</th>
-                <th scope="col" class="py-4 px-4 text-center">Win %</th>
-                <th scope="col" class="py-4 px-4 text-center">Avg PR</th>
-                <th scope="col" class="py-4 px-4 text-center">Status</th>
+                <th class="py-4 px-4 text-center">Rank</th>
+                <th class="py-4 px-6">Member Name</th>
+                <th class="py-4 px-4 text-center">W - L</th>
+                <th class="py-4 px-4 text-center">Win %</th>
+                <th class="py-4 px-4 text-center">Avg PR</th>
+                <th class="py-4 px-4 text-center">Status</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-parchment-border font-medium">
-              
-              <tr class="hover:bg-parchment transition-colors">
-                <td class="py-4 px-4 text-center font-bold text-terracotta">#1</td>
-                <td class="py-4 px-4 text-center font-bold text-slateNavy">#1</td>
-                <td class="py-4 px-6 font-bold flex items-center gap-2">
-                  <span>Eric Berkhinfand</span>
-                </td>
-                <td class="py-4 px-4 text-center text-espresso-soft">0 - 0</td>
-                <td class="py-4 px-4 text-center text-espresso-soft">0.0%</td>
-                <td class="py-4 px-4 text-center font-mono text-espresso-soft">—</td>
-                <td class="py-4 px-4 text-center">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brass/20 text-brass-dark">Unrated</span>
-                </td>
-              </tr>
-
-              <tr class="hover:bg-parchment transition-colors">
-                <td class="py-4 px-4 text-center font-bold text-terracotta">#1</td>
-                <td class="py-4 px-4 text-center font-bold text-slateNavy">#1</td>
-                <td class="py-4 px-6 font-bold">Daniel Wroby</td>
-                <td class="py-4 px-4 text-center text-espresso-soft">0 - 0</td>
-                <td class="py-4 px-4 text-center text-espresso-soft">0.0%</td>
-                <td class="py-4 px-4 text-center font-mono text-espresso-soft">—</td>
-                <td class="py-4 px-4 text-center">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brass/20 text-brass-dark">Unrated</span>
-                </td>
-              </tr>
-
-              <tr class="hover:bg-parchment transition-colors">
-                <td class="py-4 px-4 text-center font-bold text-terracotta">#1</td>
-                <td class="py-4 px-4 text-center font-bold text-slateNavy">#1</td>
-                <td class="py-4 px-6 font-bold">Steven Goldberg</td>
-                <td class="py-4 px-4 text-center text-espresso-soft">0 - 0</td>
-                <td class="py-4 px-4 text-center text-espresso-soft">0.0%</td>
-                <td class="py-4 px-4 text-center font-mono text-espresso-soft">—</td>
-                <td class="py-4 px-4 text-center">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brass/20 text-brass-dark">Unrated</span>
-                </td>
-              </tr>
-
-              <tr class="hover:bg-parchment transition-colors">
-                <td class="py-4 px-4 text-center font-bold text-terracotta">#1</td>
-                <td class="py-4 px-4 text-center font-bold text-slateNavy">#1</td>
-                <td class="py-4 px-6 font-bold">Bryce Adams</td>
-                <td class="py-4 px-4 text-center text-espresso-soft">0 - 0</td>
-                <td class="py-4 px-4 text-center text-espresso-soft">0.0%</td>
-                <td class="py-4 px-4 text-center font-mono text-espresso-soft">—</td>
-                <td class="py-4 px-4 text-center">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brass/20 text-brass-dark">Unrated</span>
-                </td>
-              </tr>
-
-              <tr class="hover:bg-parchment transition-colors">
-                <td class="py-4 px-4 text-center font-bold text-terracotta">#1</td>
-                <td class="py-4 px-4 text-center font-bold text-slateNavy">#1</td>
-                <td class="py-4 px-6 font-bold">Greg Sacks</td>
-                <td class="py-4 px-4 text-center text-espresso-soft">0 - 0</td>
-                <td class="py-4 px-4 text-center text-espresso-soft">0.0%</td>
-                <td class="py-4 px-4 text-center font-mono text-espresso-soft">—</td>
-                <td class="py-4 px-4 text-center">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brass/20 text-brass-dark">Unrated</span>
-                </td>
-              </tr>
-
-              <tr class="hover:bg-parchment transition-colors">
-                <td class="py-4 px-4 text-center font-bold text-terracotta">#1</td>
-                <td class="py-4 px-4 text-center font-bold text-slateNavy">#1</td>
-                <td class="py-4 px-6 font-bold">Daniel Kobrin</td>
-                <td class="py-4 px-4 text-center text-espresso-soft">0 - 0</td>
-                <td class="py-4 px-4 text-center text-espresso-soft">0.0%</td>
-                <td class="py-4 px-4 text-center font-mono text-espresso-soft">—</td>
-                <td class="py-4 px-4 text-center">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brass/20 text-brass-dark">Unrated</span>
-                </td>
-              </tr>
-
-              <tr class="hover:bg-parchment transition-colors">
-                <td class="py-4 px-4 text-center font-bold text-terracotta">#1</td>
-                <td class="py-4 px-4 text-center font-bold text-slateNavy">#1</td>
-                <td class="py-4 px-6 font-bold">Yona Takac</td>
-                <td class="py-4 px-4 text-center text-espresso-soft">0 - 0</td>
-                <td class="py-4 px-4 text-center text-espresso-soft">0.0%</td>
-                <td class="py-4 px-4 text-center font-mono text-espresso-soft">—</td>
-                <td class="py-4 px-4 text-center">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brass/20 text-brass-dark">Unrated</span>
-                </td>
-              </tr>
-
+            <tbody id="standingsBody" class="divide-y divide-parchment-border font-medium">
+              <!-- Dynamically Populated -->
             </tbody>
           </table>
         </div>
-        
-        <p class="text-xs text-center text-espresso-soft mt-3 italic">
-          * Ratings and Performance Rating (PR) formulas update automatically following match transcription evaluations.
-        </p>
-
       </div>
     </section>
 
-    <!-- ==================== 7. INTERACTIVE EVENTS MAP ==================== -->
+    <!-- Events & Map -->
     <section id="events" class="py-20 bg-parchment border-b border-parchment-border">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-
         <div class="text-center max-w-2xl mx-auto mb-10">
           <span class="text-xs font-bold uppercase tracking-[0.25em] text-terracotta">Where to Play</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-espresso tracking-tight mt-1">
-            Upcoming Nights & Events
-          </h2>
-          <p class="text-sm text-espresso-soft mt-2">
-            Click on any pin across Melbourne to inspect session dates, start times, formats, and venue locations.
-          </p>
+          <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-espresso tracking-tight mt-1">Upcoming Nights & Events</h2>
+          <p class="text-sm text-espresso-soft mt-2">Click on any pin across Melbourne to inspect session dates, start times, formats, and venue locations.</p>
         </div>
-
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-          
-          <!-- Leaflet Interactive Map Container -->
           <div class="lg:col-span-2 rounded-2xl overflow-hidden border border-parchment-border shadow-md h-[460px] relative z-10" id="melbourneMap"></div>
-
-          <!-- Active Event Details Panel -->
           <div class="rounded-2xl border border-parchment-border bg-parchment-card p-6 shadow-sm space-y-4">
             <div class="flex items-center gap-2 text-terracotta text-xs font-extrabold tracking-wider uppercase">
               <i data-lucide="map-pin" class="w-4 h-4"></i>
               <span>Venue Focus</span>
             </div>
-
             <div id="eventDetails">
-              <h3 id="eventTitle" class="text-xl font-bold font-display text-espresso">MBA Inaugural Social Night</h3>
-              <p id="eventVenue" class="text-xs font-bold text-slateNavy mt-1">St Kilda / Caulfield Vicinity</p>
-              
+              <h3 id="eventTitle" class="text-xl font-bold font-display text-espresso">MBA Weekly Club Night</h3>
+              <p id="eventVenue" class="text-xs font-bold text-slateNavy mt-1">Caulfield / Prahran Hub</p>
               <div class="mt-4 pt-4 border-t border-parchment-border space-y-2.5 text-xs text-espresso-soft">
-                <div class="flex items-center gap-2">
-                  <i data-lucide="calendar" class="w-4 h-4 text-espresso"></i>
-                  <span id="eventDate" class="text-espresso font-semibold">Every Fortnightly Tuesday</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <i data-lucide="clock" class="w-4 h-4 text-espresso"></i>
-                  <span id="eventTime">6:30 PM - 10:00 PM AEDT</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <i data-lucide="dices" class="w-4 h-4 text-espresso"></i>
-                  <span id="eventFormat">Chouette & 5-point match play</span>
-                </div>
+                <div class="flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4 text-espresso"></i><span id="eventDate" class="text-espresso font-semibold">Every Tuesday Evening</span></div>
+                <div class="flex items-center gap-2"><i data-lucide="clock" class="w-4 h-4 text-espresso"></i><span id="eventTime">6:30 PM - 10:30 PM</span></div>
+                <div class="flex items-center gap-2"><i data-lucide="dices" class="w-4 h-4 text-espresso"></i><span id="eventFormat">Casual Chouette & 5-pt Rated Matches</span></div>
               </div>
-
               <div class="mt-6 pt-4 border-t border-parchment-border">
                 <a href="mailto:contact@backgammon.melbourne?subject=RSVP%20for%20Club%20Night" class="w-full inline-flex items-center justify-center py-2.5 rounded-xl bg-terracotta text-white font-bold text-xs uppercase tracking-wider hover:bg-terracotta-dark transition-colors shadow-sm">
                   RSVP for This Night
@@ -492,86 +360,62 @@
               </div>
             </div>
           </div>
-
         </div>
-
       </div>
     </section>
 
-    <!-- ==================== 8. RECORDED MATCH ARCHIVE ==================== -->
+    <!-- Recorded Match Archive -->
     <section id="matches" class="py-20 bg-parchment-light border-b border-parchment-border">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        
         <div class="text-center max-w-2xl mx-auto mb-12">
           <span class="text-xs font-bold uppercase tracking-[0.25em] text-slateNavy">Historical Archive</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-espresso tracking-tight mt-1">
-            Recorded Matches
-          </h2>
-          <p class="text-sm text-espresso-soft mt-2">
-            Transcribed competitive match records with official scoring and Performance Rating (PR) metrics.
-          </p>
+          <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-espresso tracking-tight mt-1">Recorded Matches</h2>
+          <p class="text-sm text-espresso-soft mt-2">Transcribed competitive match records with official scoring and Performance Rating (PR) metrics.</p>
         </div>
-
-        <!-- Clean Empty State / Table Container -->
-        <div class="bg-parchment-card rounded-2xl border border-parchment-border shadow-sm p-8 text-center max-w-2xl mx-auto">
-          <div class="w-14 h-14 rounded-2xl bg-espresso/5 text-espresso border border-espresso/10 mx-auto flex items-center justify-center mb-4">
-            <i data-lucide="scroll-text" class="w-7 h-7"></i>
-          </div>
-          <h3 class="font-display font-bold text-lg text-espresso">No matches officially recorded yet</h3>
-          <p class="text-xs sm:text-sm text-espresso-soft mt-2 leading-relaxed">
-            The archive will record every tournament match, player scores, error rates, and PR analyses as club rounds commence.
-          </p>
-          <div class="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-parchment-border/40 text-xs text-espresso-soft font-mono">
-            <i data-lucide="info" class="w-3.5 h-3.5"></i>
-            <span>Fields tracked: Player 1 (PR) vs Player 2 (PR) • Match Length • Final Score</span>
-          </div>
+        <div id="matchArchiveContainer">
+          <!-- Populated from matches or empty state -->
         </div>
-
       </div>
     </section>
   </main>
 
-  <!-- ==================== 9. MINIMAL MODERN FOOTER ==================== -->
   <footer class="bg-espresso text-parchment-muted pt-12 pb-8 border-t border-espresso-border text-xs">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-      
       <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-espresso-surface text-center md:text-left">
         <div class="space-y-1">
           <div class="flex items-center justify-center md:justify-start gap-3">
-            <div class="w-8 h-8 rounded-full bg-espresso-surface border border-brass flex items-center justify-center font-black text-brass text-xs">
-              64
-            </div>
+            <div class="w-8 h-8 rounded-full bg-espresso-surface border border-brass flex items-center justify-center font-black text-brass text-xs">64</div>
             <span class="font-extrabold text-white text-base tracking-tight font-display">Melbourne Backgammon Association Inc.</span>
           </div>
-          <p class="text-brass font-bold text-xs uppercase tracking-wider">
-            "Backgammon, Brews, Beats and Bevs"
-          </p>
+          <p class="text-brass font-bold text-xs uppercase tracking-wider">"Backgammon, Brews, Beats and Bevs"</p>
         </div>
       </div>
-
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-parchment-muted/60">
-        <div>
-          © 2026 Melbourne Backgammon Association Inc. Incorporated in Victoria under the Associations Incorporation Reform Act 2012.
-        </div>
-        <div>
-          <a href="mailto:contact@backgammon.melbourne" class="text-brass hover:underline">contact@backgammon.melbourne</a>
-        </div>
+        <div>© 2026 Melbourne Backgammon Association Inc. Incorporated in Victoria under the Associations Incorporation Reform Act 2012.</div>
+        <div><a href="mailto:contact@backgammon.melbourne" class="text-brass hover:underline">contact@backgammon.melbourne</a></div>
       </div>
-
     </div>
   </footer>
 
-  <!-- ==================== JAVASCRIPT ==================== -->
   <script>
     lucide.createIcons();
-    
-    // Mobile Drawer Navigation
-    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const mobileDrawer = document.getElementById('mobileDrawer');
-    function toggleMenu() {
-      mobileDrawer.classList.toggle('hidden');
+
+    // PASTE YOUR GOOGLE APPS SCRIPT URL HERE:
+    const https://script.google.com/macros/s/AKfycbyOBLAPmwyTMyJUbDHj6OCKZmOJmqkwvLdQRXVOLb2WqVkNgnlA5NmqATBTfrZjXvth/exec = ""; 
+
+    // Initial Committee Members List
+    const defaultMembers = [
+      "Eric Berkhinfand", "Daniel Wroby", "Steven Goldberg",
+      "Bryce Adams", "Greg Sacks", "Daniel Kobrin", "Yona Takac"
+    ];
+
+    // Modal controls
+    function openModal() {
+      document.getElementById('uploadModal').classList.remove('hidden');
     }
-    mobileMenuBtn.addEventListener('click', toggleMenu);
+    function closeModal() {
+      document.getElementById('uploadModal').classList.add('hidden');
+    }
 
     // Carousel logic
     const track = document.getElementById('carouselTrack');
@@ -583,21 +427,13 @@
 
     function updateDots(index) {
       dots.forEach((dot, i) => {
-        if (i === index) {
-          dot.className = 'w-2.5 h-2.5 rounded-full bg-terracotta transition-all';
-        } else {
-          dot.className = 'w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all';
-        }
+        dot.className = i === index ? 'w-2.5 h-2.5 rounded-full bg-terracotta transition-all' : 'w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all';
       });
     }
 
     function goToSlide(index) {
       currentIndex = index;
-      const slideWidth = track.clientWidth;
-      track.scrollTo({
-        left: slideWidth * currentIndex,
-        behavior: 'smooth'
-      });
+      track.scrollTo({ left: track.clientWidth * currentIndex, behavior: 'smooth' });
       updateDots(currentIndex);
     }
 
@@ -611,71 +447,170 @@
       goToSlide(currentIndex);
     });
 
-    track.addEventListener('scroll', () => {
-      const slideWidth = track.clientWidth;
-      if (slideWidth > 0) {
-        const newIndex = Math.round(track.scrollLeft / slideWidth);
-        if (newIndex !== currentIndex && newIndex >= 0 && newIndex < totalSlides) {
-          currentIndex = newIndex;
-          updateDots(currentIndex);
+    // Render Standings & Match Archive
+    function renderApp(matches = []) {
+      const statsMap = {};
+      defaultMembers.forEach(name => {
+        statsMap[name] = { wins: 0, losses: 0, prList: [] };
+      });
+
+      matches.forEach(m => {
+        [m.player1, m.player2].forEach(p => {
+          if (!statsMap[p]) statsMap[p] = { wins: 0, losses: 0, prList: [] };
+        });
+
+        if (Number(m.score1) > Number(m.score2)) {
+          statsMap[m.player1].wins++;
+          statsMap[m.player2].losses++;
+        } else if (Number(m.score2) > Number(m.score1)) {
+          statsMap[m.player2].wins++;
+          statsMap[m.player1].losses++;
         }
+
+        if (m.pr1) statsMap[m.player1].prList.push(Number(m.pr1));
+        if (m.pr2) statsMap[m.player2].prList.push(Number(m.pr2));
+      });
+
+      const tbody = document.getElementById('standingsBody');
+      tbody.innerHTML = '';
+      
+      const memberList = Object.keys(statsMap);
+      memberList.forEach(name => {
+        const item = statsMap[name];
+        const total = item.wins + item.losses;
+        const winPct = total > 0 ? ((item.wins / total) * 100).toFixed(1) + '%' : '0.0%';
+        const avgPr = item.prList.length > 0 ? (item.prList.reduce((a, b) => a + b, 0) / item.prList.length).toFixed(2) : '—';
+        const isRated = total > 0;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-parchment transition-colors">
+            <td class="py-4 px-4 text-center font-bold text-terracotta">#1</td>
+            <td class="py-4 px-6 font-bold">${name}</td>
+            <td class="py-4 px-4 text-center text-espresso-soft">${item.wins} - ${item.losses}</td>
+            <td class="py-4 px-4 text-center text-espresso-soft">${winPct}</td>
+            <td class="py-4 px-4 text-center font-mono text-espresso-soft">${avgPr}</td>
+            <td class="py-4 px-4 text-center">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${isRated ? 'bg-slateNavy/15 text-slateNavy' : 'bg-brass/20 text-brass-dark'}">
+                ${isRated ? 'Active' : 'Unrated'}
+              </span>
+            </td>
+          </tr>
+        `;
+      });
+
+      const archiveContainer = document.getElementById('matchArchiveContainer');
+      if (matches.length === 0) {
+        archiveContainer.innerHTML = `
+          <div class="bg-parchment-card rounded-2xl border border-parchment-border shadow-sm p-8 text-center max-w-2xl mx-auto">
+            <div class="w-14 h-14 rounded-2xl bg-espresso/5 text-espresso border border-espresso/10 mx-auto flex items-center justify-center mb-4">
+              <i data-lucide="scroll-text" class="w-7 h-7"></i>
+            </div>
+            <h3 class="font-display font-bold text-lg text-espresso">No matches officially recorded yet</h3>
+            <p class="text-xs sm:text-sm text-espresso-soft mt-2 leading-relaxed">
+              Use the "+ Record Match" button to log the first round results.
+            </p>
+          </div>
+        `;
+      } else {
+        let rows = matches.map(m => `
+          <tr class="hover:bg-parchment transition-colors">
+            <td class="py-3 px-4 font-semibold">${m.player1} <span class="font-mono text-xs text-espresso-soft">(${m.pr1 ? 'PR ' + m.pr1 : '—'})</span></td>
+            <td class="py-3 px-4 text-center font-mono font-bold text-terracotta">${m.score1} - ${m.score2}</td>
+            <td class="py-3 px-4 font-semibold">${m.player2} <span class="font-mono text-xs text-espresso-soft">(${m.pr2 ? 'PR ' + m.pr2 : '—'})</span></td>
+            <td class="py-3 px-4 text-center text-xs text-espresso-soft">${m.matchLength} pts</td>
+            <td class="py-3 px-4 text-center text-xs text-espresso-soft">${m.format}</td>
+          </tr>
+        `).join('');
+
+        archiveContainer.innerHTML = `
+          <div class="overflow-x-auto rounded-2xl border border-parchment-border bg-parchment-card shadow-sm">
+            <table class="w-full text-left text-sm text-espresso border-collapse">
+              <thead class="bg-espresso text-parchment font-display uppercase text-xs tracking-wider">
+                <tr>
+                  <th class="py-3 px-4">Player 1</th>
+                  <th class="py-3 px-4 text-center">Score</th>
+                  <th class="py-3 px-4">Player 2</th>
+                  <th class="py-3 px-4 text-center">Length</th>
+                  <th class="py-3 px-4 text-center">Format</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-parchment-border">${rows}</tbody>
+            </table>
+          </div>
+        `;
       }
-    });
+      lucide.createIcons();
+    }
 
-    // Interactive Leaflet Map
-    const map = L.map('melbourneMap', {
-      center: [-37.835, 144.99],
-      zoom: 12,
-      scrollWheelZoom: false
-    });
+    // Load matches
+    async function fetchMatches() {
+      if (!SCRIPT_URL) {
+        renderApp([]);
+        return;
+      }
+      try {
+        const res = await fetch(SCRIPT_URL);
+        const data = await res.json();
+        renderApp(data);
+      } catch (e) {
+        renderApp([]);
+      }
+    }
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
-      maxZoom: 19
-    }).addTo(map);
+    // Submit match from phone
+    async function submitMatch(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.innerText = "Submitting...";
+      btn.disabled = true;
+
+      const payload = {
+        player1: document.getElementById('player1Input').value.trim(),
+        player2: document.getElementById('player2Input').value.trim(),
+        score1: document.getElementById('score1Input').value,
+        score2: document.getElementById('score2Input').value,
+        pr1: document.getElementById('pr1Input').value,
+        pr2: document.getElementById('pr2Input').value,
+        matchLength: document.getElementById('matchLengthSelect').value,
+        format: document.getElementById('formatSelect').value
+      };
+
+      if (SCRIPT_URL) {
+        try {
+          await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        } catch (err) {}
+      }
+
+      closeModal();
+      document.getElementById('matchForm').reset();
+      btn.innerText = "Submit Result";
+      btn.disabled = false;
+      setTimeout(fetchMatches, 1200);
+    }
+
+    // Interactive Map
+    const map = L.map('melbourneMap', { center: [-37.835, 144.99], zoom: 12, scrollWheelZoom: false });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 
     const eventsData = [
-      {
-        title: "MBA Weekly Club Night",
-        venue: "Caulfield / Prahran Hub",
-        lat: -37.876,
-        lng: 145.028,
-        date: "Every Tuesday Evening",
-        time: "6:30 PM - 10:30 PM",
-        format: "Casual Chouette & 5-pt Rated Matches"
-      },
-      {
-        title: "South Yarra Weekend Chouette",
-        venue: "Chapel St Social Club",
-        lat: -37.844,
-        lng: 144.995,
-        date: "Fortnightly Saturdays",
-        time: "2:00 PM - 6:00 PM",
-        format: "Open Chouette & Beginner Mentorship"
-      },
-      {
-        title: "Melbourne CBD Blitz Tournament",
-        venue: "Central Melbourne Brew Bar",
-        lat: -37.814,
-        lng: 144.963,
-        date: "Monthly First Thursday",
-        time: "6:00 PM - 9:30 PM",
-        format: "Swiss 3-pt Speed Backgammon"
-      }
+      { title: "MBA Weekly Club Night", venue: "Caulfield / Prahran Hub", lat: -37.876, lng: 145.028, date: "Every Tuesday Evening", time: "6:30 PM - 10:30 PM", format: "Casual Chouette & 5-pt Rated Matches" },
+      { title: "South Yarra Weekend Chouette", venue: "Chapel St Social Club", lat: -37.844, lng: 144.995, date: "Fortnightly Saturdays", time: "2:00 PM - 6:00 PM", format: "Open Chouette & Beginner Mentorship" }
     ];
 
     function createCustomPin(color) {
       return L.divIcon({
-        className: 'custom-pin',
         html: `<div style="background-color: ${color}; width: 18px; height: 18px; border-radius: 50%; border: 3px solid #F7F4EE; box-shadow: 0 4px 10px rgba(0,0,0,0.35);"></div>`,
-        iconSize: [18, 18],
-        iconAnchor: [9, 9]
+        iconSize: [18, 18], iconAnchor: [9, 9]
       });
     }
 
     eventsData.forEach(evt => {
       const marker = L.marker([evt.lat, evt.lng], { icon: createCustomPin('#C2593F') }).addTo(map);
-      
       marker.on('click', () => {
         document.getElementById('eventTitle').innerText = evt.title;
         document.getElementById('eventVenue').innerText = evt.venue;
@@ -683,9 +618,10 @@
         document.getElementById('eventTime').innerText = evt.time;
         document.getElementById('eventFormat').innerText = evt.format;
       });
-
-      marker.bindPopup(`<b>${evt.title}</b><br>${evt.venue}<br><span style="color:#C3992F;font-size:11px;">Click pin to inspect</span>`);
+      marker.bindPopup(`<b>${evt.title}</b><br>${evt.venue}`);
     });
+
+    fetchMatches();
   </script>
 </body>
 </html>
