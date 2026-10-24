@@ -13,6 +13,10 @@
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Leaflet CSS & JS for Interactive Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -73,11 +77,28 @@
       background-size: 44px 78px;
       border-bottom: 2px solid rgba(195, 153, 47, 0.35);
     }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .leaflet-popup-content-wrapper {
+      background-color: #1D1612;
+      color: #F7F4EE;
+      border-radius: 12px;
+      padding: 4px;
+      border: 1px solid #C3992F;
+    }
+    .leaflet-popup-tip {
+      background-color: #1D1612;
+    }
   </style>
 </head>
 <body class="bg-parchment text-espresso font-sans antialiased selection:bg-terracotta selection:text-white">
 
-  <!-- ==================== 1. FULL-WIDTH ELONGATED BACKGAMMON TRIANGLES BORDER ==================== -->
+  <!-- ==================== 1. ELONGATED BACKGAMMON POINTS BORDER ==================== -->
   <div class="bg-top-spears relative z-50"></div>
 
   <!-- ==================== 2. HEADER / NAVIGATION ==================== -->
@@ -92,16 +113,19 @@
         </a>
 
         <!-- Desktop Navigation -->
-        <nav class="hidden lg:flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-espresso/80">
-          <a href="#why-we-play" class="hover:text-terracotta transition-colors">That's Why We Play</a>
-          <a href="#committee" class="hover:text-terracotta transition-colors">Founding Committee</a>
+        <nav class="hidden xl:flex items-center gap-6 text-xs font-bold uppercase tracking-wider text-espresso/80">
+          <a href="#why-we-play" class="hover:text-terracotta transition-colors">Why We Play</a>
+          <a href="#committee" class="hover:text-terracotta transition-colors">Committee</a>
+          <a href="#stats" class="hover:text-terracotta transition-colors">Leaderboard</a>
+          <a href="#events" class="hover:text-terracotta transition-colors">Events & Map</a>
+          <a href="#matches" class="hover:text-terracotta transition-colors">Match Archive</a>
           <a href="mailto:contact@backgammon.melbourne" class="px-5 py-2.5 rounded-full bg-espresso text-parchment font-extrabold text-xs uppercase tracking-wider hover:bg-terracotta transition-all shadow-sm">
             Contact MBA
           </a>
         </nav>
 
         <!-- Mobile Drawer Toggle Button -->
-        <button id="mobileMenuBtn" aria-label="Toggle Navigation Menu" class="lg:hidden p-2 rounded-lg text-espresso hover:bg-parchment-border transition">
+        <button id="mobileMenuBtn" aria-label="Toggle Navigation Menu" class="xl:hidden p-2 rounded-lg text-espresso hover:bg-parchment-border transition">
           <i data-lucide="menu" class="w-6 h-6"></i>
         </button>
 
@@ -109,9 +133,12 @@
     </div>
 
     <!-- Mobile Drawer Navigation -->
-    <div id="mobileDrawer" class="hidden lg:hidden border-t border-parchment-border bg-parchment-light px-4 pt-3 pb-6 space-y-3">
-      <a href="#why-we-play" class="block px-3 py-2 text-sm font-bold text-espresso hover:bg-parchment-card rounded-lg" onclick="toggleMenu()">That's Why We Play</a>
+    <div id="mobileDrawer" class="hidden xl:hidden border-t border-parchment-border bg-parchment-light px-4 pt-3 pb-6 space-y-2">
+      <a href="#why-we-play" class="block px-3 py-2 text-sm font-bold text-espresso hover:bg-parchment-card rounded-lg" onclick="toggleMenu()">Why We Play</a>
       <a href="#committee" class="block px-3 py-2 text-sm font-bold text-espresso hover:bg-parchment-card rounded-lg" onclick="toggleMenu()">Founding Committee</a>
+      <a href="#stats" class="block px-3 py-2 text-sm font-bold text-espresso hover:bg-parchment-card rounded-lg" onclick="toggleMenu()">Leaderboard & Stats</a>
+      <a href="#events" class="block px-3 py-2 text-sm font-bold text-espresso hover:bg-parchment-card rounded-lg" onclick="toggleMenu()">Events Map</a>
+      <a href="#matches" class="block px-3 py-2 text-sm font-bold text-espresso hover:bg-parchment-card rounded-lg" onclick="toggleMenu()">Match Archive</a>
       <a href="mailto:contact@backgammon.melbourne" class="block text-center mt-3 px-5 py-3 rounded-full bg-terracotta text-white font-extrabold text-xs uppercase tracking-wider" onclick="toggleMenu()">
         Contact MBA
       </a>
@@ -119,7 +146,7 @@
   </header>
 
   <main>
-    <!-- ==================== 3. HERO SECTION WITH LOGO IMAGE ==================== -->
+    <!-- ==================== 3. HERO SECTION ==================== -->
     <section class="relative pt-10 pb-16 md:pt-14 md:pb-20 border-b border-parchment-border bg-gradient-to-b from-parchment-light via-parchment to-parchment-muted/30">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
 
@@ -156,7 +183,6 @@
           </h2>
         </div>
 
-        <!-- Symmetrical 2x2 Grid with 4 Tenets -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mx-auto">
           
           <!-- 1. Grow the Game -->
@@ -216,7 +242,7 @@
       </div>
     </section>
 
-    <!-- ==================== 5. FOUNDING COMMITTEE (STREAMLINED) ==================== -->
+    <!-- ==================== 5. FOUNDING COMMITTEE (CAROUSEL) ==================== -->
     <section id="committee" class="py-20 bg-parchment border-b border-parchment-border">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         
@@ -224,85 +250,288 @@
           Founding Committee
         </h2>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 max-w-6xl mx-auto justify-items-center">
+        <!-- Single-Item Carousel Container -->
+        <div class="relative max-w-sm sm:max-w-md mx-auto">
+          
+          <button id="carouselPrevBtn" aria-label="Previous Slide" class="absolute left-0 sm:-left-16 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-all shadow-md">
+            <i data-lucide="chevron-left" class="w-6 h-6"></i>
+          </button>
 
-          <!-- 1. Eric Berkhinfand -->
-          <div class="flex flex-col items-center group">
-            <div class="w-52 h-52 sm:w-56 sm:h-56 transition-transform duration-300 group-hover:scale-105 drop-shadow-xl flex items-center justify-center">
-              <img src="ezza.jpeg" alt="Eric Berkhinfand Badge" class="w-full h-full object-contain">
+          <div id="carouselTrack" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth">
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
+              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
+                <img src="ezza.jpeg" alt="Committee Badge" class="w-full h-full object-contain">
+              </div>
             </div>
-            <span class="mt-4 font-display font-extrabold text-lg sm:text-xl text-espresso tracking-tight">
-              Eric Berkhinfand
-            </span>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
+              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
+                <img src="wroby.jpeg" alt="Committee Badge" class="w-full h-full object-contain">
+              </div>
+            </div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
+              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
+                <img src="steve.jpeg" alt="Committee Badge" class="w-full h-full object-contain">
+              </div>
+            </div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
+              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
+                <img src="bryce.jpeg" alt="Committee Badge" class="w-full h-full object-contain">
+              </div>
+            </div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
+              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
+                <img src="greg.jpeg" alt="Committee Badge" class="w-full h-full object-contain">
+              </div>
+            </div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
+              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
+                <img src="kobrin.jpeg" alt="Committee Badge" class="w-full h-full object-contain">
+              </div>
+            </div>
+            <div class="snap-center shrink-0 w-full flex items-center justify-center p-4">
+              <div class="w-64 h-64 sm:w-72 sm:h-72 drop-shadow-xl flex items-center justify-center">
+                <img src="yona.jpeg" alt="Committee Badge" class="w-full h-full object-contain">
+              </div>
+            </div>
           </div>
 
-          <!-- 2. Daniel Wroby -->
-          <div class="flex flex-col items-center group">
-            <div class="w-52 h-52 sm:w-56 sm:h-56 transition-transform duration-300 group-hover:scale-105 drop-shadow-xl flex items-center justify-center">
-              <img src="wroby.jpeg" alt="Daniel Wroby Badge" class="w-full h-full object-contain">
-            </div>
-            <span class="mt-4 font-display font-extrabold text-lg sm:text-xl text-espresso tracking-tight">
-              Daniel Wroby
-            </span>
-          </div>
+          <button id="carouselNextBtn" aria-label="Next Slide" class="absolute right-0 sm:-right-16 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-all shadow-md">
+            <i data-lucide="chevron-right" class="w-6 h-6"></i>
+          </button>
 
-          <!-- 3. Steven Goldberg -->
-          <div class="flex flex-col items-center group">
-            <div class="w-52 h-52 sm:w-56 sm:h-56 transition-transform duration-300 group-hover:scale-105 drop-shadow-xl flex items-center justify-center">
-              <img src="steve.jpeg" alt="Steven Goldberg Badge" class="w-full h-full object-contain">
-            </div>
-            <span class="mt-4 font-display font-extrabold text-lg sm:text-xl text-espresso tracking-tight">
-              Steven Goldberg
-            </span>
-          </div>
-
-          <!-- 4. Bryce Adams -->
-          <div class="flex flex-col items-center group">
-            <div class="w-52 h-52 sm:w-56 sm:h-56 transition-transform duration-300 group-hover:scale-105 drop-shadow-xl flex items-center justify-center">
-              <img src="bryce.jpeg" alt="Bryce Adams Badge" class="w-full h-full object-contain">
-            </div>
-            <span class="mt-4 font-display font-extrabold text-lg sm:text-xl text-espresso tracking-tight">
-              Bryce Adams
-            </span>
-          </div>
-
-          <!-- 5. Greg Sacks -->
-          <div class="flex flex-col items-center group">
-            <div class="w-52 h-52 sm:w-56 sm:h-56 transition-transform duration-300 group-hover:scale-105 drop-shadow-xl flex items-center justify-center">
-              <img src="greg.jpeg" alt="Greg Sacks Badge" class="w-full h-full object-contain">
-            </div>
-            <span class="mt-4 font-display font-extrabold text-lg sm:text-xl text-espresso tracking-tight">
-              Greg Sacks
-            </span>
-          </div>
-
-          <!-- 6. Daniel Kobrin -->
-          <div class="flex flex-col items-center group">
-            <div class="w-52 h-52 sm:w-56 sm:h-56 transition-transform duration-300 group-hover:scale-105 drop-shadow-xl flex items-center justify-center">
-              <img src="kobrin.jpeg" alt="Daniel Kobrin Badge" class="w-full h-full object-contain">
-            </div>
-            <span class="mt-4 font-display font-extrabold text-lg sm:text-xl text-espresso tracking-tight">
-              Daniel Kobrin
-            </span>
-          </div>
-
-          <!-- 7. Yona Takac -->
-          <div class="flex flex-col items-center group">
-            <div class="w-52 h-52 sm:w-56 sm:h-56 transition-transform duration-300 group-hover:scale-105 drop-shadow-xl flex items-center justify-center">
-              <img src="yona.jpeg" alt="Yona Takac Badge" class="w-full h-full object-contain">
-            </div>
-            <span class="mt-4 font-display font-extrabold text-lg sm:text-xl text-espresso tracking-tight">
-              Yona Takac
-            </span>
+          <div id="carouselDots" class="flex justify-center items-center gap-2 mt-6">
+            <button class="w-2.5 h-2.5 rounded-full bg-terracotta transition-all" onclick="goToSlide(0)"></button>
+            <button class="w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all" onclick="goToSlide(1)"></button>
+            <button class="w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all" onclick="goToSlide(2)"></button>
+            <button class="w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all" onclick="goToSlide(3)"></button>
+            <button class="w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all" onclick="goToSlide(4)"></button>
+            <button class="w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all" onclick="goToSlide(5)"></button>
+            <button class="w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all" onclick="goToSlide(6)"></button>
           </div>
 
         </div>
 
       </div>
     </section>
+
+    <!-- ==================== 6. MEMBER STATS & LEADERBOARD ==================== -->
+    <section id="stats" class="py-20 bg-parchment-light border-b border-parchment-border">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-2xl mx-auto mb-12">
+          <span class="text-xs font-bold uppercase tracking-[0.25em] text-brass">Performance & Standings</span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-espresso tracking-tight mt-1">
+            Member Standings
+          </h2>
+          <p class="text-sm text-espresso-soft mt-2">
+            Official club ratings, win rates, and Performance Rating (PR) tracking across rated club encounters.
+          </p>
+        </div>
+
+        <div class="overflow-x-auto rounded-2xl border border-parchment-border bg-parchment-card shadow-sm">
+          <table class="w-full text-left text-sm text-espresso border-collapse">
+            <thead class="bg-espresso text-parchment font-display uppercase text-xs tracking-wider border-b border-espresso-border">
+              <tr>
+                <th scope="col" class="py-4 px-4 text-center">Rank (AUS)</th>
+                <th scope="col" class="py-4 px-4 text-center">Rank (World)</th>
+                <th scope="col" class="py-4 px-6">Member Name</th>
+                <th scope="col" class="py-4 px-4 text-center">W - L</th>
+                <th scope="col" class="py-4 px-4 text-center">Win %</th>
+                <th scope="col" class="py-4 px-4 text-center">Avg PR</th>
+                <th scope="col" class="py-4 px-4 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-parchment-border font-medium">
+              
+              <tr class="hover:bg-parchment transition-colors">
+                <td class="py-4 px-4 text-center font-bold text-terracotta">#1</td>
+                <td class="py-4 px-4 text-center font-bold text-slateNavy">#1</td>
+                <td class="py-4 px-6 font-bold flex items-center gap-2">
+                  <span>Eric Berkhinfand</span>
+                </td>
+                <td class="py-4 px-4 text-center text-espresso-soft">0 - 0</td>
+                <td class="py-4 px-4 text-center text-espresso-soft">0.0%</td>
+                <td class="py-4 px-4 text-center font-mono text-espresso-soft">—</td>
+                <td class="py-4 px-4 text-center">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brass/20 text-brass-dark">Unrated</span>
+                </td>
+              </tr>
+
+              <tr class="hover:bg-parchment transition-colors">
+                <td class="py-4 px-4 text-center font-bold text-terracotta">#1</td>
+                <td class="py-4 px-4 text-center font-bold text-slateNavy">#1</td>
+                <td class="py-4 px-6 font-bold">Daniel Wroby</td>
+                <td class="py-4 px-4 text-center text-espresso-soft">0 - 0</td>
+                <td class="py-4 px-4 text-center text-espresso-soft">0.0%</td>
+                <td class="py-4 px-4 text-center font-mono text-espresso-soft">—</td>
+                <td class="py-4 px-4 text-center">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brass/20 text-brass-dark">Unrated</span>
+                </td>
+              </tr>
+
+              <tr class="hover:bg-parchment transition-colors">
+                <td class="py-4 px-4 text-center font-bold text-terracotta">#1</td>
+                <td class="py-4 px-4 text-center font-bold text-slateNavy">#1</td>
+                <td class="py-4 px-6 font-bold">Steven Goldberg</td>
+                <td class="py-4 px-4 text-center text-espresso-soft">0 - 0</td>
+                <td class="py-4 px-4 text-center text-espresso-soft">0.0%</td>
+                <td class="py-4 px-4 text-center font-mono text-espresso-soft">—</td>
+                <td class="py-4 px-4 text-center">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brass/20 text-brass-dark">Unrated</span>
+                </td>
+              </tr>
+
+              <tr class="hover:bg-parchment transition-colors">
+                <td class="py-4 px-4 text-center font-bold text-terracotta">#1</td>
+                <td class="py-4 px-4 text-center font-bold text-slateNavy">#1</td>
+                <td class="py-4 px-6 font-bold">Bryce Adams</td>
+                <td class="py-4 px-4 text-center text-espresso-soft">0 - 0</td>
+                <td class="py-4 px-4 text-center text-espresso-soft">0.0%</td>
+                <td class="py-4 px-4 text-center font-mono text-espresso-soft">—</td>
+                <td class="py-4 px-4 text-center">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brass/20 text-brass-dark">Unrated</span>
+                </td>
+              </tr>
+
+              <tr class="hover:bg-parchment transition-colors">
+                <td class="py-4 px-4 text-center font-bold text-terracotta">#1</td>
+                <td class="py-4 px-4 text-center font-bold text-slateNavy">#1</td>
+                <td class="py-4 px-6 font-bold">Greg Sacks</td>
+                <td class="py-4 px-4 text-center text-espresso-soft">0 - 0</td>
+                <td class="py-4 px-4 text-center text-espresso-soft">0.0%</td>
+                <td class="py-4 px-4 text-center font-mono text-espresso-soft">—</td>
+                <td class="py-4 px-4 text-center">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brass/20 text-brass-dark">Unrated</span>
+                </td>
+              </tr>
+
+              <tr class="hover:bg-parchment transition-colors">
+                <td class="py-4 px-4 text-center font-bold text-terracotta">#1</td>
+                <td class="py-4 px-4 text-center font-bold text-slateNavy">#1</td>
+                <td class="py-4 px-6 font-bold">Daniel Kobrin</td>
+                <td class="py-4 px-4 text-center text-espresso-soft">0 - 0</td>
+                <td class="py-4 px-4 text-center text-espresso-soft">0.0%</td>
+                <td class="py-4 px-4 text-center font-mono text-espresso-soft">—</td>
+                <td class="py-4 px-4 text-center">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brass/20 text-brass-dark">Unrated</span>
+                </td>
+              </tr>
+
+              <tr class="hover:bg-parchment transition-colors">
+                <td class="py-4 px-4 text-center font-bold text-terracotta">#1</td>
+                <td class="py-4 px-4 text-center font-bold text-slateNavy">#1</td>
+                <td class="py-4 px-6 font-bold">Yona Takac</td>
+                <td class="py-4 px-4 text-center text-espresso-soft">0 - 0</td>
+                <td class="py-4 px-4 text-center text-espresso-soft">0.0%</td>
+                <td class="py-4 px-4 text-center font-mono text-espresso-soft">—</td>
+                <td class="py-4 px-4 text-center">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brass/20 text-brass-dark">Unrated</span>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+        
+        <p class="text-xs text-center text-espresso-soft mt-3 italic">
+          * Ratings and Performance Rating (PR) formulas update automatically following match transcription evaluations.
+        </p>
+
+      </div>
+    </section>
+
+    <!-- ==================== 7. INTERACTIVE EVENTS MAP ==================== -->
+    <section id="events" class="py-20 bg-parchment border-b border-parchment-border">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="text-center max-w-2xl mx-auto mb-10">
+          <span class="text-xs font-bold uppercase tracking-[0.25em] text-terracotta">Where to Play</span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-espresso tracking-tight mt-1">
+            Upcoming Nights & Events
+          </h2>
+          <p class="text-sm text-espresso-soft mt-2">
+            Click on any pin across Melbourne to inspect session dates, start times, formats, and venue locations.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          
+          <!-- Leaflet Interactive Map Container -->
+          <div class="lg:col-span-2 rounded-2xl overflow-hidden border border-parchment-border shadow-md h-[460px] relative z-10" id="melbourneMap"></div>
+
+          <!-- Active Event Details Panel -->
+          <div class="rounded-2xl border border-parchment-border bg-parchment-card p-6 shadow-sm space-y-4">
+            <div class="flex items-center gap-2 text-terracotta text-xs font-extrabold tracking-wider uppercase">
+              <i data-lucide="map-pin" class="w-4 h-4"></i>
+              <span>Venue Focus</span>
+            </div>
+
+            <div id="eventDetails">
+              <h3 id="eventTitle" class="text-xl font-bold font-display text-espresso">MBA Inaugural Social Night</h3>
+              <p id="eventVenue" class="text-xs font-bold text-slateNavy mt-1">St Kilda / Caulfield Vicinity</p>
+              
+              <div class="mt-4 pt-4 border-t border-parchment-border space-y-2.5 text-xs text-espresso-soft">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="calendar" class="w-4 h-4 text-espresso"></i>
+                  <span id="eventDate" class="text-espresso font-semibold">Every Fortnightly Tuesday</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i data-lucide="clock" class="w-4 h-4 text-espresso"></i>
+                  <span id="eventTime">6:30 PM - 10:00 PM AEDT</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i data-lucide="dices" class="w-4 h-4 text-espresso"></i>
+                  <span id="eventFormat">Chouette & 5-point match play</span>
+                </div>
+              </div>
+
+              <div class="mt-6 pt-4 border-t border-parchment-border">
+                <a href="mailto:contact@backgammon.melbourne?subject=RSVP%20for%20Club%20Night" class="w-full inline-flex items-center justify-center py-2.5 rounded-xl bg-terracotta text-white font-bold text-xs uppercase tracking-wider hover:bg-terracotta-dark transition-colors shadow-sm">
+                  RSVP for This Night
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== 8. RECORDED MATCH ARCHIVE ==================== -->
+    <section id="matches" class="py-20 bg-parchment-light border-b border-parchment-border">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-2xl mx-auto mb-12">
+          <span class="text-xs font-bold uppercase tracking-[0.25em] text-slateNavy">Historical Archive</span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-espresso tracking-tight mt-1">
+            Recorded Matches
+          </h2>
+          <p class="text-sm text-espresso-soft mt-2">
+            Transcribed competitive match records with official scoring and Performance Rating (PR) metrics.
+          </p>
+        </div>
+
+        <!-- Clean Empty State / Table Container -->
+        <div class="bg-parchment-card rounded-2xl border border-parchment-border shadow-sm p-8 text-center max-w-2xl mx-auto">
+          <div class="w-14 h-14 rounded-2xl bg-espresso/5 text-espresso border border-espresso/10 mx-auto flex items-center justify-center mb-4">
+            <i data-lucide="scroll-text" class="w-7 h-7"></i>
+          </div>
+          <h3 class="font-display font-bold text-lg text-espresso">No matches officially recorded yet</h3>
+          <p class="text-xs sm:text-sm text-espresso-soft mt-2 leading-relaxed">
+            The archive will record every tournament match, player scores, error rates, and PR analyses as club rounds commence.
+          </p>
+          <div class="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-parchment-border/40 text-xs text-espresso-soft font-mono">
+            <i data-lucide="info" class="w-3.5 h-3.5"></i>
+            <span>Fields tracked: Player 1 (PR) vs Player 2 (PR) • Match Length • Final Score</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
   </main>
 
-  <!-- ==================== 6. MINIMAL MODERN FOOTER ==================== -->
+  <!-- ==================== 9. MINIMAL MODERN FOOTER ==================== -->
   <footer class="bg-espresso text-parchment-muted pt-12 pb-8 border-t border-espresso-border text-xs">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
       
@@ -335,12 +564,128 @@
   <!-- ==================== JAVASCRIPT ==================== -->
   <script>
     lucide.createIcons();
+    
+    // Mobile Drawer Navigation
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
     const mobileDrawer = document.getElementById('mobileDrawer');
     function toggleMenu() {
       mobileDrawer.classList.toggle('hidden');
     }
     mobileMenuBtn.addEventListener('click', toggleMenu);
+
+    // Carousel logic
+    const track = document.getElementById('carouselTrack');
+    const prevBtn = document.getElementById('carouselPrevBtn');
+    const nextBtn = document.getElementById('carouselNextBtn');
+    const dots = document.querySelectorAll('#carouselDots button');
+    let currentIndex = 0;
+    const totalSlides = 7;
+
+    function updateDots(index) {
+      dots.forEach((dot, i) => {
+        if (i === index) {
+          dot.className = 'w-2.5 h-2.5 rounded-full bg-terracotta transition-all';
+        } else {
+          dot.className = 'w-2.5 h-2.5 rounded-full bg-espresso/20 hover:bg-espresso/50 transition-all';
+        }
+      });
+    }
+
+    function goToSlide(index) {
+      currentIndex = index;
+      const slideWidth = track.clientWidth;
+      track.scrollTo({
+        left: slideWidth * currentIndex,
+        behavior: 'smooth'
+      });
+      updateDots(currentIndex);
+    }
+
+    prevBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+      goToSlide(currentIndex);
+    });
+
+    nextBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % totalSlides;
+      goToSlide(currentIndex);
+    });
+
+    track.addEventListener('scroll', () => {
+      const slideWidth = track.clientWidth;
+      if (slideWidth > 0) {
+        const newIndex = Math.round(track.scrollLeft / slideWidth);
+        if (newIndex !== currentIndex && newIndex >= 0 && newIndex < totalSlides) {
+          currentIndex = newIndex;
+          updateDots(currentIndex);
+        }
+      }
+    });
+
+    // Interactive Leaflet Map
+    const map = L.map('melbourneMap', {
+      center: [-37.835, 144.99],
+      zoom: 12,
+      scrollWheelZoom: false
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
+      maxZoom: 19
+    }).addTo(map);
+
+    const eventsData = [
+      {
+        title: "MBA Weekly Club Night",
+        venue: "Caulfield / Prahran Hub",
+        lat: -37.876,
+        lng: 145.028,
+        date: "Every Tuesday Evening",
+        time: "6:30 PM - 10:30 PM",
+        format: "Casual Chouette & 5-pt Rated Matches"
+      },
+      {
+        title: "South Yarra Weekend Chouette",
+        venue: "Chapel St Social Club",
+        lat: -37.844,
+        lng: 144.995,
+        date: "Fortnightly Saturdays",
+        time: "2:00 PM - 6:00 PM",
+        format: "Open Chouette & Beginner Mentorship"
+      },
+      {
+        title: "Melbourne CBD Blitz Tournament",
+        venue: "Central Melbourne Brew Bar",
+        lat: -37.814,
+        lng: 144.963,
+        date: "Monthly First Thursday",
+        time: "6:00 PM - 9:30 PM",
+        format: "Swiss 3-pt Speed Backgammon"
+      }
+    ];
+
+    function createCustomPin(color) {
+      return L.divIcon({
+        className: 'custom-pin',
+        html: `<div style="background-color: ${color}; width: 18px; height: 18px; border-radius: 50%; border: 3px solid #F7F4EE; box-shadow: 0 4px 10px rgba(0,0,0,0.35);"></div>`,
+        iconSize: [18, 18],
+        iconAnchor: [9, 9]
+      });
+    }
+
+    eventsData.forEach(evt => {
+      const marker = L.marker([evt.lat, evt.lng], { icon: createCustomPin('#C2593F') }).addTo(map);
+      
+      marker.on('click', () => {
+        document.getElementById('eventTitle').innerText = evt.title;
+        document.getElementById('eventVenue').innerText = evt.venue;
+        document.getElementById('eventDate').innerText = evt.date;
+        document.getElementById('eventTime').innerText = evt.time;
+        document.getElementById('eventFormat').innerText = evt.format;
+      });
+
+      marker.bindPopup(`<b>${evt.title}</b><br>${evt.venue}<br><span style="color:#C3992F;font-size:11px;">Click pin to inspect</span>`);
+    });
   </script>
 </body>
 </html>
