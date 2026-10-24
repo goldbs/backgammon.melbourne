@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Melbourne Backgammon Association Inc. | Backgammon | Beats | Bevs</title>
+  <title>Melbourne Backgammon Association Inc.</title>
 
   <!-- Google Fonts: Space Grotesk, Plus Jakarta Sans, Bungee -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -99,13 +99,13 @@
 <body class="bg-parchment text-espresso font-sans antialiased selection:bg-terracotta selection:text-white pb-24 md:pb-0">
 
   <!-- Floating Mobile Action Bar -->
-  <div class="fixed bottom-6 right-4 sm:right-6 z-50 flex items-center gap-2">
+  <div class="fixed bottom-6 right-4 sm:right-6 z-50 flex items-center gap-2 md:hidden">
     <button type="button" id="joinFab" class="flex items-center gap-1.5 px-4 py-3 rounded-full bg-slateNavy text-white font-extrabold text-xs uppercase tracking-wider shadow-2xl hover:bg-slateNavy-dark active:scale-95 transition-all cursor-pointer">
       <i data-lucide="user-plus" class="w-4 h-4"></i>
       <span>Join MBA</span>
     </button>
     <button type="button" id="recordMatchFab" class="flex items-center gap-1.5 px-4 py-3 rounded-full bg-terracotta text-white font-extrabold text-xs uppercase tracking-wider shadow-2xl hover:bg-terracotta-dark active:scale-95 transition-all cursor-pointer">
-      <i data-lucide="plus-circle" class="w-5 h-5"></i>
+      <i data-lucide="plus-circle" class="w-4 h-4"></i>
       <span>Record Match</span>
     </button>
   </div>
@@ -234,8 +234,11 @@
   <header class="sticky top-0 z-30 bg-parchment-light/95 backdrop-blur-md border-b border-parchment-border transition-all">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-20">
-        <a href="#" class="group py-1 text-left">
-          <span class="font-display font-extrabold text-xl sm:text-2xl md:text-3xl tracking-[-0.03em] text-espresso leading-none group-hover:text-terracotta transition-colors">
+        <a href="#" class="group py-1 text-left flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full overflow-hidden border border-brass/40 shadow-sm shrink-0">
+            <img src="logo.jpeg" alt="MBA Emblem" class="w-full h-full object-cover">
+          </div>
+          <span class="font-display font-extrabold text-lg sm:text-2xl tracking-[-0.03em] text-espresso leading-none group-hover:text-terracotta transition-colors">
             Melbourne Backgammon Association Inc.
           </span>
         </a>
@@ -252,25 +255,61 @@
   </header>
 
   <main>
-    <!-- Hero Section -->
-    <section class="relative pt-10 pb-16 md:pt-14 md:pb-20 border-b border-parchment-border bg-gradient-to-b from-parchment-light via-parchment to-parchment-muted/30">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div class="flex flex-col items-center justify-center mb-5">
-          <div class="relative group">
-            <img src="logo.jpeg" alt="MBA Emblem" class="w-48 h-48 sm:w-56 sm:h-56 lg:w-64 lg:h-64 object-contain rounded-full drop-shadow-2xl transition-transform duration-500 group-hover:scale-105">
+    <!-- Editorial Split-Hero: Emblem + Mission + Square Crisloid Board -->
+    <section class="relative pt-12 pb-16 md:pt-20 md:pb-24 border-b border-parchment-border bg-gradient-to-b from-parchment-light via-parchment to-parchment-muted/30">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-14 items-center">
+          
+          <!-- Left Column: Identity, refined text, and primary actions -->
+          <div class="md:col-span-7 flex flex-col items-center md:items-start text-center md:text-left space-y-6">
+            
+            <div class="relative group">
+              <img 
+                src="logo.jpeg" 
+                alt="Melbourne Backgammon Association Emblem" 
+                class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover shadow-xl border-2 border-brass/40 p-1 bg-parchment-light transition-transform duration-300 group-hover:scale-105"
+              >
+            </div>
+
+            <div class="space-y-4 max-w-xl">
+              <h1 class="font-display font-black text-3xl sm:text-4xl lg:text-5xl tracking-[-0.03em] text-espresso leading-[1.12]">
+                Melbourne Backgammon Association
+              </h1>
+              <p class="text-base sm:text-lg lg:text-xl text-espresso-soft font-medium leading-relaxed">
+                Growing Melbourne’s backgammon community through analysis, learning, and play.
+              </p>
+            </div>
+
+            <div class="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-3">
+              <button type="button" id="heroJoinBtn" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-slateNavy text-white font-bold text-xs uppercase tracking-wider hover:bg-slateNavy-dark transition-all shadow-md active:scale-95 cursor-pointer">
+                <i data-lucide="user-plus" class="w-4 h-4"></i>
+                <span>Join Association</span>
+              </button>
+              <button type="button" id="heroRecordBtn" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-terracotta text-white font-bold text-xs uppercase tracking-wider hover:bg-terracotta-dark transition-all shadow-md active:scale-95 cursor-pointer">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>Record Match</span>
+              </button>
+            </div>
+
           </div>
-        </div>
-        <div class="my-5 flex justify-center">
-          <div class="inline-flex items-center px-6 sm:px-9 py-2.5 rounded-full bg-espresso/[0.04] border border-espresso/15 shadow-sm">
-            <span class="text-xs sm:text-sm md:text-base font-bold tracking-[0.25em] sm:tracking-[0.3em] text-espresso uppercase font-sans select-none">
-              backgammon | beats | bevs
-            </span>
+
+          <!-- Right Column: crisloid.jpeg square board presentation -->
+          <div class="md:col-span-5 flex justify-center md:justify-end">
+            <div class="relative w-full max-w-[320px] sm:max-w-[380px] lg:max-w-[410px] aspect-square rounded-3xl overflow-hidden border border-parchment-border shadow-2xl bg-espresso-surface group">
+              <img 
+                src="crisloid.jpeg" 
+                alt="Backgammon Board" 
+                class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              >
+              <div class="absolute inset-0 rounded-3xl ring-1 ring-inset ring-brass/25 pointer-events-none"></div>
+            </div>
           </div>
+
         </div>
       </div>
     </section>
 
-    <!-- 4 Tiles -->
+    <!-- 4 Value Tiles -->
     <section class="py-16 md:py-20 bg-parchment border-b border-parchment-border">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mx-auto">
@@ -312,7 +351,7 @@
       </div>
     </section>
 
-    <!-- Standings (Dynamic Ranked Standings + Scroll Resistance) -->
+    <!-- Standings (Hierarchy: Wins > Win % > Unrated > Losses > PR > Name) -->
     <section id="stats" class="snap-lock py-20 bg-parchment-light border-b border-parchment-border">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="overflow-x-auto rounded-2xl border border-parchment-border bg-parchment-card shadow-sm">
@@ -464,7 +503,7 @@
             <div class="w-8 h-8 rounded-full bg-espresso-surface border border-brass flex items-center justify-center font-black text-brass text-xs">64</div>
             <span class="font-extrabold text-white text-base tracking-tight font-display">Melbourne Backgammon Association Inc.</span>
           </div>
-          <p class="text-brass font-bold text-xs uppercase tracking-wider">backgammon | beats | bevs</p>
+          <p class="text-parchment-muted/80 text-xs">Growing Melbourne’s backgammon community through analysis, learning, and play.</p>
         </div>
       </div>
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-parchment-muted/60">
@@ -510,8 +549,10 @@
     const joinModal = document.getElementById('joinModal');
     const recordMatchFab = document.getElementById('recordMatchFab');
     const recordMatchNav = document.getElementById('recordMatchNav');
+    const heroRecordBtn = document.getElementById('heroRecordBtn');
     const joinFab = document.getElementById('joinFab');
     const joinNav = document.getElementById('joinNav');
+    const heroJoinBtn = document.getElementById('heroJoinBtn');
     const closeModalBtn = document.getElementById('closeModalBtn');
     const closeJoinBtn = document.getElementById('closeJoinBtn');
 
@@ -528,10 +569,12 @@
 
     if (recordMatchFab) recordMatchFab.addEventListener('click', () => openModal(uploadModal));
     if (recordMatchNav) recordMatchNav.addEventListener('click', () => openModal(uploadModal));
+    if (heroRecordBtn) heroRecordBtn.addEventListener('click', () => openModal(uploadModal));
     if (closeModalBtn) closeModalBtn.addEventListener('click', () => closeModal(uploadModal));
 
     if (joinFab) joinFab.addEventListener('click', () => openModal(joinModal));
     if (joinNav) joinNav.addEventListener('click', () => openModal(joinModal));
+    if (heroJoinBtn) heroJoinBtn.addEventListener('click', () => openModal(joinModal));
     if (closeJoinBtn) closeJoinBtn.addEventListener('click', () => closeModal(joinModal));
 
     [uploadModal, joinModal].forEach(m => {
@@ -685,7 +728,7 @@
     if (prevBtn) prevBtn.addEventListener('click', prevSlide);
 
     // ==========================================
-    // Render Standings & Match Archive (Fixed Ranking Order)
+    // Render Standings & Match Archive
     // ==========================================
     function renderApp(matches = [], fetchedMembers = []) {
       const allMembersSet = new Set([...defaultMembers]);
@@ -737,13 +780,7 @@
         };
       });
 
-      // Strict Standings Hierarchy:
-      // 1. Most Wins (descending)
-      // 2. Win Ratio (descending)
-      // 3. Unrated (0-0) ranks ABOVE players with 0 wins and active losses (0-1, 0-2)
-      // 4. Fewest Losses for players tied on wins
-      // 5. Lowest PR (ascending)
-      // 6. Alphabetical fallback
+      // Leaderboard sorting hierarchy
       membersArray.sort((a, b) => {
         if (b.wins !== a.wins) return b.wins - a.wins;
 
