@@ -26,6 +26,9 @@ with sync_playwright() as p:
    page.clock.set_fixed_time(datetime.fromisoformat(instant))
    page.goto(BASE_URL,wait_until='networkidle',timeout=60000)
    assert page.locator('#eventsList article').count()==3
+   assert page.locator('#melbourneMap iframe').count()==0
+   assert page.locator('#eventMapPanel').is_hidden()
+   assert page.locator('#eventsList button[aria-expanded="true"]').count()==0
    cards=page.locator('#eventsList article')
    for i,date in enumerate(expected):assert date in cards.nth(i).inner_text(),cards.nth(i).inner_text()
    for i in range(3):
@@ -33,6 +36,8 @@ with sync_playwright() as p:
     assert page.locator('#melbourneMap iframe').get_attribute('src').startswith('https://maps.google.com/maps?q=')
     address=cards.nth(i).locator('a').first.get_attribute('href').split('destination=')[1]
     assert address in page.locator('#melbourneMap iframe').get_attribute('src')
+    assert page.locator('#eventMapPanel').is_visible()
+    assert cards.nth(i).get_by_role('button').get_attribute('aria-expanded')=='true'
     assert page.locator('#selectedEventDetails').is_visible()
     assert page.locator('#selectedEventDetails').get_attribute('open') is None
     assert cards.nth(i).get_by_role('button').inner_text().split('\n')[1] in page.locator('#selectedEventDescription').text_content()
@@ -40,7 +45,14 @@ with sync_playwright() as p:
    assert 'Masters Tournament' not in page.locator('#eventsList').inner_text()
    assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
    if width >= 1024:
-    assert abs(page.locator('#eventsList').bounding_box()['height'] - page.locator('.events-map-shell').bounding_box()['height']) < 100
+    assert cards.nth(1).bounding_box()['x'] > cards.nth(0).bounding_box()['x']
+   page.locator('#hideEventMap').click()
+   assert page.locator('#eventMapPanel').is_hidden()
+   assert page.locator('#melbourneMap iframe').count()==0
+   assert page.locator('#eventsList button[aria-expanded="true"]').count()==0
+   assert cards.nth(2).get_by_role('button').evaluate('(e)=>e===document.activeElement')
+   cards.nth(2).get_by_role('button').press('Enter')
+   assert page.locator('#eventMapPanel').is_visible()
    print(width,instant,'PASS: three approved listings, recurrence dates, closure exceptions and map selection',flush=True)
  assert not posts
  assert not errors,errors

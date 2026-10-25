@@ -15,7 +15,22 @@
   const dayFormat = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Australia/Melbourne', year: 'numeric', month: '2-digit', day: '2-digit'
   });
+  const mapPanel = document.getElementById('eventMapPanel');
+  const hideMap = document.getElementById('hideEventMap');
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   let selectedCard = null;
+  hideMap?.addEventListener('click', () => {
+    mapPanel.hidden = true;
+    mapContainer.replaceChildren();
+    document.getElementById('selectedEventDetails').hidden = true;
+    if (selectedCard) {
+      selectedCard.setAttribute('aria-pressed', 'false');
+      selectedCard.setAttribute('aria-expanded', 'false');
+      selectedCard.focus({ preventScroll: true });
+      selectedCard.scrollIntoView({ block: 'nearest', behavior: reducedMotion.matches ? 'instant' : 'smooth' });
+    }
+    selectedCard = null;
+  });
 
   function element(tag, className, text) {
     const node = document.createElement(tag);
@@ -39,10 +54,13 @@
   function showEvent(event, card) {
     if (selectedCard) {
       selectedCard.setAttribute('aria-pressed', 'false');
-
+      selectedCard.setAttribute('aria-expanded', 'false');
     }
     selectedCard = card;
     card.setAttribute('aria-pressed', 'true');
+    card.setAttribute('aria-expanded', 'true');
+    const opening = mapPanel && mapPanel.hidden;
+    if (mapPanel) mapPanel.hidden = false;
     const details = document.getElementById('selectedEventDetails');
     const description = document.getElementById('selectedEventDescription');
     if (details && description) {
@@ -54,6 +72,7 @@
       if (event.description) description.append(element('p', '', String(event.description)));
     }
     showMap(event.address, `${event.title} — ${event.venue || event.address}`);
+    if (opening) requestAnimationFrame(() => mapPanel.scrollIntoView({ block: 'nearest', behavior: reducedMotion.matches ? 'instant' : 'smooth' }));
   }
 
   function validTimestamp(value) {
@@ -149,12 +168,15 @@
     const card = element('button', 'event-select');
     card.type = 'button';
     card.setAttribute('aria-pressed', 'false');
+    card.setAttribute('aria-expanded', 'false');
+    card.setAttribute('aria-controls', 'eventMapPanel');
     card.setAttribute('aria-label', `Show ${event.title} on the map`);
     card.append(element('span', 'event-date', event.dateLabel.replace(/^Next: /, '')));
     card.append(element('span', 'event-title', event.title));
     card.append(element('span', 'event-organiser', `Hosted by ${event.organiser}`));
     if (event.shortSchedule || event.schedule) card.append(element('span', 'event-schedule', String(event.shortSchedule || event.schedule)));
     if (event.endLabel) card.append(element('span', 'event-schedule', event.endLabel));
+    card.append(element('span', 'event-map-action', 'View venue map →'));
     card.addEventListener('click', () => showEvent(event, card));
     article.append(card);
     const links = element('div', 'event-links');
@@ -166,7 +188,7 @@
       source.href = event.source; source.target = '_blank'; source.rel = 'noopener noreferrer'; links.append(source);
     }
     article.append(links); list.append(article);
-    if (!selectedCard) showEvent(event, card);
+
   });
-  if (!upcoming.length) showMap('Melbourne VIC Australia', 'Backgammon around Melbourne');
+
 })();

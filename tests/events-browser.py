@@ -47,6 +47,8 @@ with sync_playwright() as p:
  page.goto(BASE_URL,wait_until='networkidle',timeout=60000)
  assert page.locator('#eventsList article').count()==0
  assert 'No upcoming events listed' in page.locator('#eventsStatus').inner_text()
+ assert page.locator('#melbourneMap iframe').count()==0
+ assert page.locator('#eventMapPanel').is_hidden()
  assert not errors,errors
  print('PASS: empty approved lists publish no candidate events.')
  b.close()

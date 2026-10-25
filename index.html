@@ -111,7 +111,7 @@
     #melbourneMap { height: 320px; }
     #mapStatus { margin: 0; padding: .85rem 1rem; font-size: .75rem; color: #543D32; background: #F1ECE2; }
     #eventsList { display: grid; gap: .65rem; }
-    .event-choice { border: 1px solid #E5DCCE; border-radius: .85rem; overflow: hidden; transition: border-color .15s, background .15s; }
+    .event-choice { display: flex; flex-direction: column; border: 1px solid #E5DCCE; border-radius: .85rem; overflow: hidden; transition: border-color .15s, background .15s; }
     .event-choice:has(button[aria-pressed="true"]) { border-color: #2E4A62; background: #2E4A6209; }
     .event-select { display: block; width: 100%; text-align: left; padding: .85rem 1rem .5rem; }
     .event-select:hover { background: #2E4A6207; }
@@ -120,11 +120,15 @@
     .event-title { display: block; font-size: 1.05rem; font-weight: 800; margin-top: .2rem; }
     .event-organiser { display: block; font-size: .72rem; color: #2E4A62; margin-top: .2rem; }
     .event-schedule { display: block; font-size: .78rem; color: #543D32; margin-top: .3rem; }
-    .event-links { display: flex; flex-wrap: wrap; gap: 1rem; padding: 0 1rem .8rem; font-size: .68rem; font-weight: 700; color: #2E4A62; }
+    .event-links { margin-top: auto; display: flex; flex-wrap: wrap; gap: 1rem; padding: 0 1rem .8rem; font-size: .68rem; font-weight: 700; color: #2E4A62; }
     .event-details { border-bottom: 1px solid #E5DCCE; padding: .9rem 0; font-size: .8rem; color: #543D32; }
     .event-details summary { cursor: pointer; font-weight: 700; color: #2E4A62; }
     .event-details p { margin-top: .65rem; max-width: 52rem; line-height: 1.6; }
-    @media (min-width: 1024px) { .events-layout { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); } #melbourneMap { height: 420px; } }
+    .event-map-action { display: block; margin-top: .65rem; color: #2E4A62; font-size: .72rem; font-weight: 700; }
+    .event-map-header { display: flex; align-items: center; justify-content: space-between; padding: .65rem 1rem; background: #F1ECE2; font-size: .8rem; font-weight: 700; color: #2E4A62; }
+    #hideEventMap { min-height: 44px; padding: .4rem .6rem; border-radius: .5rem; }
+    #hideEventMap:hover { background: #2E4A6210; }
+    @media (min-width: 1024px) { #eventsList { grid-template-columns: repeat(3, minmax(0, 1fr)); } #melbourneMap { height: 380px; } }
   </style>
 </head>
 <body class="bg-parchment text-espresso font-sans antialiased selection:bg-terracotta selection:text-white">
@@ -440,11 +444,12 @@
           <p id="eventsStatus" class="text-sm text-espresso-soft mt-2" role="status">Loading upcoming events…</p>
         </div>
         <div class="events-layout">
-          <div class="events-map-shell">
+          <div id="eventsList" aria-label="Upcoming events"></div>
+          <div id="eventMapPanel" class="events-map-shell" hidden>
+            <div class="event-map-header"><span>Venue map</span><button type="button" id="hideEventMap" aria-controls="eventMapPanel">Hide map ×</button></div>
             <div id="melbourneMap" aria-label="Google map of upcoming backgammon events"></div>
             <p id="mapStatus" role="status">Choose an event to see its venue.</p>
           </div>
-          <div id="eventsList" aria-label="Upcoming events"></div>
         </div>
         <details id="selectedEventDetails" class="event-details" hidden>
           <summary>Entry and session details</summary>
