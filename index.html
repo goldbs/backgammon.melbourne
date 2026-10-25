@@ -123,9 +123,9 @@
       <form id="joinForm" class="p-5 overflow-y-auto space-y-4 text-xs font-semibold">
         <fieldset class="space-y-2"><legend class="font-bold mb-2">How would you like to join?</legend>
           <label class="flex items-start gap-3 rounded-xl border border-parchment-border p-3 cursor-pointer"><input type="radio" name="membershipType" value="community" checked class="mt-1"><span><strong class="block">Community only · Free</strong><span class="block font-normal text-espresso-soft mt-1">Leaderboard, match results and association events. No association voting rights.</span></span></label>
-          <label class="flex items-start gap-3 rounded-xl border border-parchment-border p-3 cursor-pointer"><input type="radio" name="membershipType" value="association" class="mt-1"><span><strong class="block">Association membership · $100/year</strong><span class="block font-normal text-espresso-soft mt-1">Includes community participation. Joining-month fee rounded to the nearest $5; renews 1 January.</span></span></label>
+          <label class="flex items-start gap-3 rounded-xl border border-parchment-border p-3 cursor-pointer"><input type="radio" name="membershipType" value="association" class="mt-1"><span><strong class="block">Association membership · $100/year</strong><span class="block font-normal text-espresso-soft mt-1">Voting rights for eligible members and other benefits. Includes community participation.</span></span></label>
         </fieldset>
-        <div><label for="regFullName" class="block text-espresso-soft mb-1">Full name</label><input type="text" id="regFullName" required maxlength="120" autocomplete="name" placeholder="e.g. Samuel Bennett" class="w-full px-3.5 py-2.5 rounded-lg border border-parchment-border bg-parchment font-medium"></div>
+        <div><label for="regFullName" class="block text-espresso-soft mb-1">Full name</label><input type="text" id="regFullName" required maxlength="120" autocomplete="name" placeholder="e.g. Masayuki Mochizuki" class="w-full px-3.5 py-2.5 rounded-lg border border-parchment-border bg-parchment font-medium"></div>
         <div><label for="regEmail" class="block text-espresso-soft mb-1">Email address</label><input type="email" id="regEmail" required maxlength="254" autocomplete="email" placeholder="name@example.com" class="w-full px-3.5 py-2.5 rounded-lg border border-parchment-border bg-parchment font-medium"></div>
         <div><label for="regPhone" class="block text-espresso-soft mb-1">Mobile phone</label><input type="tel" id="regPhone" required maxlength="40" autocomplete="tel" placeholder="0400 000 000" class="w-full px-3.5 py-2.5 rounded-lg border border-parchment-border bg-parchment font-medium"></div>
         <fieldset id="associationJoinFields" hidden disabled class="space-y-4">
@@ -339,8 +339,9 @@
     </section>
 
     <!-- Standings (Hierarchy: Wins > Win % > Unrated > Losses > PR > Name) -->
-    <section id="stats" class="py-20 bg-parchment-light border-b border-parchment-border">
+    <section id="stats" class="py-20 bg-parchment-light border-b border-parchment-border" aria-labelledby="leaderboardHeading">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 id="leaderboardHeading" class="text-xs font-bold uppercase tracking-[0.25em] text-slateNavy text-center mb-8">Leaderboard</h2>
         <div class="overflow-x-auto rounded-2xl border border-parchment-border bg-parchment-card shadow-sm">
           <table class="w-full text-left text-sm text-espresso border-collapse">
             <thead class="bg-espresso text-parchment font-display uppercase text-xs tracking-wider border-b border-espresso-border">
