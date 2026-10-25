@@ -73,6 +73,8 @@ The organiser approved VBA Monday tournaments, Melbourne Backgammon Club Thursda
 
 Recurring external entries use `recurrence: { weekday: 0..6, startTime: 'HH:mm', endTime: 'HH:mm', weeksOfMonth: [2, 4], excludeDates: ['YYYY-MM-DD'] }`. Sunday is 0. End time, weeks and exclusions are optional. `weeksOfMonth` means the ordinal occurrence of that weekday, not calendar week numbers. The calendar computes the next scheduled date in Melbourne time, displays the published recurring schedule, and advances after the start (or after the end when the organiser publishes an end time). These are schedule-derived dates, not individually reconfirmed sessions. Melbourne Backgammon Club's announced 24 and 31 December 2026 closures are excluded. Other cancellations are not imported automatically; retain links to the organisers for updates.
 
-`python3 tests/recurring-events-browser.py` checks the three approved listings, next-date ordering, Christmas exclusions and map selection on mobile/desktop using fixed dates and read-only test doubles.
+`python3 tests/recurring-events-browser.py` checks the currently approved listings, next-date ordering, Christmas exclusions and map selection on mobile/desktop using fixed dates and read-only test doubles.
 
 The calendar loads with no selected event and no Google Maps iframe. Event cards appear in three columns on desktop and stack on mobile. Selecting a card expands a shared map below the cards and makes the selected entry details available. Hide map clears selection and removes the iframe, returning keyboard focus to the selected card.
+
+The organiser subsequently removed Melbourne North Sunday backgammon. Only the Monday VBA and Thursday Melbourne Backgammon Club listings remain published. Desktop event cards fill the available row width.

@@ -28,19 +28,6 @@ window.MBA_EVENTS_CONFIG = {
       sourceUrl: 'https://melbournebackgammonclub.com/',
       format: 'Weekly matches',
       description: '$10 entry, cash only. Optional extra $10 weekly prize pool. All experience levels welcome. Club closed 24–31 December 2026. Check the organiser’s listing for changes.'
-    },
-    {
-      approved: true,
-      title: 'Sunday backgammon',
-      organiser: 'Melbourne North Backgammon Club',
-      recurrence: { weekday: 0, weeksOfMonth: [2, 4], startTime: '13:30' },
-      shortSchedule: 'Second and fourth Sundays · 1:30pm',
-      schedule: 'Second and fourth Sundays · Arrive 1:15pm · Starts 1:30pm',
-      venue: 'Moonee Valley Bowls Club',
-      address: '2A Pattison Street, Moonee Ponds VIC',
-      sourceUrl: 'https://anzbgf.org/backgammon-clubs-2/',
-      format: 'Club tournament',
-      description: 'Beginners welcome; free lessons and a tournament. Schedule listed by ANZBGF; entry fee not published. Confirm the session with the club via the federation listing before travelling.'
     }
   ]
 };

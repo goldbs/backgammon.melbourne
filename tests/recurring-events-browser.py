@@ -22,16 +22,16 @@ with sync_playwright() as p:
  page.route('**/*',route)
  for width in [390,1440]:
   page.set_viewport_size({'width':width,'height':900})
-  for instant,expected in [('2026-10-25T09:00:00+00:00',['26 Oct 2026','29 Oct 2026','8 Nov 2026']),('2026-12-24T00:00:00+00:00',['27 Dec 2026','28 Dec 2026','7 Jan 2027']),('2026-10-26T09:00:00+00:00',['29 Oct 2026','2 Nov 2026','8 Nov 2026'])]:
+  for instant,expected in [('2026-10-25T09:00:00+00:00',['26 Oct 2026','29 Oct 2026']),('2026-12-24T00:00:00+00:00',['28 Dec 2026','7 Jan 2027']),('2026-10-26T09:00:00+00:00',['29 Oct 2026','2 Nov 2026'])]:
    page.clock.set_fixed_time(datetime.fromisoformat(instant))
    page.goto(BASE_URL,wait_until='networkidle',timeout=60000)
-   assert page.locator('#eventsList article').count()==3
+   assert page.locator('#eventsList article').count()==2
    assert page.locator('#melbourneMap iframe').count()==0
    assert page.locator('#eventMapPanel').is_hidden()
    assert page.locator('#eventsList button[aria-expanded="true"]').count()==0
    cards=page.locator('#eventsList article')
    for i,date in enumerate(expected):assert date in cards.nth(i).inner_text(),cards.nth(i).inner_text()
-   for i in range(3):
+   for i in range(2):
     cards.nth(i).get_by_role('button').click()
     assert page.locator('#melbourneMap iframe').get_attribute('src').startswith('https://maps.google.com/maps?q=')
     address=cards.nth(i).locator('a').first.get_attribute('href').split('destination=')[1]
@@ -43,6 +43,7 @@ with sync_playwright() as p:
     assert cards.nth(i).get_by_role('button').inner_text().split('\n')[1] in page.locator('#selectedEventDescription').text_content()
    assert page.locator('#eventsList button[aria-pressed="true"]').count()==1
    assert 'Masters Tournament' not in page.locator('#eventsList').inner_text()
+   assert 'Sunday backgammon' not in page.locator('#eventsList').inner_text()
    assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
    if width >= 1024:
     assert cards.nth(1).bounding_box()['x'] > cards.nth(0).bounding_box()['x']
@@ -50,10 +51,10 @@ with sync_playwright() as p:
    assert page.locator('#eventMapPanel').is_hidden()
    assert page.locator('#melbourneMap iframe').count()==0
    assert page.locator('#eventsList button[aria-expanded="true"]').count()==0
-   assert cards.nth(2).get_by_role('button').evaluate('(e)=>e===document.activeElement')
-   cards.nth(2).get_by_role('button').press('Enter')
+   assert cards.nth(1).get_by_role('button').evaluate('(e)=>e===document.activeElement')
+   cards.nth(1).get_by_role('button').press('Enter')
    assert page.locator('#eventMapPanel').is_visible()
-   print(width,instant,'PASS: three approved listings, recurrence dates, closure exceptions and map selection',flush=True)
+   print(width,instant,'PASS: two approved listings, recurrence dates, closure exceptions and map selection',flush=True)
  assert not posts
  assert not errors,errors
  b.close()
