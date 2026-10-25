@@ -1021,5 +1021,20 @@
   <script src="events-config.js"></script>
   <script src="events.js"></script>
   <script src="membership.js"></script>
+  <script>
+    // Intercept and clear any default empty events placeholder text from events.js
+    (function() {
+      const observer = new MutationObserver(() => {
+        const list = document.getElementById('eventsList');
+        if (list && list.innerHTML.includes('No confirmed upcoming events yet')) {
+          list.innerHTML = '';
+        }
+      });
+      const target = document.getElementById('eventsList');
+      if (target) {
+        observer.observe(target, { childList: true, subtree: true });
+      }
+    })();
+  </script>
 </body>
 </html>
