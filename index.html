@@ -69,10 +69,25 @@
   <style>
     html {
       scroll-snap-type: y proximity;
+      scroll-padding-top: calc(5rem + 1rem);
     }
-    .snap-lock {
+    body > .bg-top-spears,
+    main section,
+    body > footer {
       scroll-snap-align: start;
-      scroll-snap-stop: always;
+      scroll-snap-stop: normal;
+    }
+    #joinForm,
+    #joinResult,
+    #matchForm,
+    #eventDialog {
+      overscroll-behavior-y: contain;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html.scroll-smooth {
+        scroll-behavior: auto;
+        scroll-snap-type: none;
+      }
     }
     .bg-top-spears {
       width: 100%;
@@ -349,7 +364,7 @@
     </section>
 
     <!-- Standings (Hierarchy: Wins > Win % > Unrated > Losses > PR > Name) -->
-    <section id="stats" class="snap-lock py-20 bg-parchment-light border-b border-parchment-border">
+    <section id="stats" class="py-20 bg-parchment-light border-b border-parchment-border">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="overflow-x-auto rounded-2xl border border-parchment-border bg-parchment-card shadow-sm">
           <table class="w-full text-left text-sm text-espresso border-collapse">

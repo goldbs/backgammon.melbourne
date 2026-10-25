@@ -71,10 +71,25 @@
   <style>
     html {
       scroll-snap-type: y proximity;
+      scroll-padding-top: 1.5rem;
     }
-    .snap-lock {
+    body > .bg-top-spears,
+    main section,
+    body > footer {
       scroll-snap-align: start;
-      scroll-snap-stop: always;
+      scroll-snap-stop: normal;
+    }
+    #joinForm,
+    #joinResult,
+    #matchForm,
+    #eventDialog {
+      overscroll-behavior-y: contain;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html.scroll-smooth {
+        scroll-behavior: auto;
+        scroll-snap-type: none;
+      }
     }
     .bg-top-spears {
       width: 100%;
