@@ -1,13 +1,13 @@
 # Association-managed events and external tournament listings
 
-Public event submissions have been removed. Only the association maintains its hosted-event calendar. Tournaments run by other clubs appear separately and are added only after the organiser of this website approves specific sourced listings. The wording does not imply a formal affiliation or partnership with those clubs.
+Public event submissions have been removed. Only the association maintains its hosted-event calendar. Approved MBA events and tournaments run by other clubs share one chronological event list beside the same Google map. External tournaments are added only after the organiser of this website approves specific sourced listings. The wording does not imply a formal affiliation or partnership with those clubs.
 
 ## Website data
 
 `events-config.js` contains two public arrays, both currently empty:
 
 - `associationEvents`: association-hosted events approved for publication.
-- `sisterClubTournaments`: externally hosted tournaments explicitly approved for listing.
+- `sisterClubTournaments`: externally hosted tournaments explicitly approved for listing. Both arrays are combined in the same public calendar; the separate arrays record organiser provenance rather than separate website sections.
 
 Research candidates must stay outside the public checkout, not in these arrays. The website does not import external calendars or legacy member events automatically.
 
@@ -39,12 +39,13 @@ External tournament fields:
   startDate: 'YYYY-MM-DD',
   endDate: 'YYYY-MM-DD', // optional for a one-day tournament
   venue: 'Optional verified venue',
+  address: 'Verified public street address for the shared map',
   sourceUrl: 'https://official-organiser.example/event',
   description: 'Optional verified public details'
 }
 ```
 
-Date-only listings do not invent start/end times. The browser omits unapproved, expired, invalid-date and unsafe-source entries. Ongoing multi-day events remain listed through their last Melbourne calendar day. Links go to the named organiser’s official information; registration and any payments are handled by that organiser.
+External listings require a verified map address. Date-only listings do not invent start/end times. The selected MBA or external event focuses its address on the same free Google Maps embed. The organiser is shown on every card. The organiser selected the shared selectable-event map, not simultaneous venue pins. No Google My Maps setup, API key or billing is needed. The browser omits unapproved, expired, invalid-date and unsafe-source entries. Ongoing multi-day events remain listed through their last Melbourne calendar day. Links go to the named organiser’s official information; registration and any payments are handled by that organiser.
 
 ## Required external-event approval
 

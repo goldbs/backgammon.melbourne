@@ -5,9 +5,15 @@
   const status = document.getElementById('eventsStatus');
   const mapContainer = document.getElementById('melbourneMap');
   const mapStatus = document.getElementById('mapStatus');
-  const dateFormat = new Intl.DateTimeFormat('en-AU', {
+  const dateTimeFormat = new Intl.DateTimeFormat('en-AU', {
     timeZone: 'Australia/Melbourne', weekday: 'short', day: 'numeric', month: 'short',
     year: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
+  });
+  const dateFormat = new Intl.DateTimeFormat('en-AU', {
+    timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric'
+  });
+  const dayFormat = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Australia/Melbourne', year: 'numeric', month: '2-digit', day: '2-digit'
   });
   let selectedCard = null;
 
@@ -38,44 +44,11 @@
     selectedCard = card;
     card.setAttribute('aria-pressed', 'true');
     card.classList.add('ring-2', 'ring-terracotta');
-    showMap(event.address, `${event.title} — ${event.venue}`);
+    showMap(event.address, `${event.title} — ${event.venue || event.address}`);
   }
 
   function validTimestamp(value) {
     return typeof value === 'string' && /(?:Z|[+-]\d{2}:\d{2})$/.test(value) && Number.isFinite(Date.parse(value));
-  }
-
-  function renderAssociationEvents(events) {
-    const upcoming = events.filter(event => event && event.approved === true &&
-      event.host === 'association' && typeof event.title === 'string' && typeof event.venue === 'string' &&
-      typeof event.address === 'string' && event.address.trim() && validTimestamp(event.startsAt) &&
-      validTimestamp(event.endsAt) && Date.parse(event.endsAt) > Date.parse(event.startsAt) &&
-      Date.parse(event.endsAt) > Date.now()
-    ).sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt));
-    status.textContent = upcoming.length
-      ? `${upcoming.length} upcoming association ${upcoming.length === 1 ? 'event' : 'events'} · Melbourne time`
-      : 'No upcoming association events listed. Check back soon.';
-    upcoming.forEach(event => {
-      const article = element('article', 'rounded-2xl border border-parchment-border bg-parchment-light overflow-hidden shadow-sm');
-      const card = element('button', 'w-full text-left p-4 hover:bg-parchment-card transition-colors');
-      card.type = 'button';
-      card.setAttribute('aria-pressed', 'false');
-      card.setAttribute('aria-label', `Show ${event.title} on the map`);
-      card.append(element('span', 'block text-xs font-bold text-terracotta', dateFormat.format(new Date(event.startsAt))));
-      card.append(element('span', 'block text-lg font-display font-bold mt-2', event.title));
-      card.append(element('span', 'block text-sm text-slateNavy font-semibold mt-1', event.venue));
-      card.append(element('span', 'block text-xs text-espresso-soft mt-1', event.address));
-      card.append(element('span', 'block text-xs text-espresso-soft mt-2', `Until ${dateFormat.format(new Date(event.endsAt))}`));
-      if (event.format) card.append(element('span', 'inline-block mt-3 rounded-full bg-parchment-card px-3 py-1 text-xs font-semibold', String(event.format)));
-      if (event.description) card.append(element('span', 'block mt-3 text-sm text-espresso-soft whitespace-pre-wrap break-words', String(event.description)));
-      card.addEventListener('click', () => showEvent(event, card));
-      const directions = element('a', 'block px-4 pb-4 text-xs font-bold text-terracotta underline', 'Directions in Google Maps ↗');
-      directions.href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.address)}`;
-      directions.target = '_blank'; directions.rel = 'noopener noreferrer';
-      article.append(card, directions); list.append(article);
-      if (!selectedCard) showEvent(event, card);
-    });
-    if (!upcoming.length) showMap('Melbourne VIC Australia', 'Backgammon around Melbourne');
   }
 
   function safeSource(value) {
@@ -91,38 +64,71 @@
     return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value ? date : null;
   }
 
-  function renderSisterTournaments(events) {
-    const target = document.getElementById('sisterTournamentsList');
-    const message = document.getElementById('sisterTournamentsStatus');
-    // Date-only entries use the Melbourne calendar date; no start/end time is invented.
-    const today = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'Australia/Melbourne', year: 'numeric', month: '2-digit', day: '2-digit'
-    }).format(new Date());
-    const upcoming = events.filter(event => event && event.approved === true &&
-      typeof event.title === 'string' && typeof event.organiser === 'string' &&
-      calendarDate(event.startDate) && calendarDate(event.endDate || event.startDate) &&
-      (event.endDate || event.startDate) >= event.startDate &&
-      (event.endDate || event.startDate) >= today && safeSource(event.sourceUrl)
-    ).sort((a, b) => a.startDate.localeCompare(b.startDate));
-    message.textContent = upcoming.length
-      ? `${upcoming.length} upcoming ${upcoming.length === 1 ? 'tournament' : 'tournaments'}`
-      : 'No upcoming tournaments listed. Check back soon.';
-    const format = new Intl.DateTimeFormat('en-AU', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' });
-    upcoming.forEach(event => {
-      const card = element('article', 'rounded-2xl border border-parchment-border bg-parchment-card p-5 shadow-sm');
-      const dates = format.format(calendarDate(event.startDate)) +
-        (event.endDate && event.endDate !== event.startDate ? ` – ${format.format(calendarDate(event.endDate))}` : '');
-      card.append(element('p', 'text-xs font-bold text-terracotta', dates));
-      card.append(element('h3', 'font-display text-xl font-bold mt-2', event.title));
-      card.append(element('p', 'text-sm text-slateNavy font-semibold mt-2', event.organiser));
-      if (event.venue) card.append(element('p', 'text-sm text-espresso-soft mt-2', String(event.venue)));
-      if (event.description) card.append(element('p', 'text-sm text-espresso-soft mt-3 whitespace-pre-wrap break-words', String(event.description)));
-      const source = element('a', 'inline-block mt-4 text-sm font-bold text-slateNavy underline', 'Official event details ↗');
-      source.href = safeSource(event.sourceUrl); source.target = '_blank'; source.rel = 'noopener noreferrer';
-      card.append(source); target.append(card);
-    });
+  function hasLocation(event) {
+    return typeof event.address === 'string' && Boolean(event.address.trim());
   }
 
-  renderAssociationEvents(Array.isArray(config.associationEvents) ? config.associationEvents : []);
-  renderSisterTournaments(Array.isArray(config.sisterClubTournaments) ? config.sisterClubTournaments : []);
+  const association = (Array.isArray(config.associationEvents) ? config.associationEvents : [])
+    .filter(event => event && event.approved === true && event.host === 'association' &&
+      typeof event.title === 'string' && event.title.trim() && typeof event.venue === 'string' &&
+      hasLocation(event) && validTimestamp(event.startsAt) && validTimestamp(event.endsAt) &&
+      Date.parse(event.endsAt) > Date.parse(event.startsAt) && Date.parse(event.endsAt) > Date.now())
+    .map(event => ({ ...event,
+      organiser: 'Melbourne Backgammon Association',
+      dateLabel: dateTimeFormat.format(new Date(event.startsAt)),
+      endLabel: `Until ${dateTimeFormat.format(new Date(event.endsAt))}`,
+      sortDate: dayFormat.format(new Date(event.startsAt)),
+      sortTime: Date.parse(event.startsAt), source: safeSource(event.sourceUrl)
+    }));
+
+  const today = dayFormat.format(new Date());
+  const otherClubs = (Array.isArray(config.sisterClubTournaments) ? config.sisterClubTournaments : [])
+    .filter(event => event && event.approved === true && typeof event.title === 'string' && event.title.trim() &&
+      typeof event.organiser === 'string' && event.organiser.trim() && hasLocation(event) &&
+      calendarDate(event.startDate) && calendarDate(event.endDate || event.startDate) &&
+      (event.endDate || event.startDate) >= event.startDate &&
+      (event.endDate || event.startDate) >= today && safeSource(event.sourceUrl))
+    .map(event => ({ ...event,
+      dateLabel: dateFormat.format(calendarDate(event.startDate)) +
+        (event.endDate && event.endDate !== event.startDate
+          ? ` – ${dateFormat.format(calendarDate(event.endDate))}` : ''),
+      endLabel: '', sortDate: event.startDate, sortTime: 0, source: safeSource(event.sourceUrl)
+    }));
+
+  // One approved calendar: MBA events and other clubs share ordering and map selection.
+  // Date-only tournaments retain their published calendar dates; no time is invented.
+  const upcoming = [...association, ...otherClubs].sort((a, b) =>
+    a.sortDate.localeCompare(b.sortDate) || a.sortTime - b.sortTime || a.title.localeCompare(b.title));
+  status.textContent = upcoming.length
+    ? `${upcoming.length} upcoming ${upcoming.length === 1 ? 'event' : 'events'} · Times shown in Melbourne time`
+    : 'No upcoming events listed. Check back soon.';
+
+  upcoming.forEach(event => {
+    const article = element('article', 'rounded-2xl border border-parchment-border bg-parchment-light overflow-hidden shadow-sm');
+    const card = element('button', 'w-full text-left p-4 hover:bg-parchment-card transition-colors');
+    card.type = 'button';
+    card.setAttribute('aria-pressed', 'false');
+    card.setAttribute('aria-label', `Show ${event.title} on the map`);
+    card.append(element('span', 'block text-xs font-bold text-terracotta', event.dateLabel));
+    card.append(element('span', 'block text-lg font-display font-bold mt-2', event.title));
+    card.append(element('span', 'block text-xs text-slateNavy font-semibold mt-2', `Hosted by ${event.organiser}`));
+    if (event.venue) card.append(element('span', 'block text-sm font-semibold mt-2', String(event.venue)));
+    card.append(element('span', 'block text-xs text-espresso-soft mt-1', event.address));
+    if (event.endLabel) card.append(element('span', 'block text-xs text-espresso-soft mt-2', event.endLabel));
+    if (event.format) card.append(element('span', 'inline-block mt-3 rounded-full bg-parchment-card px-3 py-1 text-xs font-semibold', String(event.format)));
+    if (event.description) card.append(element('span', 'block mt-3 text-sm text-espresso-soft whitespace-pre-wrap break-words', String(event.description)));
+    card.addEventListener('click', () => showEvent(event, card));
+    article.append(card);
+    const links = element('div', 'flex flex-wrap gap-3 px-4 pb-4 text-xs font-bold text-slateNavy');
+    const directions = element('a', 'underline', 'Directions ↗');
+    directions.href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.address)}`;
+    directions.target = '_blank'; directions.rel = 'noopener noreferrer'; links.append(directions);
+    if (event.source) {
+      const source = element('a', 'underline', 'Official event details ↗');
+      source.href = event.source; source.target = '_blank'; source.rel = 'noopener noreferrer'; links.append(source);
+    }
+    article.append(links); list.append(article);
+    if (!selectedCard) showEvent(event, card);
+  });
+  if (!upcoming.length) showMap('Melbourne VIC Australia', 'Backgammon around Melbourne');
 })();
