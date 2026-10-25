@@ -437,14 +437,13 @@
       </div>
     </section>
 
-    <!-- Community events -->
+    <!-- Community events: Find your next game -->
     <section id="events" class="py-16 md:py-20 bg-parchment border-b border-parchment-border" aria-labelledby="eventsHeading">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-8">
-          <div class="max-w-xl">
-            <p class="text-xs font-bold uppercase tracking-[0.25em] text-terracotta">Around the board</p>
-            <h2 id="eventsHeading" class="text-3xl sm:text-4xl font-extrabold font-display tracking-tight mt-2">Find your next game.</h2>
-            <p class="text-sm text-espresso-soft mt-3 leading-relaxed">Club nights, casual chouettes and tournaments hosted by Melbourne Backgammon Association. Find your next game and explore tournaments at other clubs below.</p>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5 mb-8">
+          <div>
+            <h2 id="eventsHeading" class="text-xs font-bold uppercase tracking-[0.25em] text-terracotta">Find your next game</h2>
+            <p class="text-sm text-espresso-soft mt-3 leading-relaxed">Club nights, casual chouettes and tournaments hosted by Melbourne Backgammon Association.</p>
           </div>
         </div>
         <p id="eventsStatus" class="text-sm text-espresso-soft mb-4" role="status">Loading upcoming events…</p>
@@ -472,16 +471,48 @@
       </div>
     </section>
 
-    <!-- Recorded Match Archive -->
+    <!-- Recorded Match Archive: Historical Archive with Search -->
+
     <section id="matches" class="py-20 bg-parchment-light border-b border-parchment-border">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-2xl mx-auto mb-12">
-          <span class="text-xs font-bold uppercase tracking-[0.25em] text-slateNavy">Historical Archive</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-espresso tracking-tight mt-1">Recorded Matches</h2>
-          <p class="text-sm text-espresso-soft mt-2">Transcribed competitive match records with official scoring and Performance Rating (PR) metrics.</p>
+        <div class="text-center max-w-2xl mx-auto mb-8">
+          <h2 class="text-xs font-bold uppercase tracking-[0.25em] text-slateNavy">Historical Archive</h2>
         </div>
+        
+        <!-- Player Search Control with Autocomplete Dropdown -->
+        <div class="max-w-md mx-auto mb-8 relative">
+          <div class="relative flex items-center">
+            <span class="absolute left-3.5 text-espresso-soft">
+              <i data-lucide="search" class="w-4 h-4"></i>
+            </span>
+            <input 
+              type="text" 
+              id="archiveSearchInput" 
+              autocomplete="off"
+              placeholder="Search matches by player name..." 
+              class="w-full pl-10 pr-10 py-2.5 rounded-xl border border-parchment-border bg-parchment-card text-xs font-semibold text-espresso placeholder:text-espresso-soft/60 focus:outline-none focus:border-slateNavy transition-colors shadow-sm"
+            >
+            <button 
+              type="button" 
+              id="clearArchiveSearch" 
+              class="absolute right-3 text-espresso-soft hover:text-espresso hidden cursor-pointer"
+              aria-label="Clear search"
+            >
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Live Player Search Suggestions Dropdown -->
+          <div id="archiveSearchSuggestions" class="absolute left-0 right-0 top-full mt-1.5 bg-parchment-light border border-parchment-border rounded-xl shadow-xl overflow-hidden hidden z-30 max-h-56 overflow-y-auto divide-y divide-parchment-border/40"></div>
+        </div>
+
+        <!-- Selected Player Overview Banner -->
+        <div id="archivePlayerSummary" class="max-w-md mx-auto mb-6 hidden">
+          <!-- Dynamically populated with player record metrics -->
+        </div>
+
         <div id="matchArchiveContainer">
-          <!-- Populated from matches or empty state -->
+          <!-- Populated dynamically: 10 most recent or player search results -->
         </div>
       </div>
     </section>
@@ -490,12 +521,21 @@
   <footer class="bg-espresso text-parchment-muted pt-12 pb-8 border-t border-espresso-border text-xs">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
       <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-espresso-surface text-center md:text-left">
+        <!-- Left: Navbar logo and title -->
         <div class="space-y-1">
           <div class="flex items-center justify-center md:justify-start gap-3">
-            <div class="w-8 h-8 rounded-full bg-espresso-surface border border-brass flex items-center justify-center font-black text-brass text-xs">64</div>
+            <div class="w-9 h-9 rounded-full overflow-hidden border border-brass/40 shadow-sm shrink-0">
+              <img src="logo_graphic.png" alt="MBA Logo" class="w-full h-full object-cover">
+            </div>
             <span class="font-extrabold text-white text-base tracking-tight font-display">Melbourne Backgammon Association</span>
           </div>
           <p class="text-parchment-muted/80 text-xs">Growing Melbourne’s backgammon community through analysis, study, and play.</p>
+        </div>
+
+        <!-- Right: Powered by Bliss -->
+        <div class="flex items-center justify-center md:justify-end gap-2.5">
+          <span class="text-parchment-muted/80 text-xs font-semibold tracking-wide">powered by Bliss</span>
+          <img src="bliss.jpeg" alt="Bliss Engine Logo" class="h-7 w-auto object-contain rounded border border-espresso-border">
         </div>
       </div>
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-parchment-muted/60">
@@ -712,7 +752,277 @@
     if (prevBtn) prevBtn.addEventListener('click', prevSlide);
 
     // ==========================================
-    // Render Standings & Match Archive (No Status Column)
+    // Match Archive Filter & Autocomplete Logic
+    // ==========================================
+    function formatMatchDate(dateVal) {
+      if (!dateVal) return '—';
+      const d = new Date(dateVal);
+      if (isNaN(d.getTime())) return String(dateVal);
+      return d.toLocaleDateString('en-AU', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+
+    function getUniqueHistoricalPlayers() {
+      const playerSet = new Set(registeredMembers);
+      currentMatches.forEach(m => {
+        if (m.player1) playerSet.add(normalizeName(m.player1));
+        if (m.player2) playerSet.add(normalizeName(m.player2));
+      });
+      return Array.from(playerSet).sort((a, b) => a.localeCompare(b));
+    }
+
+    function renderMatchesTable(matchesToDisplay, isFiltered = false, searchedPlayerName = '') {
+      const archiveContainer = document.getElementById('matchArchiveContainer');
+      const summaryContainer = document.getElementById('archivePlayerSummary');
+      if (!archiveContainer) return;
+
+      // Update Player Summary Card if filtered to a specific player
+      if (isFiltered && searchedPlayerName) {
+        let wins = 0;
+        let losses = 0;
+        let prSum = 0;
+        let prCount = 0;
+
+        matchesToDisplay.forEach(m => {
+          const p1 = normalizeName(m.player1);
+          const p2 = normalizeName(m.player2);
+          const isP1 = p1.toLowerCase() === searchedPlayerName.toLowerCase();
+          const isP2 = p2.toLowerCase() === searchedPlayerName.toLowerCase();
+
+          if (isP1) {
+            if (Number(m.score1) > Number(m.score2)) wins++;
+            else if (Number(m.score2) > Number(m.score1)) losses++;
+            if (m.pr1) { prSum += Number(m.pr1); prCount++; }
+          } else if (isP2) {
+            if (Number(m.score2) > Number(m.score1)) wins++;
+            else if (Number(m.score1) > Number(m.score2)) losses++;
+            if (m.pr2) { prSum += Number(m.pr2); prCount++; }
+          }
+        });
+
+        const total = wins + losses;
+        const winPct = total > 0 ? ((wins / total) * 100).toFixed(1) + '%' : '0.0%';
+        const avgPr = prCount > 0 ? (prSum / prCount).toFixed(2) : '—';
+
+        summaryContainer.innerHTML = `
+          <div class="p-4 rounded-2xl bg-parchment-card border border-parchment-border shadow-sm flex items-center justify-between gap-4">
+            <div>
+              <div class="text-[10px] font-bold uppercase tracking-wider text-slateNavy">Player Match Record</div>
+              <div class="font-display font-bold text-base text-espresso">${searchedPlayerName}</div>
+            </div>
+            <div class="flex items-center gap-3 text-right">
+              <div>
+                <div class="text-[10px] text-espresso-soft font-semibold">Record</div>
+                <div class="font-mono text-xs font-bold text-espresso">${wins}W - ${losses}L <span class="text-espresso-soft font-normal">(${winPct})</span></div>
+              </div>
+              <div class="border-l border-parchment-border pl-3">
+                <div class="text-[10px] text-espresso-soft font-semibold">Avg PR</div>
+                <div class="font-mono text-xs font-bold text-espresso">${avgPr}</div>
+              </div>
+            </div>
+          </div>
+        `;
+        summaryContainer.classList.remove('hidden');
+      } else {
+        summaryContainer.classList.add('hidden');
+        summaryContainer.innerHTML = '';
+      }
+
+      if (!matchesToDisplay || matchesToDisplay.length === 0) {
+        archiveContainer.innerHTML = `
+          <div class="bg-parchment-card rounded-2xl border border-parchment-border shadow-sm p-8 text-center max-w-2xl mx-auto">
+            <div class="w-14 h-14 rounded-2xl bg-espresso/5 text-espresso border border-espresso/10 mx-auto flex items-center justify-center mb-4">
+              <i data-lucide="scroll-text" class="w-7 h-7"></i>
+            </div>
+            <h3 class="font-display font-bold text-lg text-espresso">${isFiltered ? 'No matches found for that player' : 'No matches officially recorded yet'}</h3>
+            <p class="text-xs sm:text-sm text-espresso-soft mt-2 leading-relaxed">
+              ${isFiltered ? 'Try selecting another member from the suggestions or clear the search to view recent games.' : 'Use the "+ Record Match" button to log the first round results.'}
+            </p>
+          </div>
+        `;
+      } else {
+        const rows = matchesToDisplay.map(m => {
+          const matchDate = formatMatchDate(m.date || m.timestamp);
+          const p1 = normalizeName(m.player1);
+          const p2 = normalizeName(m.player2);
+          const pr1Str = m.pr1 ? ` <span class="font-mono text-[11px] text-espresso-soft/80">(PR ${m.pr1})</span>` : '';
+          const pr2Str = m.pr2 ? ` <span class="font-mono text-[11px] text-espresso-soft/80">(PR ${m.pr2})</span>` : '';
+
+          return `
+            <tr class="hover:bg-parchment transition-colors">
+              <td class="py-3 px-4 text-xs font-medium text-espresso-soft whitespace-nowrap">${matchDate}</td>
+              <td class="py-3 px-4 font-semibold text-espresso">
+                ${p1}${pr1Str} <span class="text-espresso-soft font-normal px-1">vs.</span> ${p2}${pr2Str}
+              </td>
+              <td class="py-3 px-4 text-center font-mono font-bold text-terracotta whitespace-nowrap">${m.score1} - ${m.score2}</td>
+              <td class="py-3 px-4 text-center text-xs text-espresso-soft whitespace-nowrap">${m.format || 'Casual'}</td>
+            </tr>
+          `;
+        }).join('');
+
+        archiveContainer.innerHTML = `
+          <div class="overflow-x-auto rounded-2xl border border-parchment-border bg-parchment-card shadow-sm">
+            <table class="w-full text-left text-sm text-espresso border-collapse">
+              <thead class="bg-espresso text-parchment font-display uppercase text-xs tracking-wider">
+                <tr>
+                  <th class="py-3 px-4">Date</th>
+                  <th class="py-3 px-4">Opponents</th>
+                  <th class="py-3 px-4 text-center">Score</th>
+                  <th class="py-3 px-4 text-center">Format</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-parchment-border">${rows}</tbody>
+            </table>
+          </div>
+        `;
+      }
+      lucide.createIcons();
+    }
+
+    function filterMatches(exactPlayer = null) {
+      const searchInput = document.getElementById('archiveSearchInput');
+      const clearBtn = document.getElementById('clearArchiveSearch');
+      const suggestionsBox = document.getElementById('archiveSearchSuggestions');
+
+      const query = exactPlayer !== null ? exactPlayer.trim() : (searchInput?.value || '').trim();
+      const queryLower = query.toLowerCase();
+
+      if (clearBtn) {
+        if (query) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+      }
+
+      if (!query) {
+        // Show 10 most recent games by default (reversed to display latest submissions first)
+        const recentTen = [...currentMatches].reverse().slice(0, 10);
+        renderMatchesTable(recentTen, false);
+        if (suggestionsBox) suggestionsBox.classList.add('hidden');
+        return;
+      }
+
+      // Filter matches where either player matches
+      const filtered = [...currentMatches].reverse().filter(m => {
+        const p1 = normalizeName(m.player1).toLowerCase();
+        const p2 = normalizeName(m.player2).toLowerCase();
+        return exactPlayer !== null 
+          ? (p1 === queryLower || p2 === queryLower)
+          : (p1.includes(queryLower) || p2.includes(queryLower));
+      });
+
+      renderMatchesTable(filtered, true, query);
+    }
+
+    const archiveSearchInput = document.getElementById('archiveSearchInput');
+    const clearArchiveSearch = document.getElementById('clearArchiveSearch');
+    const archiveSearchSuggestions = document.getElementById('archiveSearchSuggestions');
+
+    if (archiveSearchInput) {
+      archiveSearchInput.addEventListener('input', function() {
+        const query = this.value.trim().toLowerCase();
+        filterMatches();
+
+        if (!query) {
+          archiveSearchSuggestions.innerHTML = '';
+          archiveSearchSuggestions.classList.add('hidden');
+          return;
+        }
+
+        const allPlayers = getUniqueHistoricalPlayers();
+        const matches = allPlayers.filter(p => p.toLowerCase().includes(query));
+
+        if (matches.length === 0) {
+          archiveSearchSuggestions.innerHTML = `
+            <div class="px-4 py-2.5 text-xs text-espresso-soft italic bg-parchment-light">No matching player found in records</div>
+          `;
+          archiveSearchSuggestions.classList.remove('hidden');
+          return;
+        }
+
+        archiveSearchSuggestions.innerHTML = matches.map(playerName => {
+          // Count total matches recorded for player
+          const matchCount = currentMatches.filter(m => 
+            normalizeName(m.player1).toLowerCase() === playerName.toLowerCase() || 
+            normalizeName(m.player2).toLowerCase() === playerName.toLowerCase()
+          ).length;
+
+          return `
+            <div class="px-4 py-2.5 hover:bg-parchment active:bg-parchment-border/60 cursor-pointer transition-colors flex items-center justify-between text-xs font-semibold text-espresso bg-parchment-light" data-player="${playerName}">
+              <div class="flex items-center gap-2">
+                <i data-lucide="user" class="w-3.5 h-3.5 text-slateNavy/70"></i>
+                <span>${playerName}</span>
+              </div>
+              <span class="text-[10px] text-espresso-soft font-mono bg-parchment-card px-2 py-0.5 rounded-full border border-parchment-border">${matchCount} match${matchCount === 1 ? '' : 'es'}</span>
+            </div>
+          `;
+        }).join('');
+
+        archiveSearchSuggestions.classList.remove('hidden');
+        lucide.createIcons();
+
+        archiveSearchSuggestions.querySelectorAll('div[data-player]').forEach(item => {
+          item.addEventListener('click', function() {
+            const selectedPlayer = this.getAttribute('data-player');
+            archiveSearchInput.value = selectedPlayer;
+            archiveSearchSuggestions.classList.add('hidden');
+            filterMatches(selectedPlayer);
+          });
+        });
+      });
+
+      // Show top players when focused with empty box
+      archiveSearchInput.addEventListener('focus', function() {
+        if (!this.value.trim()) {
+          const allPlayers = getUniqueHistoricalPlayers();
+          if (allPlayers.length > 0) {
+            archiveSearchSuggestions.innerHTML = `
+              <div class="px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-espresso-soft/80 bg-parchment-card border-b border-parchment-border">Players</div>
+            ` + allPlayers.slice(0, 8).map(playerName => `
+              <div class="px-4 py-2 hover:bg-parchment cursor-pointer transition-colors flex items-center justify-between text-xs font-semibold text-espresso bg-parchment-light" data-player="${playerName}">
+                <span>${playerName}</span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-espresso-soft/40"></i>
+              </div>
+            `).join('');
+
+            archiveSearchSuggestions.classList.remove('hidden');
+            lucide.createIcons();
+
+            archiveSearchSuggestions.querySelectorAll('div[data-player]').forEach(item => {
+              item.addEventListener('click', function() {
+                const selectedPlayer = this.getAttribute('data-player');
+                archiveSearchInput.value = selectedPlayer;
+                archiveSearchSuggestions.classList.add('hidden');
+                filterMatches(selectedPlayer);
+              });
+            });
+          }
+        }
+      });
+    }
+
+    if (clearArchiveSearch) {
+      clearArchiveSearch.addEventListener('click', () => {
+        if (archiveSearchInput) {
+          archiveSearchInput.value = '';
+          if (archiveSearchSuggestions) archiveSearchSuggestions.classList.add('hidden');
+          filterMatches();
+        }
+      });
+    }
+
+    // Close suggestions on outside click
+    document.addEventListener('click', (e) => {
+      if (archiveSearchInput && archiveSearchSuggestions && 
+          !archiveSearchInput.contains(e.target) && 
+          !archiveSearchSuggestions.contains(e.target)) {
+        archiveSearchSuggestions.classList.add('hidden');
+      }
+    });
+
+    // ==========================================
+    // Render Standings & Match Archive
     // ==========================================
     function renderApp(matches = [], fetchedMembers = []) {
       const allMembersSet = new Set([...defaultMembers]);
@@ -811,48 +1121,8 @@
         `;
       });
 
-      const archiveContainer = document.getElementById('matchArchiveContainer');
-      if (matches.length === 0) {
-        archiveContainer.innerHTML = `
-          <div class="bg-parchment-card rounded-2xl border border-parchment-border shadow-sm p-8 text-center max-w-2xl mx-auto">
-            <div class="w-14 h-14 rounded-2xl bg-espresso/5 text-espresso border border-espresso/10 mx-auto flex items-center justify-center mb-4">
-              <i data-lucide="scroll-text" class="w-7 h-7"></i>
-            </div>
-            <h3 class="font-display font-bold text-lg text-espresso">No matches officially recorded yet</h3>
-            <p class="text-xs sm:text-sm text-espresso-soft mt-2 leading-relaxed">
-              Use the "+ Record Match" button to log the first round results.
-            </p>
-          </div>
-        `;
-      } else {
-        let rows = matches.map(m => `
-          <tr class="hover:bg-parchment transition-colors">
-            <td class="py-3 px-4 font-semibold">${normalizeName(m.player1)} <span class="font-mono text-xs text-espresso-soft">(${m.pr1 ? 'PR ' + m.pr1 : '—'})</span></td>
-            <td class="py-3 px-4 text-center font-mono font-bold text-terracotta">${m.score1} - ${m.score2}</td>
-            <td class="py-3 px-4 font-semibold">${normalizeName(m.player2)} <span class="font-mono text-xs text-espresso-soft">(${m.pr2 ? 'PR ' + m.pr2 : '—'})</span></td>
-            <td class="py-3 px-4 text-center text-xs text-espresso-soft">${m.matchLength} pts</td>
-            <td class="py-3 px-4 text-center text-xs text-espresso-soft">${m.format}</td>
-          </tr>
-        `).join('');
-
-        archiveContainer.innerHTML = `
-          <div class="overflow-x-auto rounded-2xl border border-parchment-border bg-parchment-card shadow-sm">
-            <table class="w-full text-left text-sm text-espresso border-collapse">
-              <thead class="bg-espresso text-parchment font-display uppercase text-xs tracking-wider">
-                <tr>
-                  <th class="py-3 px-4">Player 1</th>
-                  <th class="py-3 px-4 text-center">Score</th>
-                  <th class="py-3 px-4">Player 2</th>
-                  <th class="py-3 px-4 text-center">Length</th>
-                  <th class="py-3 px-4 text-center">Format</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-parchment-border">${rows}</tbody>
-            </table>
-          </div>
-        `;
-      }
-      lucide.createIcons();
+      // Render the matches archive based on search state or default 10
+      filterMatches();
     }
 
     // Load matches and members
@@ -929,5 +1199,6 @@
   <script src="events-config.js"></script>
   <script src="events.js"></script>
   <script src="membership.js"></script>
+
 </body>
 </html>
