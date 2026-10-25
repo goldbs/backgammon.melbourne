@@ -106,6 +106,25 @@
     .member-card img { width: 100%; max-width: 11rem; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 50%; border: 3px solid #C3992F; }
     @media (min-width: 640px) { .member-card { flex-basis: calc((100% - 2rem) / 3); } .members-browser { gap: 1rem; } }
     @media (min-width: 1024px) { .member-card { flex-basis: calc((100% - 3rem) / 4); } .members-strip { overflow-x: hidden; } }
+    .events-layout { display: grid; gap: 1.25rem; align-items: start; }
+    .events-map-shell { border: 1px solid #E5DCCE; border-radius: 1rem; overflow: hidden; }
+    #melbourneMap { height: 320px; }
+    #mapStatus { margin: 0; padding: .85rem 1rem; font-size: .75rem; color: #543D32; background: #F1ECE2; }
+    #eventsList { display: grid; gap: .65rem; }
+    .event-choice { border: 1px solid #E5DCCE; border-radius: .85rem; overflow: hidden; transition: border-color .15s, background .15s; }
+    .event-choice:has(button[aria-pressed="true"]) { border-color: #2E4A62; background: #2E4A6209; }
+    .event-select { display: block; width: 100%; text-align: left; padding: .85rem 1rem .5rem; }
+    .event-select:hover { background: #2E4A6207; }
+    .event-select:focus-visible { outline: 2px solid #2E4A62; outline-offset: -3px; }
+    .event-date { display: block; color: #C2593F; font-size: .7rem; font-weight: 700; }
+    .event-title { display: block; font-size: 1.05rem; font-weight: 800; margin-top: .2rem; }
+    .event-organiser { display: block; font-size: .72rem; color: #2E4A62; margin-top: .2rem; }
+    .event-schedule { display: block; font-size: .78rem; color: #543D32; margin-top: .3rem; }
+    .event-links { display: flex; flex-wrap: wrap; gap: 1rem; padding: 0 1rem .8rem; font-size: .68rem; font-weight: 700; color: #2E4A62; }
+    .event-details { border-bottom: 1px solid #E5DCCE; padding: .9rem 0; font-size: .8rem; color: #543D32; }
+    .event-details summary { cursor: pointer; font-weight: 700; color: #2E4A62; }
+    .event-details p { margin-top: .65rem; max-width: 52rem; line-height: 1.6; }
+    @media (min-width: 1024px) { .events-layout { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); } #melbourneMap { height: 420px; } }
   </style>
 </head>
 <body class="bg-parchment text-espresso font-sans antialiased selection:bg-terracotta selection:text-white">
@@ -416,22 +435,21 @@
 
     <section id="events" class="py-16 md:py-20 bg-parchment border-b border-parchment-border" aria-labelledby="eventsHeading">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5 mb-8">
-          <div>
-            <h2 id="eventsHeading" class="text-xs font-bold uppercase tracking-[0.25em] text-terracotta">Find your next game</h2>
-          </div>
+        <div class="mb-6">
+          <h2 id="eventsHeading" class="text-3xl sm:text-4xl font-extrabold text-espresso font-display tracking-tight">Find your next game</h2>
+          <p id="eventsStatus" class="text-sm text-espresso-soft mt-2" role="status">Loading upcoming events…</p>
         </div>
-        <p id="eventsStatus" class="text-sm text-espresso-soft mb-4" role="status">Loading upcoming events…</p>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-          <div class="lg:col-span-2 rounded-2xl overflow-hidden border border-parchment-border shadow-sm bg-parchment-card">
-            <div id="melbourneMap" class="h-[360px] sm:h-[460px]" aria-label="Google map of upcoming backgammon events"></div>
-            <p id="mapStatus" class="p-4 text-xs text-espresso-soft" role="status">Choose an event to see its location on Google Maps.</p>
+        <div class="events-layout">
+          <div class="events-map-shell">
+            <div id="melbourneMap" aria-label="Google map of upcoming backgammon events"></div>
+            <p id="mapStatus" role="status">Choose an event to see its venue.</p>
           </div>
-          <div>
-            <h3 class="font-display font-bold text-lg mb-3">Upcoming events</h3>
-            <div id="eventsList" class="space-y-3"></div>
-          </div>
+          <div id="eventsList" aria-label="Upcoming events"></div>
         </div>
+        <details id="selectedEventDetails" class="event-details" hidden>
+          <summary>Entry and session details</summary>
+          <div id="selectedEventDescription"></div>
+        </details>
       </div>
     </section>
 

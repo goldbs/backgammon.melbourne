@@ -39,11 +39,20 @@
   function showEvent(event, card) {
     if (selectedCard) {
       selectedCard.setAttribute('aria-pressed', 'false');
-      selectedCard.classList.remove('ring-2', 'ring-terracotta');
+
     }
     selectedCard = card;
     card.setAttribute('aria-pressed', 'true');
-    card.classList.add('ring-2', 'ring-terracotta');
+    const details = document.getElementById('selectedEventDetails');
+    const description = document.getElementById('selectedEventDescription');
+    if (details && description) {
+      details.hidden = false;
+      description.replaceChildren();
+      description.append(element('p', '', `${event.title} · ${event.organiser}`));
+      if (event.schedule) description.append(element('p', '', event.schedule));
+      description.append(element('p', '', `${event.venue || ''} · ${event.address}`));
+      if (event.description) description.append(element('p', '', String(event.description)));
+    }
     showMap(event.address, `${event.title} — ${event.venue || event.address}`);
   }
 
@@ -136,23 +145,19 @@
     : 'No upcoming events listed. Check back soon.';
 
   upcoming.forEach(event => {
-    const article = element('article', 'rounded-2xl border border-parchment-border bg-parchment-light overflow-hidden shadow-sm');
-    const card = element('button', 'w-full text-left p-4 hover:bg-parchment-card transition-colors');
+    const article = element('article', 'event-choice');
+    const card = element('button', 'event-select');
     card.type = 'button';
     card.setAttribute('aria-pressed', 'false');
     card.setAttribute('aria-label', `Show ${event.title} on the map`);
-    card.append(element('span', 'block text-xs font-bold text-terracotta', event.dateLabel));
-    card.append(element('span', 'block text-lg font-display font-bold mt-2', event.title));
-    card.append(element('span', 'block text-xs text-slateNavy font-semibold mt-2', `Hosted by ${event.organiser}`));
-    if (event.schedule) card.append(element('span', 'block text-sm font-semibold mt-2', String(event.schedule)));
-    if (event.venue) card.append(element('span', 'block text-sm font-semibold mt-2', String(event.venue)));
-    card.append(element('span', 'block text-xs text-espresso-soft mt-1', event.address));
-    if (event.endLabel) card.append(element('span', 'block text-xs text-espresso-soft mt-2', event.endLabel));
-    if (event.format) card.append(element('span', 'inline-block mt-3 rounded-full bg-parchment-card px-3 py-1 text-xs font-semibold', String(event.format)));
-    if (event.description) card.append(element('span', 'block mt-3 text-sm text-espresso-soft whitespace-pre-wrap break-words', String(event.description)));
+    card.append(element('span', 'event-date', event.dateLabel.replace(/^Next: /, '')));
+    card.append(element('span', 'event-title', event.title));
+    card.append(element('span', 'event-organiser', `Hosted by ${event.organiser}`));
+    if (event.shortSchedule || event.schedule) card.append(element('span', 'event-schedule', String(event.shortSchedule || event.schedule)));
+    if (event.endLabel) card.append(element('span', 'event-schedule', event.endLabel));
     card.addEventListener('click', () => showEvent(event, card));
     article.append(card);
-    const links = element('div', 'flex flex-wrap gap-3 px-4 pb-4 text-xs font-bold text-slateNavy');
+    const links = element('div', 'event-links');
     const directions = element('a', 'underline', 'Directions ↗');
     directions.href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.address)}`;
     directions.target = '_blank'; directions.rel = 'noopener noreferrer'; links.append(directions);

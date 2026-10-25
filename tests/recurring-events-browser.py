@@ -33,9 +33,14 @@ with sync_playwright() as p:
     assert page.locator('#melbourneMap iframe').get_attribute('src').startswith('https://maps.google.com/maps?q=')
     address=cards.nth(i).locator('a').first.get_attribute('href').split('destination=')[1]
     assert address in page.locator('#melbourneMap iframe').get_attribute('src')
+    assert page.locator('#selectedEventDetails').is_visible()
+    assert page.locator('#selectedEventDetails').get_attribute('open') is None
+    assert cards.nth(i).get_by_role('button').inner_text().split('\n')[1] in page.locator('#selectedEventDescription').text_content()
    assert page.locator('#eventsList button[aria-pressed="true"]').count()==1
    assert 'Masters Tournament' not in page.locator('#eventsList').inner_text()
    assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+   if width >= 1024:
+    assert abs(page.locator('#eventsList').bounding_box()['height'] - page.locator('.events-map-shell').bounding_box()['height']) < 100
    print(width,instant,'PASS: three approved listings, recurrence dates, closure exceptions and map selection',flush=True)
  assert not posts
  assert not errors,errors
