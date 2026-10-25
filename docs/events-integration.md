@@ -1,41 +1,67 @@
-# Community events
+# Association-managed events and external tournament listings
 
-The Events section uses an embedded Google map focused on the event selected from the list. No Maps API key or billing account is required. It does not show all events as simultaneous pins. Google controls the map embed; directions open Google Maps in a new tab.
+Public event submissions have been removed. Only the association maintains its hosted-event calendar. Tournaments run by other clubs appear separately and are added only after the organiser of this website approves specific sourced listings. The wording does not imply a formal affiliation or partnership with those clubs.
 
-Members submit an event using the email in the existing Members sheet. The server checks membership, stores the event privately, and emails that address an expiring, single-use confirmation link. Opening the link publishes the event. Pending/failed/expired events, emails and token hashes never appear in public event data. Event times are interpreted and displayed in Australia/Melbourne, including daylight saving; ambiguous/nonexistent changeover times are rejected.
+## Website data
 
-## Deployment — backend first
+`events-config.js` contains two public arrays, both currently empty:
 
-1. Save a backup of the current Apps Script `Code.gs` before replacing it. The replacement in [apps-script/Code.gs](../apps-script/Code.gs) includes the existing registration, match recording and match-confirmation handlers plus event handlers.
-2. Open the existing Apps Script project. Select `Code.gs`, replace its entire content with `apps-script/Code.gs`, and save. Do not add a second copy of these functions in a separate file.
-3. Choose **Deploy → Manage deployments**, select the existing web app, click the pencil/edit button, select **New version**, and click **Deploy**. Keep the existing deployment URL, execution identity and access settings. The web app needs to run as its owner and be accessible to website visitors. Merely saving code does not update the deployed web app.
-4. The replacement retains the existing `SCRIPT_URL`. Do not create a different deployment URL unless both that constant and `events-config.js` are updated together (also update the existing match frontend endpoint). Existing emailed match links must keep working.
-5. Confirm the deployed GET response includes `eventsVersion: 1` and `events: []` alongside `matches` and `members`. Until this version is present, the event form stays disabled and does not POST to the old backend. An `Events` sheet is created with headers on the first valid member submission. If a sheet called Events already exists with different headers, stop and resolve the conflict instead of overwriting it.
-6. Deploy the website files through the normal hosting workflow: `index.html`, `events.js`, and `events-config.js`. These local changes are not pushed or deployed automatically. Preserve the earlier mobile navbar change.
-7. With a controlled member address and permission to send it email, submit one event, verify it is absent publicly, click its confirmation email, and confirm it appears on a refreshed event list and map. Check a second click cannot republish it. Check browser-readable POST responses on the actual website origin; an opaque `no-cors` response is not sufficient. Never switch to `no-cors` or report successful email delivery without an acknowledged backend response.
+- `associationEvents`: association-hosted events approved for publication.
+- `sisterClubTournaments`: externally hosted tournaments explicitly approved for listing.
 
-Do not post events against the old backend manually: it treated unrecognized actions as match submissions. The new backend explicitly rejects unknown actions.
+Research candidates must stay outside the public checkout, not in these arrays. The website does not import external calendars or legacy member events automatically.
 
-## Data and behavior
+Association event fields:
 
-GET returns `{ matches, members, eventsVersion: 1, events }`. Public event fields are `id`, `status: "confirmed"`, `title`, `venue`, `address`, `startsAt`, `endsAt`, `format`, and `description`. Times are ISO UTC strings. Past events disappear when their end time passes (on page reload).
+```js
+{
+  approved: true,
+  host: 'association',
+  title: 'Approved association event title',
+  venue: 'Confirmed venue',
+  address: 'Confirmed public event address',
+  startsAt: 'YYYY-MM-DDTHH:mm:ss+11:00', // use the correct Melbourne offset for the event date
+  endsAt: 'YYYY-MM-DDTHH:mm:ss+11:00',
+  format: 'Optional format',
+  description: 'Optional public information'
+}
+```
 
-POST uses JSON with a CORS-simple `text/plain` content type and `action: "submitEvent"`. Fields are `memberEmail`, `title`, `venue`, `address`, local-wall-clock `startsAt` and `endsAt`, `format`, `description`, and `timeZone: "Australia/Melbourne"`. Success returns `{ status: "pending_verification" }`. The response intentionally does not reveal whether an email belongs to a member. Invalid input returns `{ status: "error", error: "..." }`.
+Use real, verified timestamps, not the placeholders above. The browser requires approval and association host, omits expired/invalid events, orders by start, and focuses the embedded Google map on the selected event. No Maps API key or billing account is needed. This schema is an example only and is not loaded as a real event.
 
-Events must start in the next 366 days, end after their start, and last no more than seven days. Confirmation expires within 24 hours or at event start, whichever is sooner. The backend deduplicates identical open submissions, allows three email requests per member per hour and 30 total per hour, and checks remaining Apps Script mail quota. Repeated requests do not automatically resend the same pending event. An ignored email expires without publishing. Inactive members cannot submit or confirm events.
+External tournament fields:
 
-The private Events sheet columns are defined in `EVENT_HEADERS_`. Confirmation tokens are stored only as SHA-256 hashes and cleared on use. Sheet writes and confirmation are serialized by a script lock. User text is escaped for HTML and protected from spreadsheet formula evaluation. Existing match-verification semantics are preserved; event tokens do not replace previously issued match links.
+```js
+{
+  approved: true,
+  title: 'Approved tournament title',
+  organiser: 'Actual organising club or association',
+  startDate: 'YYYY-MM-DD',
+  endDate: 'YYYY-MM-DD', // optional for a one-day tournament
+  venue: 'Optional verified venue',
+  sourceUrl: 'https://official-organiser.example/event',
+  description: 'Optional verified public details'
+}
+```
 
-The email link intentionally publishes on opening to match the requested one-click flow. Some automated email link scanners may follow links; if this becomes an issue, use a landing page with an explicit confirmation button instead.
+Date-only listings do not invent start/end times. The browser omits unapproved, expired, invalid-date and unsafe-source entries. Ongoing multi-day events remain listed through their last Melbourne calendar day. Links go to the named organiser’s official information; registration and any payments are handled by that organiser.
 
-## Validation
+## Required external-event approval
 
-Run `node --test tests/events-backend.test.cjs` with Node (no package installation needed). Tests mock Apps Script services and email; they do not modify Google Sheets or send real emails. They exercise membership checks, private pending data, token confirmation/expiry/reuse, email failure, rate limits, malicious text, Melbourne time handling, and existing match/member behavior.
+Before adding a real tournament, obtain an official source and confirm its title, actual organiser, future date(s), venue/location and entry details. Include any uncertainty or cancellation/update notice in the shortlist sent to the website organiser. Do not infer a future edition from a past tournament, treat an undated recurring social session as a dated tournament, or label a club a formal sister/partner without confirmation.
 
-For browser tests, run `python3 -m http.server 8000 --bind 0.0.0.0` from the repository, then `python3 tests/events-browser.py`. This optional test requires Python Playwright, Chromium at `/usr/bin/chromium`, and curl. It supplies controlled event API responses and a map iframe test double. External styling/scripts use curl's verified TLS transport because native Chromium rejects this environment's proxy certificate. It checks mobile/desktop UI, event visibility, safe text rendering, payload timezone, validation, pending acknowledgement and old-backend gating. It does not prove the live Google map embed or live email integration works.
+No real external tournament has been added in this revision. Research on 25 October 2026 was blocked: Google’s search response supplied a JavaScript challenge rather than usable results, while the environment proxy denied Bing/ANZBGF with HTTP 403 CONNECT errors. The saved draft includes research domains, but that does not establish they are active in the running machine. Retry only after publication/runtime application or another meaningful access change; do not invent a shortlist.
 
-Still required after manual Apps Script deployment: real-origin CORS validation, one controlled email confirmation, and a live Google Maps embed check. No real email, event submission, spreadsheet write, deployment or website push was performed during local development.
+## Backend closure and deployment
 
-### Deployment observed
+The updated `apps-script/Code.gs` rejects every `submitEvent` POST without sending email or writing sheets. Old `verifyEvent` links return a closed notice and cannot publish. Public GET retains an empty `events` array and advertises `eventSubmissionsOpen: false` for compatibility. Existing Sheets data is preserved; legacy confirmed member events are not automatically republished. Match handling, community registration and association-membership requests remain supported.
 
-After the user deployed the Apps Script update, a read-only live GET returned `eventsVersion: 1`, an empty events array, two matches and seven members. An intentionally incomplete `submitEvent` request was rejected with `Membership email is required.` and `Access-Control-Allow-Origin: *`; this request cannot create an event or dispatch an email. The actual confirmation email cycle and live website deployment remain untested. Google embed hosts were added to the cloud environment draft (preserving existing domains); review/save and publication are required before this environment can validate the embed.
+**The owner must deploy this updated Apps Script as a new version on the existing deployment URL.** Publishing website files removes the submission UI but does not update the separately deployed Google script. Until that script is redeployed, its old public endpoint may still accept event submissions/confirmation links. Do not claim live server-side closure based only on the frontend removal.
+
+The source update also removes the event-submission dialog, handlers and prompts from `index.html`/`events.js`, and updates the association page’s community-participation wording. Website changes are deployed through GitHub main/Cloudflare; Apps Script remains a separate deployment.
+
+## Checks
+
+`node --test tests/events-backend.test.cjs` exercises server rejection, old-link closure, preservation of legacy records, and existing membership/match behavior with fake Apps Script services. No live writes or emails are performed.
+
+With the local static server running, `python3 tests/events-browser.py` checks mobile/desktop association-only rendering, absence of event submission controls and POSTs, external listing approval/date/source filtering, safe text, and empty calendars. All event examples exist only inside test fixtures, not in public listing data. Native Chromium’s proxy trust limitation is handled by certificate-verified curl transport for external styling/scripts; the map itself is a test double.

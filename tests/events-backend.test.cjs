@@ -41,90 +41,31 @@ function fixture() {
   const post = payload => JSON.parse(context.doPost({ postData: { contents: JSON.stringify(payload) } }).text);
   const get = () => JSON.parse(context.doGet({ parameter: {} }).text);
   const event = { action: 'submitEvent', memberEmail: 'member@example.com', title: 'Sunday chouette', venue: 'Test venue', address: '1 Test St, Melbourne VIC', startsAt: '2026-11-01T18:00', endsAt: '2026-11-01T21:00', format: 'Chouette', description: 'All welcome', timeZone: 'Australia/Melbourne' };
-  function confirmParameters() {
-    const url = new URL(mail.at(-1).body.match(/https:\/\/[^\s]+/)[0]);
-    return Object.fromEntries(url.searchParams);
-  }
-  return { context, sheets, mail, post, get, event, confirmParameters, configureMembership: patch => vm.runInContext("Object.assign(MEMBERSHIP_SETTINGS_, " + JSON.stringify(patch) + ")", context), failMail: () => { failMail = true; }, unlocked: () => !locked };
+  return { context, sheets, mail, post, get, event, configureMembership: patch => vm.runInContext("Object.assign(MEMBERSHIP_SETTINGS_, " + JSON.stringify(patch) + ")", context), failMail: () => { failMail = true; }, unlocked: () => !locked };
 }
 
-test('member submission stays private until its email token is confirmed; public data excludes private fields', () => {
-  const f = fixture();
-  assert.equal(f.post(f.event).status, 'pending_verification');
-  assert.equal(f.mail.length, 1); assert.equal(f.mail[0].to, 'member@example.com');
-  assert.deepEqual(f.get().events, []); assert.equal(f.sheets.Sheet1.rows.length, 1);
-  const params = f.confirmParameters();
-  assert.notEqual(f.sheets.Events.rows[1][11], params.token);
-  assert.match(f.context.doGet({ parameter: params }).html, /Your event is published/);
-  const published = f.get().events;
-  assert.equal(published.length, 1); assert.equal(published[0].startsAt, '2026-11-01T07:00:00.000Z');
-  assert.equal(published[0].title, f.event.title);
-  for (const privateText of ['member@example.com', params.token, 'TokenHash', 'TokenExpiresAt']) assert.ok(!JSON.stringify(published).includes(privateText));
-  assert.match(f.context.doGet({ parameter: params }).html, /already been used/);
-  assert.equal(f.get().events.length, 1); assert.equal(f.sheets.Events.rows[1][11], ''); assert.ok(f.unlocked());
-});
-
-test('non-members and inactive members receive a neutral response without email or storage', () => {
-  for (const inactive of [false, true]) {
-    const f = fixture(); if (inactive) f.sheets.Members.rows[1][4] = 'Inactive';
-    assert.equal(f.post({ ...f.event, memberEmail: inactive ? f.event.memberEmail : 'unknown@example.com' }).status, 'pending_verification');
-    assert.equal(f.mail.length, 0); assert.equal(f.sheets.Events, undefined);
+test('public event submissions are rejected for members and non-members without writes or email', () => {
+  for (const email of ['member@example.com','unknown@example.com']) {
+    const f=fixture();const before=JSON.stringify(f.sheets);
+    const response=f.post({...f.event,memberEmail:email});
+    assert.equal(response.status,'error');assert.match(response.error,/managed by the association/);
+    assert.equal(JSON.stringify(f.sheets),before);assert.equal(f.mail.length,0);
   }
 });
 
-test('forged tokens, expired links, and deactivated membership cannot publish events', () => {
-  for (const mode of ['forged', 'expired', 'inactive']) {
-    const f = fixture(); f.post(f.event); const params = f.confirmParameters();
-    if (mode === 'forged') params.token = crypto.randomUUID() + crypto.randomUUID();
-    if (mode === 'expired') f.sheets.Events.rows[1][12] = new Date(NOW - 1);
-    if (mode === 'inactive') f.sheets.Members.rows[1][4] = 'Inactive';
-    assert.match(f.context.doGet({ parameter: params }).html, /Link unavailable/);
-    assert.deepEqual(f.get().events, []); assert.ok(f.unlocked());
-  }
+test('old confirmation links cannot publish pending events or change existing records', () => {
+  const f=fixture();
+  f.sheets.Events=new Sheet([['Created','EventID','Email','Title','Venue','Address','Start','End','Format','Description','Status'],[new Date(NOW),'evt_old','member@example.com','Old pending event','Venue','Address',new Date(NOW+86400000),new Date(NOW+90000000),'Casual','','pending']]);
+  const before=JSON.stringify(f.sheets.Events.rows);
+  const response=f.context.doGet({parameter:{action:'verifyEvent',eventId:'evt_old',token:'old-token'}});
+  assert.match(response.html,/cannot publish an event/);
+  assert.equal(JSON.stringify(f.sheets.Events.rows),before);assert.equal(f.mail.length,0);
 });
 
-test('expired confirmed events disappear from public feed', () => {
-  const f = fixture(); f.post(f.event); f.context.doGet({ parameter: f.confirmParameters() });
-  f.sheets.Events.rows[1][7] = new Date(NOW - 1); assert.deepEqual(f.get().events, []);
-});
-
-test('invalid dates, DST gaps and repeated times, excessive durations and unsupported formats are rejected without mail', () => {
-  const invalid = [
-    { startsAt: '2026-01-01T12:00' }, { endsAt: '2026-11-01T17:00' },
-    { startsAt: '2027-02-30T12:00' }, { startsAt: '2027-04-04T02:30', endsAt: '2027-04-04T04:00' },
-    { startsAt: '2027-10-03T02:30', endsAt: '2027-10-03T04:00' }, { startsAt: '2026-11-01T25:00' },
-    { endsAt: '2026-11-10T18:00' }, { format: 'Unsupported' }, { timeZone: 'UTC' },
-    { title: ' ' }, { title: 'x'.repeat(101) }, { memberEmail: 'bad' }, { title: 'bad\nheader' }
-  ];
-  for (const patch of invalid) {
-    const f = fixture(); assert.equal(f.post({ ...f.event, ...patch }).status, 'error', JSON.stringify(patch));
-    assert.equal(f.mail.length, 0); assert.equal(f.sheets.Events, undefined);
-  }
-});
-
-test('Melbourne summer and winter times are independent of the runtime timezone', () => {
-  const f = fixture();
-  assert.equal(f.context.eventLocalDate_('2027-01-15T18:00').toISOString(), '2027-01-15T07:00:00.000Z');
-  assert.equal(f.context.eventLocalDate_('2027-06-15T18:00').toISOString(), '2027-06-15T08:00:00.000Z');
-});
-
-test('duplicate submission sends one email; per-member rate limit persists in sheet', () => {
-  const f = fixture(); f.post(f.event); f.post(f.event); assert.equal(f.mail.length, 1);
-  for (let i = 1; i < 5; i++) f.post({ ...f.event, title: 'Event ' + i });
-  assert.equal(f.mail.length, 3); assert.equal(f.sheets.Events.rows.length, 4); assert.ok(f.unlocked());
-});
-
-test('email failure leaves an unpublishable row and releases the lock', () => {
-  const f = fixture(); f.failMail(); assert.equal(f.post(f.event).status, 'error');
-  assert.equal(f.sheets.Events.rows[1][10], 'email_failed'); assert.equal(f.sheets.Events.rows[1][11], '');
-  assert.deepEqual(f.get().events, []); assert.ok(f.unlocked());
-});
-
-test('untrusted event text cannot create spreadsheet formulas or HTML email markup', () => {
-  const f = fixture(); f.post({ ...f.event, title: '=IMPORTXML("test")', description: '<script>alert(1)</script>' });
-  assert.ok(f.sheets.Events.rows[1][3].startsWith("'="));
-  assert.ok(!f.mail[0].htmlBody.includes('<script>')); assert.ok(f.mail[0].htmlBody.includes('&lt;script&gt;'));
-  f.context.doGet({ parameter: f.confirmParameters() }); assert.equal(f.get().events[0].title, '=IMPORTXML("test")');
+test('legacy confirmed member events are not automatically republished in association-only listings', () => {
+  const f=fixture();f.sheets.Events=new Sheet([['Legacy events'],[new Date(NOW),'evt_old','private@example.com','Legacy event','','',new Date(NOW+86400000),new Date(NOW+90000000),'','','confirmed']]);
+  const data=f.get();assert.deepEqual(data.events,[]);assert.equal(data.eventSubmissionsOpen,false);
+  assert.ok(!JSON.stringify(data).includes('private@example.com'));assert.equal(f.sheets.Events.rows.length,2);
 });
 
 test('existing match submission, verification, public feed and member registration remain available', () => {

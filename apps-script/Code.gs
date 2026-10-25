@@ -5,7 +5,7 @@ function doPost(e) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const data = JSON.parse(e.postData.contents);
     
-    if (data.action === "submitEvent") return submitCommunityEvent_(ss, data);
+    if (data.action === "submitEvent") return eventJson_({ status: "error", error: "Event submissions are closed. Events are managed by the association." });
 
     if (data.action === "registerMember") return registerMbaParticipant_(ss, data);
 
@@ -101,7 +101,7 @@ function doGet(e) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
   if (e && e.parameter && e.parameter.action === "verifyEvent") {
-    return verifyCommunityEvent_(ss, e.parameter);
+    return HtmlService.createHtmlOutput('<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Association events</title></head><body><h1>Event submissions are closed</h1><p>Events are managed by Melbourne Backgammon Association. This confirmation link cannot publish an event.</p><a href="https://backgammon.melbourne/#events">View association events</a></body></html>');
   }
 
   // 1. Handle 1-Click Email Action
@@ -190,14 +190,12 @@ function doGet(e) {
     }
   }
 
-  return ContentService.createTextOutput(JSON.stringify({ matches, members, events: publicCommunityEvents_(ss), eventsVersion: 1, registration: publicMembershipSettings_() }))
+  return ContentService.createTextOutput(JSON.stringify({ matches, members, events: [], eventsVersion: 1, eventSubmissionsOpen: false, registration: publicMembershipSettings_() }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// Community events. Private rows are never included in the public response.
-const EVENT_HEADERS_ = ["Created", "EventID", "MemberEmail", "Title", "Venue", "Address", "StartsAt", "EndsAt", "Format", "Description", "Status", "TokenHash", "TokenExpiresAt", "ConfirmedAt"];
+// Shared registration helpers. Event publishing is maintained in the website source.
 const EVENT_TIME_ZONE_ = "Australia/Melbourne";
-const EVENT_FORMATS_ = ["Casual play", "Chouette", "Club night", "Tournament", "Beginners welcome"];
 
 function eventJson_(value) {
   return ContentService.createTextOutput(JSON.stringify(value)).setMimeType(ContentService.MimeType.JSON);
@@ -219,161 +217,6 @@ function eventText_(value, label, max, optional) {
 function eventSheetText_(value) {
   // Prevent untrusted strings from being evaluated as spreadsheet formulas.
   return /^[=+\-@\t\r]/.test(value) ? "'" + value : value;
-}
-
-function eventReadText_(value) {
-  return String(value || "").replace(/^'(?=[=+\-@\t\r])/, "");
-}
-
-function eventEscapeHtml_(value) {
-  return String(value).replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
-}
-
-function eventTokenHash_(token) {
-  return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, token, Utilities.Charset.UTF_8)
-    .map(byte => (byte & 255).toString(16).padStart(2, "0")).join("");
-}
-
-function eventLocalDate_(text) {
-  if (typeof text !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(text)) throw new Error("Check the event date and time.");
-  const parts = text.match(/\d+/g).map(Number);
-  const wallClock = Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3], parts[4]);
-  // Melbourne uses UTC+10 or UTC+11. Round-trip both to catch daylight-saving
-  // gaps, repeated times, impossible dates and invalid hour/minute values.
-  const candidates = [10, 11].map(offset => new Date(wallClock - offset * 3600000))
-    .filter(date => Utilities.formatDate(date, EVENT_TIME_ZONE_, "yyyy-MM-dd'T'HH:mm") === text);
-  if (candidates.length !== 1) throw new Error("Choose an unambiguous Melbourne time outside the daylight-saving changeover.");
-  return candidates[0];
-}
-
-function eventSheet_(ss) {
-  let sheet = ss.getSheetByName("Events");
-  if (!sheet) {
-    sheet = ss.insertSheet("Events");
-    sheet.appendRow(EVENT_HEADERS_);
-  } else {
-    const header = sheet.getDataRange().getValues()[0] || [];
-    if (!EVENT_HEADERS_.every((name, index) => header[index] === name)) {
-      throw new Error("The Events sheet has an unexpected layout. Contact the committee.");
-    }
-  }
-  return sheet;
-}
-
-function submitCommunityEvent_(ss, data) {
-  const neutralResponse = { status: "pending_verification" };
-  const email = eventText_(data.memberEmail, "Membership email", 254).toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Check your membership email.");
-  const title = eventText_(data.title, "Event name", 100);
-  const venue = eventText_(data.venue, "Venue", 120);
-  const address = eventText_(data.address, "Street address", 250);
-  const description = eventText_(data.description, "Description", 1500, true);
-  if (data.timeZone !== EVENT_TIME_ZONE_) throw new Error("Use Melbourne event times.");
-  if (!EVENT_FORMATS_.includes(data.format)) throw new Error("Choose a valid event format.");
-  const startsAt = eventLocalDate_(data.startsAt);
-  const endsAt = eventLocalDate_(data.endsAt);
-  const now = new Date();
-  if (startsAt <= now || endsAt <= startsAt || endsAt - startsAt > 7 * 86400000 || startsAt - now > 366 * 86400000) {
-    throw new Error("Use a future event within the next year, ending after it starts and lasting no more than seven days.");
-  }
-  const members = ss.getSheetByName("Members");
-  const memberRows = members ? members.getDataRange().getValues().slice(1) : [];
-  const member = memberRows.find(row => String(row[2] || "").trim().toLowerCase() === email &&
-    String(row[1] || "").trim() && String(row[4] || "Active").trim().toLowerCase() !== "inactive");
-  // Do not reveal whether an address is registered; never email non-members.
-  if (!member) return eventJson_(neutralResponse);
-  const lock = LockService.getScriptLock();
-  lock.waitLock(10000);
-  try {
-    const sheet = eventSheet_(ss);
-    const rows = sheet.getDataRange().getValues().slice(1);
-    const recent = rows.filter(row => new Date(row[0]).getTime() > now.getTime() - 3600000);
-    if (recent.filter(row => row[2] === email).length >= 3 || recent.length >= 30) return eventJson_(neutralResponse);
-    const duplicate = rows.some(row => row[2] === email && eventReadText_(row[3]) === title &&
-      eventReadText_(row[5]) === address && new Date(row[6]).getTime() === startsAt.getTime() &&
-      (row[10] === "confirmed" || (row[10] === "pending" && new Date(row[12]) > now)));
-    if (duplicate) return eventJson_(neutralResponse);
-    if (MailApp.getRemainingDailyQuota() < 1) throw new Error("Email is temporarily unavailable. Please try later.");
-    const eventId = "evt_" + Utilities.getUuid();
-    const token = Utilities.getUuid() + Utilities.getUuid();
-    const expires = new Date(Math.min(now.getTime() + 86400000, startsAt.getTime()));
-    const row = [now, eventId, email, eventSheetText_(title), eventSheetText_(venue), eventSheetText_(address),
-      startsAt, endsAt, data.format, eventSheetText_(description), "pending", eventTokenHash_(token), expires, ""];
-    sheet.appendRow(row);
-    const rowNumber = sheet.getLastRow();
-    const confirmUrl = SCRIPT_URL + "?action=verifyEvent&eventId=" + encodeURIComponent(eventId) + "&token=" + encodeURIComponent(token);
-    const when = Utilities.formatDate(startsAt, EVENT_TIME_ZONE_, "EEE d MMM yyyy, h:mm a z");
-    try {
-      MailApp.sendEmail({
-        to: String(member[2]).trim(),
-        subject: "Confirm your MBA event: " + title,
-        body: "Confirm your event: " + title + "\n" + venue + "\n" + address + "\n" + when +
-          "\n\nPublish this event: " + confirmUrl + "\n\nThis link expires within 24 hours. If you did not request this, ignore this email.",
-        htmlBody: '<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;background:#F7F4EE;color:#1D1612;border-radius:16px">' +
-          '<h2 style="color:#C2593F">Confirm your event</h2><h3>' + eventEscapeHtml_(title) + '</h3><p>' + eventEscapeHtml_(venue) +
-          '<br>' + eventEscapeHtml_(address) + '<br>' + eventEscapeHtml_(when) + '</p><p>' + eventEscapeHtml_(description).replace(/\n/g, '<br>') +
-          '</p><p>Your event is private until you confirm. Use the button below to publish it to the MBA calendar.</p>' +
-          '<p><a style="display:inline-block;background:#C2593F;color:white;padding:14px 24px;border-radius:30px;text-decoration:none" href="' + eventEscapeHtml_(confirmUrl) + '">Confirm and publish event</a></p>' +
-          '<p>This link expires within 24 hours. If you did not request this, ignore this email.</p></div>'
-      });
-    } catch (error) {
-      sheet.getRange(rowNumber, 11).setValue("email_failed");
-      sheet.getRange(rowNumber, 12).setValue("");
-      throw new Error("The confirmation email could not be sent. Please try later.");
-    }
-    return eventJson_(neutralResponse);
-  } finally {
-    lock.releaseLock();
-  }
-}
-
-function verifyCommunityEvent_(ss, parameters) {
-  let title = "Link unavailable";
-  let message = "This link is invalid, expired, or has already been used. Submit the event again if needed.";
-  const token = String(parameters.token || "");
-  const eventId = String(parameters.eventId || "");
-  if (/^evt_[a-zA-Z0-9-]{36}$/.test(eventId) && /^[a-zA-Z0-9-]{72}$/.test(token)) {
-    const lock = LockService.getScriptLock();
-    lock.waitLock(10000);
-    try {
-      const sheet = ss.getSheetByName("Events");
-      const rows = sheet ? sheet.getDataRange().getValues() : [];
-      const index = rows.findIndex((row, position) => position > 0 && row[1] === eventId);
-      const row = rows[index];
-      const now = new Date();
-      if (row && row[10] === "pending" && row[11] === eventTokenHash_(token) &&
-          new Date(row[12]) > now && new Date(row[6]) > now) {
-        // Recheck membership in case the member was deactivated after submission.
-        const members = ss.getSheetByName("Members");
-        const active = members && members.getDataRange().getValues().slice(1).some(member =>
-          String(member[2] || "").trim().toLowerCase() === row[2] &&
-          String(member[4] || "Active").trim().toLowerCase() !== "inactive");
-        if (active) {
-          sheet.getRange(index + 1, 11, 1, 4).setValues([["confirmed", "", row[12], now]]);
-          title = "Your event is published!";
-          message = eventReadText_(row[3]) + " is now on the MBA event calendar. Thank you for bringing people together.";
-        }
-      }
-    } finally {
-      lock.releaseLock();
-    }
-  }
-  return HtmlService.createHtmlOutput('<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>MBA event confirmation</title></head>' +
-    '<body style="font-family:Arial,sans-serif;background:#F7F4EE;color:#1D1612;padding:32px"><main style="max-width:480px;margin:10vh auto;background:white;padding:32px;border-radius:20px">' +
-    '<h1>' + title + '</h1><p>' + eventEscapeHtml_(message) + '</p><a href="https://backgammon.melbourne/#events">Return to the event calendar</a></main></body></html>');
-}
-
-function publicCommunityEvents_(ss) {
-  const sheet = ss.getSheetByName("Events");
-  if (!sheet) return [];
-  const now = new Date();
-  return sheet.getDataRange().getValues().slice(1)
-    .filter(row => row[10] === "confirmed" && new Date(row[7]) > now)
-    .map(row => ({
-      id: row[1], status: "confirmed", title: eventReadText_(row[3]), venue: eventReadText_(row[4]), address: eventReadText_(row[5]),
-      startsAt: new Date(row[6]).toISOString(), endsAt: new Date(row[7]).toISOString(), format: row[8], description: eventReadText_(row[9])
-    }))
-    .sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt));
 }
 
 // Enable formal applications only after incorporation/rules adoption is resolved.

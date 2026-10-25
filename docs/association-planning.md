@@ -6,7 +6,7 @@
 
 - Intended name: Melbourne Backgammon Association; legal registration and adopted name are not yet confirmed.
 - Intention to adopt Consumer Affairs Victoria model rules at the founding meeting.
-- Free website users are community participants, separate from formal association membership. Existing leaderboard, match and event functionality remains available to them.
+- Free website users are community participants, separate from formal association membership. Leaderboard participation, match submission and event browsing remain available; members cannot publish events.
 - Proposed association subscription: AUD $100 per calendar year, renewal on 1 January. Admission and voting must follow the eventually adopted rules, not payment or website signup alone.
 - President: Eric Berkhinfand. Vice president: Bryce Adams. Secretary: Steven Goldberg. Treasurer: Daniel Wroby.
 - Other founding committee members: Greg Sacks, Daniel Kobrin, Yona Takac.
@@ -63,3 +63,7 @@ The organiser authorised publishing meeting documents on the association page, w
 Public files: `docs/founding-meeting-agenda.html` / `.txt`, `docs/membership-administration.html` / `.txt`, `docs/founding-meeting-minutes.html` / `.txt`, and `docs/meeting-documents.css`. These were prepared as public reading copies without private attendance details or backend implementation notes. The original private pack remains outside the repository. The street address, calendar/joining link and personal forwarding destination are not published. The footer-only link to the association page is unchanged.
 
 Link/anchor/download checks and mobile/desktop print controls were validated locally. These source changes are not a website deployment.
+
+## Association-only event publishing
+
+The organiser withdrew public/member event hosting and submissions. The website now has a read-only association-hosted calendar and a separate approval-controlled list for tournaments hosted by other clubs. Both curated arrays are empty pending real approved entries. Apps Script source rejects submission POSTs and legacy confirmation links, but the owner must redeploy that source for server-side closure. No external event may be added until the organiser explicitly approves it. See `docs/events-integration.md`.

@@ -79,8 +79,7 @@
     }
     #joinForm,
     #joinResult,
-    #matchForm,
-    #eventDialog {
+    #matchForm {
       overscroll-behavior-y: contain;
     }
     @media (prefers-reduced-motion: reduce) {
@@ -123,7 +122,7 @@
 
       <form id="joinForm" class="p-5 overflow-y-auto space-y-4 text-xs font-semibold">
         <fieldset class="space-y-2"><legend class="font-bold mb-2">How would you like to join?</legend>
-          <label class="flex items-start gap-3 rounded-xl border border-parchment-border p-3 cursor-pointer"><input type="radio" name="membershipType" value="community" checked class="mt-1"><span><strong class="block">Community only · Free</strong><span class="block font-normal text-espresso-soft mt-1">Leaderboard, match results and community events. No association voting rights.</span></span></label>
+          <label class="flex items-start gap-3 rounded-xl border border-parchment-border p-3 cursor-pointer"><input type="radio" name="membershipType" value="community" checked class="mt-1"><span><strong class="block">Community only · Free</strong><span class="block font-normal text-espresso-soft mt-1">Leaderboard, match results and association events. No association voting rights.</span></span></label>
           <label class="flex items-start gap-3 rounded-xl border border-parchment-border p-3 cursor-pointer"><input type="radio" name="membershipType" value="association" class="mt-1"><span><strong class="block">Association membership · $100/year</strong><span class="block font-normal text-espresso-soft mt-1">Includes community participation. Joining-month fee rounded to the nearest $5; renews 1 January.</span></span></label>
         </fieldset>
         <div><label for="regFullName" class="block text-espresso-soft mb-1">Full name</label><input type="text" id="regFullName" required maxlength="120" autocomplete="name" placeholder="e.g. Samuel Bennett" class="w-full px-3.5 py-2.5 rounded-lg border border-parchment-border bg-parchment font-medium"></div>
@@ -223,30 +222,6 @@
       </form>
     </div>
   </div>
-
-  <dialog id="eventDialog" aria-labelledby="eventDialogTitle" class="w-[calc(100%-2rem)] max-w-xl max-h-[90dvh] rounded-2xl p-0 bg-parchment-light text-espresso shadow-2xl backdrop:bg-espresso/70">
-    <div class="flex justify-between items-center gap-4 p-5 border-b border-parchment-border">
-      <h3 id="eventDialogTitle" class="font-display text-xl font-bold">Bring people to the board</h3>
-      <button id="closeEventBtn" type="button" aria-label="Close event form" class="rounded-full px-3 py-2 hover:bg-parchment-card">✕</button>
-    </div>
-    <form id="eventForm" class="p-5 space-y-4 text-sm">
-      <p class="text-espresso-soft leading-relaxed">Add your event details, then confirm using the link sent to your membership email. Your event appears publicly after confirmation.</p>
-      <p id="eventSetupStatus" class="text-espresso-soft rounded-xl border border-parchment-border p-3" role="status"></p>
-      <div><label for="eventMemberEmail" class="block font-bold mb-1">Your membership email</label><input id="eventMemberEmail" name="memberEmail" type="email" autocomplete="email" required maxlength="254" class="w-full p-3 rounded-xl border border-parchment-border bg-parchment"/><p class="text-xs text-espresso-soft mt-1">Used for verification only. Your email won’t appear on the event.</p></div>
-      <div><label for="newEventTitle" class="block font-bold mb-1">Event name</label><input id="newEventTitle" name="title" required maxlength="100" placeholder="e.g. Sunday afternoon chouette" class="w-full p-3 rounded-xl border border-parchment-border bg-parchment"/></div>
-      <div><label for="newEventVenue" class="block font-bold mb-1">Venue</label><input id="newEventVenue" name="venue" required maxlength="120" placeholder="Venue name" class="w-full p-3 rounded-xl border border-parchment-border bg-parchment"/></div>
-      <div><label for="newEventAddress" class="block font-bold mb-1">Street address</label><input id="newEventAddress" name="address" required maxlength="250" placeholder="Street, suburb, state and postcode" class="w-full p-3 rounded-xl border border-parchment-border bg-parchment"/></div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div><label for="newEventStart" class="block font-bold mb-1">Starts</label><input id="newEventStart" name="startsAt" type="datetime-local" required class="w-full min-w-0 p-3 rounded-xl border border-parchment-border bg-parchment"/></div>
-        <div><label for="newEventEnd" class="block font-bold mb-1">Ends</label><input id="newEventEnd" name="endsAt" type="datetime-local" required class="w-full min-w-0 p-3 rounded-xl border border-parchment-border bg-parchment"/></div>
-      </div>
-      <p class="text-xs text-espresso-soft">Event times are in Melbourne time (Australia/Melbourne).</p>
-      <div><label for="newEventFormat" class="block font-bold mb-1">Format</label><select id="newEventFormat" name="format" class="w-full p-3 rounded-xl border border-parchment-border bg-parchment"><option>Casual play</option><option>Chouette</option><option>Club night</option><option>Tournament</option><option>Beginners welcome</option></select></div>
-      <div><label for="newEventDescription" class="block font-bold mb-1">What should players know? <span class="font-normal">(optional)</span></label><textarea id="newEventDescription" name="description" rows="3" maxlength="1500" placeholder="Cost, skill level, what to bring…" class="w-full p-3 rounded-xl border border-parchment-border bg-parchment"></textarea></div>
-      <p id="eventFormStatus" role="status" class="text-sm text-espresso-soft"></p>
-      <button id="submitEventBtn" type="submit" disabled class="w-full rounded-xl bg-terracotta text-white font-bold p-3 hover:bg-terracotta-dark disabled:opacity-50 disabled:cursor-not-allowed">Send confirmation email</button>
-    </form>
-  </dialog>
 
   <!-- Top Point Border (Without bottom line) -->
   <div class="bg-top-spears relative z-30"></div>
@@ -469,21 +444,31 @@
           <div class="max-w-xl">
             <p class="text-xs font-bold uppercase tracking-[0.25em] text-terracotta">Around the board</p>
             <h2 id="eventsHeading" class="text-3xl sm:text-4xl font-extrabold font-display tracking-tight mt-2">Find your next game.</h2>
-            <p class="text-sm text-espresso-soft mt-3 leading-relaxed">Club nights, casual chouettes and tournaments. Discover a game nearby, or bring the community together with an event of your own.</p>
+            <p class="text-sm text-espresso-soft mt-3 leading-relaxed">Club nights, casual chouettes and tournaments hosted by Melbourne Backgammon Association. Find your next game and explore tournaments at other clubs below.</p>
           </div>
-          <button id="addEventBtn" type="button" class="inline-flex shrink-0 items-center justify-center gap-2 px-5 py-3 rounded-full bg-terracotta text-white text-xs font-extrabold uppercase tracking-wider hover:bg-terracotta-dark">+ Add an event</button>
         </div>
         <p id="eventsStatus" class="text-sm text-espresso-soft mb-4" role="status">Loading upcoming events…</p>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           <div class="lg:col-span-2 rounded-2xl overflow-hidden border border-parchment-border shadow-sm bg-parchment-card">
-            <div id="melbourneMap" class="h-[360px] sm:h-[460px]" aria-label="Google map of upcoming backgammon events"></div>
+            <div id="melbourneMap" class="h-[360px] sm:h-[460px]" aria-label="Google map of upcoming association events"></div>
             <p id="mapStatus" class="p-4 text-xs text-espresso-soft" role="status">Choose an event to see its location on Google Maps.</p>
           </div>
           <div>
-            <h3 class="font-display font-bold text-lg mb-3">Upcoming events</h3>
+            <h3 class="font-display font-bold text-lg mb-3">Association events</h3>
             <div id="eventsList" class="space-y-3"></div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Tournaments hosted by other clubs; entries are added after association approval. -->
+    <section id="sister-club-tournaments" class="py-16 md:py-20 bg-parchment-light border-b border-parchment-border" aria-labelledby="sisterTournamentsHeading">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <p class="text-xs font-bold uppercase tracking-[0.25em] text-slateNavy">Around the clubs</p>
+        <h2 id="sisterTournamentsHeading" class="text-3xl sm:text-4xl font-extrabold font-display tracking-tight mt-2">Tournaments at other clubs</h2>
+        <p class="text-sm text-espresso-soft leading-relaxed mt-3 max-w-2xl">More opportunities to play across the wider backgammon community. Each tournament is run by the named organiser; follow its official listing for entry details and updates.</p>
+        <p id="sisterTournamentsStatus" role="status" class="mt-6 text-sm text-espresso-soft"></p>
+        <div id="sisterTournamentsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-5"></div>
       </div>
     </section>
 

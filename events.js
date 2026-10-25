@@ -1,30 +1,15 @@
 (() => {
   'use strict';
   const config = window.MBA_EVENTS_CONFIG || {};
-  const endpoint = config.eventsEndpoint;
   const list = document.getElementById('eventsList');
   const status = document.getElementById('eventsStatus');
   const mapContainer = document.getElementById('melbourneMap');
   const mapStatus = document.getElementById('mapStatus');
-  const dialog = document.getElementById('eventDialog');
-  const form = document.getElementById('eventForm');
-  const submit = document.getElementById('submitEventBtn');
-  const feedback = document.getElementById('eventFormStatus');
   const dateFormat = new Intl.DateTimeFormat('en-AU', {
     timeZone: 'Australia/Melbourne', weekday: 'short', day: 'numeric', month: 'short',
     year: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
   });
   let selectedCard = null;
-  let serviceReady = false;
-  const setupStatus = document.getElementById('eventSetupStatus');
-
-  function setServiceReady(ready) {
-    serviceReady = ready;
-    submit.disabled = !ready;
-    setupStatus.textContent = ready
-      ? 'Only confirmed member events are shown publicly. Check your inbox after submitting.'
-      : 'Event submissions aren’t open yet. Please check back soon.';
-  }
 
   function element(tag, className, text) {
     const node = document.createElement(tag);
@@ -56,22 +41,20 @@
     showMap(event.address, `${event.title} — ${event.venue}`);
   }
 
-  function renderEvents(events) {
-    // Verification and membership checks must also be enforced by the server.
-    const upcoming = events.filter(event =>
-      event.status === 'confirmed' && typeof event.id === 'string' &&
-      typeof event.title === 'string' && typeof event.venue === 'string' &&
-      typeof event.address === 'string' && event.address.trim() &&
-      /(?:Z|[+-]\d{2}:\d{2})$/.test(event.startsAt || '') &&
-      /(?:Z|[+-]\d{2}:\d{2})$/.test(event.endsAt || '') &&
-      Number.isFinite(Date.parse(event.startsAt)) &&
-      Date.parse(event.endsAt) > Date.parse(event.startsAt) && Date.parse(event.endsAt) > Date.now()
+  function validTimestamp(value) {
+    return typeof value === 'string' && /(?:Z|[+-]\d{2}:\d{2})$/.test(value) && Number.isFinite(Date.parse(value));
+  }
+
+  function renderAssociationEvents(events) {
+    const upcoming = events.filter(event => event && event.approved === true &&
+      event.host === 'association' && typeof event.title === 'string' && typeof event.venue === 'string' &&
+      typeof event.address === 'string' && event.address.trim() && validTimestamp(event.startsAt) &&
+      validTimestamp(event.endsAt) && Date.parse(event.endsAt) > Date.parse(event.startsAt) &&
+      Date.parse(event.endsAt) > Date.now()
     ).sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt));
-    list.replaceChildren();
-    selectedCard = null;
     status.textContent = upcoming.length
-      ? `${upcoming.length} upcoming ${upcoming.length === 1 ? 'event' : 'events'} · Times shown in Melbourne time`
-      : 'No confirmed upcoming events yet. Be the first to bring people together.';
+      ? `${upcoming.length} upcoming association ${upcoming.length === 1 ? 'event' : 'events'} · Melbourne time`
+      : 'No upcoming association events listed. Check back soon.';
     upcoming.forEach(event => {
       const article = element('article', 'rounded-2xl border border-parchment-border bg-parchment-light overflow-hidden shadow-sm');
       const card = element('button', 'w-full text-left p-4 hover:bg-parchment-card transition-colors');
@@ -88,96 +71,58 @@
       card.addEventListener('click', () => showEvent(event, card));
       const directions = element('a', 'block px-4 pb-4 text-xs font-bold text-terracotta underline', 'Directions in Google Maps ↗');
       directions.href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.address)}`;
-      directions.target = '_blank';
-      directions.rel = 'noopener noreferrer';
-      article.append(card, directions);
-      list.append(article);
+      directions.target = '_blank'; directions.rel = 'noopener noreferrer';
+      article.append(card, directions); list.append(article);
       if (!selectedCard) showEvent(event, card);
     });
-    if (!upcoming.length) showMap('Melbourne VIC Australia', 'Find your next game in Melbourne');
+    if (!upcoming.length) showMap('Melbourne VIC Australia', 'Backgammon around Melbourne');
   }
 
-  async function loadEvents() {
-    if (!endpoint) {
-      status.textContent = 'The community calendar is coming soon.';
-      showMap('Melbourne VIC Australia', 'Backgammon around Melbourne');
-      return;
-    }
+  function safeSource(value) {
     try {
-      const response = await fetch(endpoint);
-      if (!response.ok) throw new Error('Event request failed');
-      const data = await response.json();
-      if (data.eventsVersion !== 1 || !Array.isArray(data.events)) {
-        setServiceReady(false);
-        status.textContent = 'The community calendar is coming soon.';
-        showMap('Melbourne VIC Australia', 'Backgammon around Melbourne');
-        return;
-      }
-      setServiceReady(true);
-      renderEvents(data.events);
-    } catch (_) {
-      setServiceReady(false);
-      showMap('Melbourne VIC Australia', 'Backgammon around Melbourne');
-      status.textContent = 'We couldn’t load the events. Please try again.';
-      const retry = element('button', 'underline font-bold text-terracotta ml-2', 'Retry');
-      retry.type = 'button';
-      retry.addEventListener('click', () => { status.textContent = 'Loading upcoming events…'; loadEvents(); });
-      status.append(retry);
-    }
+      const url = new URL(value);
+      return url.protocol === 'https:' && !url.username && !url.password ? url.href : null;
+    } catch (_) { return null; }
   }
 
-  document.getElementById('addEventBtn').addEventListener('click', () => dialog.showModal());
-  document.getElementById('closeEventBtn').addEventListener('click', () => dialog.close());
-  dialog.addEventListener('click', event => {
-    if (event.target !== dialog) return;
-    const bounds = dialog.getBoundingClientRect();
-    if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();
-  });
-  setServiceReady(false);
-  form.addEventListener('submit', async event => {
-    event.preventDefault();
-    if (!endpoint || !serviceReady || submit.disabled || !form.reportValidity()) return;
-    const fields = Object.fromEntries(new FormData(form));
-    if (fields.endsAt <= fields.startsAt) {
-      feedback.textContent = 'The end time must be after the start time.';
-      return;
-    }
-    // Local wall-clock values are interpreted in Melbourne by the backend,
-    // independent of the visitor’s device timezone (including daylight saving).
-    const payload = Object.fromEntries(Object.entries(fields).map(([key, value]) => [key, value.trim()]));
-    if (!payload.title || !payload.venue || !payload.address) {
-      feedback.textContent = 'Enter an event name, venue and street address.';
-      return;
-    }
-    payload.action = 'submitEvent';
-    payload.timeZone = 'Australia/Melbourne';
-    submit.disabled = true;
-    feedback.textContent = 'Requesting your confirmation email…';
-    try {
-      // Avoid posting to the older backend, which treats unknown actions as matches.
-      const readiness = await fetch(endpoint);
-      if (!readiness.ok || (await readiness.json()).eventsVersion !== 1) {
-        setServiceReady(false);
-        feedback.textContent = 'Event submissions are temporarily unavailable. Please try later.';
-        return;
-      }
-      const response = await fetch(endpoint, {
-        method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload)
-      });
-      if (!response.ok) throw new Error('Submission failed');
-      const result = await response.json();
-      if (result.status === 'error') {
-        feedback.textContent = typeof result.error === 'string' ? result.error.slice(0, 250) : 'Please check your event details.';
-        return;
-      }
-      if (result.status !== 'pending_verification') throw new Error('Unconfirmed submission');
-      form.reset();
-      feedback.textContent = 'If this address belongs to a member, a confirmation link has been sent. Your event stays private until you confirm it. Check your spam folder too.';
-    } catch (_) {
-      feedback.textContent = 'We couldn’t confirm the submission. Check your inbox before trying again; your event has not been added to the public map.';
-    } finally {
-      submit.disabled = !serviceReady;
-    }
-  });
-  loadEvents();
+  function calendarDate(value) {
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+    const date = new Date(`${value}T00:00:00Z`);
+    return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value ? date : null;
+  }
+
+  function renderSisterTournaments(events) {
+    const target = document.getElementById('sisterTournamentsList');
+    const message = document.getElementById('sisterTournamentsStatus');
+    // Date-only entries use the Melbourne calendar date; no start/end time is invented.
+    const today = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Australia/Melbourne', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).format(new Date());
+    const upcoming = events.filter(event => event && event.approved === true &&
+      typeof event.title === 'string' && typeof event.organiser === 'string' &&
+      calendarDate(event.startDate) && calendarDate(event.endDate || event.startDate) &&
+      (event.endDate || event.startDate) >= event.startDate &&
+      (event.endDate || event.startDate) >= today && safeSource(event.sourceUrl)
+    ).sort((a, b) => a.startDate.localeCompare(b.startDate));
+    message.textContent = upcoming.length
+      ? `${upcoming.length} upcoming ${upcoming.length === 1 ? 'tournament' : 'tournaments'}`
+      : 'No upcoming tournaments listed. Check back soon.';
+    const format = new Intl.DateTimeFormat('en-AU', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' });
+    upcoming.forEach(event => {
+      const card = element('article', 'rounded-2xl border border-parchment-border bg-parchment-card p-5 shadow-sm');
+      const dates = format.format(calendarDate(event.startDate)) +
+        (event.endDate && event.endDate !== event.startDate ? ` – ${format.format(calendarDate(event.endDate))}` : '');
+      card.append(element('p', 'text-xs font-bold text-terracotta', dates));
+      card.append(element('h3', 'font-display text-xl font-bold mt-2', event.title));
+      card.append(element('p', 'text-sm text-slateNavy font-semibold mt-2', event.organiser));
+      if (event.venue) card.append(element('p', 'text-sm text-espresso-soft mt-2', String(event.venue)));
+      if (event.description) card.append(element('p', 'text-sm text-espresso-soft mt-3 whitespace-pre-wrap break-words', String(event.description)));
+      const source = element('a', 'inline-block mt-4 text-sm font-bold text-slateNavy underline', 'Official event details ↗');
+      source.href = safeSource(event.sourceUrl); source.target = '_blank'; source.rel = 'noopener noreferrer';
+      card.append(source); target.append(card);
+    });
+  }
+
+  renderAssociationEvents(Array.isArray(config.associationEvents) ? config.associationEvents : []);
+  renderSisterTournaments(Array.isArray(config.sisterClubTournaments) ? config.sisterClubTournaments : []);
 })();
