@@ -20,9 +20,10 @@ function fixture(t, { missingManifest = false, duplicateCode = false, wrongDeplo
   let versions = 0;
   const run = (args, cwd) => {
     stage = cwd;
-    const command = args[5];
+    const command = args[args.indexOf('--json') + 1];
     calls.push(command);
     if (command === 'clone-script') {
+      assert.ok(!args.includes('--project'), 'clone must not reference a nonexistent project config');
       const content = args[args.indexOf('--rootDir') + 1];
       mkdirSync(content);
       writeFileSync(join(cwd, '.clasp.json'), JSON.stringify({ scriptId: config.scriptId, rootDir: 'content' }));

@@ -82,7 +82,9 @@ export function deploy({ mode = 'plan', root = repository, authFile = process.en
   }));
   const clasp = args => {
     try {
-      const output = invoke(['--auth', resolve(authFile), '--project', projectFile, '--json', ...args], stage);
+      // clone creates .clasp.json in cwd; --project rejects a path that does not yet exist.
+      const projectArgs = args[0] === 'clone-script' ? [] : ['--project', projectFile];
+      const output = invoke(['--auth', resolve(authFile), ...projectArgs, '--json', ...args], stage);
       return output.trim() ? JSON.parse(output) : {};
     } catch (error) {
       // Avoid dumping credentials or remote file contents from command output.
