@@ -1,0 +1,8 @@
+{
+  "name": "mba-apps-script-tools",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Pinned development tooling for the existing MBA Apps Script project",
+  "engines": { "node": ">=20" },
+  "devDependencies": { "@google/clasp": "3.4.1" }
+}

@@ -1,0 +1,13 @@
+.git/
+.github/
+tools/
+tests/
+apps-script/
+**/node_modules/
+**/.clasprc*.json
+**/.mba-clasp-auth*.json
+**/clasp-auth*.json
+**/client_secret*.json
+.clasp.json
+.claspignore
+.clasp-backups/

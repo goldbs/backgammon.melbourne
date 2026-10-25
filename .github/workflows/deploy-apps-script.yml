@@ -1,0 +1,49 @@
+name: Deploy Apps Script
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'apps-script/**'
+      - '.clasp.json'
+      - 'tools/clasp/**'
+      - '.github/workflows/deploy-apps-script.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mba-apps-script-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install pinned clasp
+        run: npm ci --prefix tools/clasp --no-audit --no-fund
+      - name: Test deployment safeguards and backend
+        run: |
+          node --test tools/clasp/deploy.test.mjs
+          node --test tests/events-backend.test.cjs
+      - name: Load Google authorisation securely
+        env:
+          CLASP_CREDENTIALS: ${{ secrets.CLASP_CREDENTIALS }}
+        run: node tools/clasp/write-auth.mjs
+      - name: Preserve remote project and update existing deployment
+        env:
+          CLASP_AUTH_FILE: ${{ runner.temp }}/.mba-clasprc.json
+        run: node tools/clasp/deploy.mjs --deploy
+      - name: Check public backend without submitting data
+        run: node tools/clasp/verify.mjs
+      - name: Remove temporary Google credential
+        if: always()
+        run: rm -f "$RUNNER_TEMP/.mba-clasprc.json"
