@@ -98,65 +98,14 @@
     }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .members-strip {
-      display: flex;
-      gap: 1rem;
-      overflow-x: auto;
-      padding: 0.5rem 0.25rem 1rem;
-      scroll-padding-inline: 0.25rem;
-      scroll-snap-type: x proximity;
-      scroll-behavior: smooth;
-      overscroll-behavior-x: contain;
-      scrollbar-width: thin;
-      scrollbar-color: #C3992F #E5DCCE;
-    }
-    .members-strip:focus-visible {
-      outline: 2px solid #2E4A62;
-      outline-offset: 4px;
-      border-radius: 1rem;
-    }
-    .member-card {
-      flex: 0 0 calc((100% - 1rem) / 1.5);
-      min-width: 0;
-      margin: 0;
-      padding: 1.25rem 0.75rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      background: #FCFAF6;
-      border: 1px solid #E5DCCE;
-      border-radius: 1.25rem;
-      scroll-snap-align: start;
-      scroll-snap-stop: normal;
-    }
-    .member-card img {
-      width: min(100%, 11rem);
-      height: auto;
-      aspect-ratio: 1;
-      object-fit: cover;
-      border-radius: 50%;
-    }
-    .member-card figcaption {
-      margin-top: 1rem;
-      min-height: 2.8em;
-      font-size: 0.875rem;
-      line-height: 1.4;
-      font-weight: 700;
-      overflow-wrap: anywhere;
-    }
-    @media (min-width: 640px) {
-      .member-card { flex-basis: calc((100% - 2rem) / 3); }
-    }
-    @media (min-width: 1024px) {
-      .member-card { flex-basis: calc((100% - 3rem) / 4); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .members-strip {
-        scroll-behavior: auto;
-        scroll-snap-type: none;
-      }
-    }
+    .members-browser { display: grid; grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem; align-items: center; gap: 0.5rem; }
+    .members-strip { display: flex; gap: 1rem; overflow-x: auto; padding: 0.5rem 0; overscroll-behavior-x: contain; scrollbar-width: none; }
+    .members-strip::-webkit-scrollbar { display: none; }
+    .members-strip:focus-visible { outline: 2px solid #2E4A62; outline-offset: 4px; border-radius: 1rem; }
+    .member-card { flex: 0 0 calc((100% - 1rem) / 2); min-width: 0; margin: 0; display: flex; justify-content: center; }
+    .member-card img { width: 100%; max-width: 11rem; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 50%; border: 3px solid #C3992F; }
+    @media (min-width: 640px) { .member-card { flex-basis: calc((100% - 2rem) / 3); } .members-browser { gap: 1rem; } }
+    @media (min-width: 1024px) { .member-card { flex-basis: calc((100% - 3rem) / 4); } .members-strip { overflow-x: hidden; } }
   </style>
 </head>
 <body class="bg-parchment text-espresso font-sans antialiased selection:bg-terracotta selection:text-white">
@@ -421,80 +370,6 @@
     </section>
 
     <!-- Members: native scrolling, without looping or duplicate cards. -->
-    <section id="committee" class="py-20 bg-parchment border-b border-parchment-border" aria-labelledby="membersHeading">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between gap-4 mb-8">
-          <h2 id="membersHeading" class="text-3xl sm:text-5xl font-extrabold text-espresso font-display tracking-tight">Members</h2>
-          <div class="flex gap-2 shrink-0">
-            <button type="button" id="carouselPrevBtn" aria-label="Previous members" aria-controls="carouselTrack" disabled class="w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-colors shadow-sm disabled:opacity-40 disabled:cursor-default disabled:hover:bg-parchment-card disabled:hover:text-espresso disabled:hover:border-parchment-border">
-              <i data-lucide="chevron-left" class="w-6 h-6" aria-hidden="true"></i>
-            </button>
-            <button type="button" id="carouselNextBtn" aria-label="Next members" aria-controls="carouselTrack" class="w-11 h-11 rounded-full bg-parchment-card border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white hover:border-terracotta transition-colors shadow-sm disabled:opacity-40 disabled:cursor-default disabled:hover:bg-parchment-card disabled:hover:text-espresso disabled:hover:border-parchment-border">
-              <i data-lucide="chevron-right" class="w-6 h-6" aria-hidden="true"></i>
-            </button>
-          </div>
-        </div>
-        <div id="carouselTrack" class="members-strip" role="list" aria-label="Members" aria-describedby="membersScrollHint" tabindex="0">
-          <figure class="member-card" role="listitem">
-            <img src="ezza.jpeg" alt="" loading="lazy" width="240" height="240">
-            <figcaption>Eric Berkhinfand</figcaption>
-          </figure>
-          <figure class="member-card" role="listitem">
-            <img src="wroby.jpeg" alt="" loading="lazy" width="240" height="240">
-            <figcaption>Daniel Wroby</figcaption>
-          </figure>
-          <figure class="member-card" role="listitem">
-            <img src="steve.jpeg" alt="" loading="lazy" width="240" height="240">
-            <figcaption>Steven Goldberg</figcaption>
-          </figure>
-          <figure class="member-card" role="listitem">
-            <img src="bryce.jpeg" alt="" loading="lazy" width="240" height="240">
-            <figcaption>Bryce Adams</figcaption>
-          </figure>
-          <figure class="member-card" role="listitem">
-            <img src="greg.jpeg" alt="" loading="lazy" width="240" height="240">
-            <figcaption>Greg Sacks</figcaption>
-          </figure>
-          <figure class="member-card" role="listitem">
-            <img src="kobrin.jpeg" alt="" loading="lazy" width="240" height="240">
-            <figcaption>Daniel Kobrin</figcaption>
-          </figure>
-          <figure class="member-card" role="listitem">
-            <img src="yona.jpeg" alt="" loading="lazy" width="240" height="240">
-            <figcaption>Yona Takac</figcaption>
-          </figure>
-        </div>
-        <div class="flex justify-between items-center gap-4 mt-3 text-xs text-espresso-soft">
-          <p id="membersScrollHint">Swipe or scroll to browse members.</p>
-          <p id="membersRange" class="shrink-0 font-semibold" aria-live="polite" aria-atomic="true"></p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Community events: Find your next game -->
-    <section id="events" class="py-16 md:py-20 bg-parchment border-b border-parchment-border" aria-labelledby="eventsHeading">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5 mb-8">
-          <div>
-            <h2 id="eventsHeading" class="text-xs font-bold uppercase tracking-[0.25em] text-terracotta">Find your next game</h2>
-          </div>
-        </div>
-        <p id="eventsStatus" class="text-sm text-espresso-soft mb-4" role="status">Loading upcoming events…</p>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-          <div class="lg:col-span-2 rounded-2xl overflow-hidden border border-parchment-border shadow-sm bg-parchment-card">
-            <div id="melbourneMap" class="h-[360px] sm:h-[460px]" aria-label="Google map of upcoming backgammon events"></div>
-            <p id="mapStatus" class="p-4 text-xs text-espresso-soft" role="status">Choose an event to see its location on Google Maps.</p>
-          </div>
-          <div>
-            <h3 class="font-display font-bold text-lg mb-3">Upcoming events</h3>
-            <div id="eventsList" class="space-y-3"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Recorded Match Archive: Historical Archive with Search -->
-
     <section id="matches" class="py-20 bg-parchment-light border-b border-parchment-border">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-2xl mx-auto mb-8">
@@ -536,6 +411,47 @@
         <div id="matchArchiveContainer">
           <!-- Populated dynamically: 10 most recent or player search results -->
         </div>
+      </div>
+    </section>
+
+    <section id="events" class="py-16 md:py-20 bg-parchment border-b border-parchment-border" aria-labelledby="eventsHeading">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5 mb-8">
+          <div>
+            <h2 id="eventsHeading" class="text-xs font-bold uppercase tracking-[0.25em] text-terracotta">Find your next game</h2>
+          </div>
+        </div>
+        <p id="eventsStatus" class="text-sm text-espresso-soft mb-4" role="status">Loading upcoming events…</p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <div class="lg:col-span-2 rounded-2xl overflow-hidden border border-parchment-border shadow-sm bg-parchment-card">
+            <div id="melbourneMap" class="h-[360px] sm:h-[460px]" aria-label="Google map of upcoming backgammon events"></div>
+            <p id="mapStatus" class="p-4 text-xs text-espresso-soft" role="status">Choose an event to see its location on Google Maps.</p>
+          </div>
+          <div>
+            <h3 class="font-display font-bold text-lg mb-3">Upcoming events</h3>
+            <div id="eventsList" class="space-y-3"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="committee" class="py-20 bg-parchment border-b border-parchment-border" aria-labelledby="membersHeading">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 id="membersHeading" class="text-3xl sm:text-5xl font-extrabold text-espresso font-display tracking-tight text-center mb-8">Members</h2>
+        <div class="members-browser">
+          <button type="button" id="carouselPrevBtn" aria-label="Previous members" aria-controls="carouselTrack" class="w-11 h-11 rounded-full border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white transition-colors"><i data-lucide="chevron-left" class="w-6 h-6" aria-hidden="true"></i></button>
+          <div id="carouselTrack" class="members-strip" role="group" aria-label="Member photos" aria-describedby="membersScrollHint" tabindex="0">
+            <figure class="member-card"><img src="ezza.jpeg" alt="" loading="lazy" width="240" height="240"></figure>
+            <figure class="member-card"><img src="wroby.jpeg" alt="" loading="lazy" width="240" height="240"></figure>
+            <figure class="member-card"><img src="steve.jpeg" alt="" loading="lazy" width="240" height="240"></figure>
+            <figure class="member-card"><img src="bryce.jpeg" alt="" loading="lazy" width="240" height="240"></figure>
+            <figure class="member-card"><img src="greg.jpeg" alt="" loading="lazy" width="240" height="240"></figure>
+            <figure class="member-card"><img src="kobrin.jpeg" alt="" loading="lazy" width="240" height="240"></figure>
+            <figure class="member-card"><img src="yona.jpeg" alt="" loading="lazy" width="240" height="240"></figure>
+          </div>
+          <button type="button" id="carouselNextBtn" aria-label="Next members" aria-controls="carouselTrack" class="w-11 h-11 rounded-full border border-parchment-border text-espresso flex items-center justify-center hover:bg-terracotta hover:text-white transition-colors"><i data-lucide="chevron-right" class="w-6 h-6" aria-hidden="true"></i></button>
+        </div>
+        <p id="membersScrollHint" class="text-center text-xs text-espresso-soft mt-4">Use the arrows to browse, or swipe on mobile.</p>
       </div>
     </section>
   </main>
