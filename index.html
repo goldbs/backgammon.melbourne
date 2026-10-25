@@ -462,14 +462,12 @@
       </div>
     </section>
 
-    <!-- Community events -->
+    <!-- Community events: Find your next game -->
     <section id="events" class="py-16 md:py-20 bg-parchment border-b border-parchment-border" aria-labelledby="eventsHeading">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-8">
-          <div class="max-w-xl">
-            <p class="text-xs font-bold uppercase tracking-[0.25em] text-terracotta">Around the board</p>
-            <h2 id="eventsHeading" class="text-3xl sm:text-4xl font-extrabold font-display tracking-tight mt-2">Find your next game.</h2>
-            <p class="text-sm text-espresso-soft mt-3 leading-relaxed">Club nights, casual chouettes and tournaments. Discover a game nearby, or bring the community together with an event of your own.</p>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5 mb-8">
+          <div>
+            <h2 id="eventsHeading" class="text-xs font-bold uppercase tracking-[0.25em] text-terracotta">Find your next game</h2>
           </div>
           <button id="addEventBtn" type="button" class="inline-flex shrink-0 items-center justify-center gap-2 px-5 py-3 rounded-full bg-terracotta text-white text-xs font-extrabold uppercase tracking-wider hover:bg-terracotta-dark">+ Add an event</button>
         </div>
@@ -487,16 +485,38 @@
       </div>
     </section>
 
-    <!-- Recorded Match Archive -->
+    <!-- Recorded Match Archive: Historical Archive with Search -->
     <section id="matches" class="py-20 bg-parchment-light border-b border-parchment-border">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-2xl mx-auto mb-12">
-          <span class="text-xs font-bold uppercase tracking-[0.25em] text-slateNavy">Historical Archive</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold font-display text-espresso tracking-tight mt-1">Recorded Matches</h2>
-          <p class="text-sm text-espresso-soft mt-2">Transcribed competitive match records with official scoring and Performance Rating (PR) metrics.</p>
+        <div class="text-center max-w-2xl mx-auto mb-8">
+          <h2 class="text-xs font-bold uppercase tracking-[0.25em] text-slateNavy">Historical Archive</h2>
         </div>
+        
+        <!-- Player Search Control -->
+        <div class="max-w-md mx-auto mb-8 relative">
+          <div class="relative flex items-center">
+            <span class="absolute left-3.5 text-espresso-soft">
+              <i data-lucide="search" class="w-4 h-4"></i>
+            </span>
+            <input 
+              type="text" 
+              id="archiveSearchInput" 
+              placeholder="Search matches by player name..." 
+              class="w-full pl-10 pr-10 py-2.5 rounded-xl border border-parchment-border bg-parchment-card text-xs font-semibold text-espresso placeholder:text-espresso-soft/60 focus:outline-none focus:border-slateNavy transition-colors shadow-sm"
+            >
+            <button 
+              type="button" 
+              id="clearArchiveSearch" 
+              class="absolute right-3 text-espresso-soft hover:text-espresso hidden cursor-pointer"
+              aria-label="Clear search"
+            >
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
         <div id="matchArchiveContainer">
-          <!-- Populated from matches or empty state -->
+          <!-- Populated dynamically: 10 most recent or player search results -->
         </div>
       </div>
     </section>
@@ -505,12 +525,21 @@
   <footer class="bg-espresso text-parchment-muted pt-12 pb-8 border-t border-espresso-border text-xs">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
       <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-espresso-surface text-center md:text-left">
+        <!-- Left: Navbar logo and title -->
         <div class="space-y-1">
           <div class="flex items-center justify-center md:justify-start gap-3">
-            <div class="w-8 h-8 rounded-full bg-espresso-surface border border-brass flex items-center justify-center font-black text-brass text-xs">64</div>
+            <div class="w-9 h-9 rounded-full overflow-hidden border border-brass/40 shadow-sm shrink-0">
+              <img src="logo_graphic.png" alt="MBA Logo" class="w-full h-full object-cover">
+            </div>
             <span class="font-extrabold text-white text-base tracking-tight font-display">Melbourne Backgammon Association</span>
           </div>
           <p class="text-parchment-muted/80 text-xs">Growing Melbourne’s backgammon community through analysis, study, and play.</p>
+        </div>
+
+        <!-- Right: Powered by Bliss -->
+        <div class="flex items-center justify-center md:justify-end gap-2.5">
+          <span class="text-parchment-muted/80 text-xs font-semibold tracking-wide">powered by Bliss</span>
+          <img src="bliss.jpeg" alt="Bliss Engine Logo" class="h-7 w-auto object-contain rounded border border-espresso-border">
         </div>
       </div>
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-parchment-muted/60">
@@ -727,7 +756,95 @@
     if (prevBtn) prevBtn.addEventListener('click', prevSlide);
 
     // ==========================================
-    // Render Standings & Match Archive (No Status Column)
+    // Match Archive Filter & Render Logic
+    // ==========================================
+    function renderMatchesTable(matchesToDisplay, isFiltered = false) {
+      const archiveContainer = document.getElementById('matchArchiveContainer');
+      if (!archiveContainer) return;
+
+      if (!matchesToDisplay || matchesToDisplay.length === 0) {
+        archiveContainer.innerHTML = `
+          <div class="bg-parchment-card rounded-2xl border border-parchment-border shadow-sm p-8 text-center max-w-2xl mx-auto">
+            <div class="w-14 h-14 rounded-2xl bg-espresso/5 text-espresso border border-espresso/10 mx-auto flex items-center justify-center mb-4">
+              <i data-lucide="scroll-text" class="w-7 h-7"></i>
+            </div>
+            <h3 class="font-display font-bold text-lg text-espresso">${isFiltered ? 'No matches found for that player' : 'No matches officially recorded yet'}</h3>
+            <p class="text-xs sm:text-sm text-espresso-soft mt-2 leading-relaxed">
+              ${isFiltered ? 'Try searching for another member or clear the search to view recent matches.' : 'Use the "+ Record Match" button to log the first round results.'}
+            </p>
+          </div>
+        `;
+      } else {
+        const rows = matchesToDisplay.map(m => `
+          <tr class="hover:bg-parchment transition-colors">
+            <td class="py-3 px-4 font-semibold">${normalizeName(m.player1)} <span class="font-mono text-xs text-espresso-soft">(${m.pr1 ? 'PR ' + m.pr1 : '—'})</span></td>
+            <td class="py-3 px-4 text-center font-mono font-bold text-terracotta">${m.score1} - ${m.score2}</td>
+            <td class="py-3 px-4 font-semibold">${normalizeName(m.player2)} <span class="font-mono text-xs text-espresso-soft">(${m.pr2 ? 'PR ' + m.pr2 : '—'})</span></td>
+            <td class="py-3 px-4 text-center text-xs text-espresso-soft">${m.format || 'Casual'}</td>
+          </tr>
+        `).join('');
+
+        archiveContainer.innerHTML = `
+          <div class="overflow-x-auto rounded-2xl border border-parchment-border bg-parchment-card shadow-sm">
+            <table class="w-full text-left text-sm text-espresso border-collapse">
+              <thead class="bg-espresso text-parchment font-display uppercase text-xs tracking-wider">
+                <tr>
+                  <th class="py-3 px-4">Player 1</th>
+                  <th class="py-3 px-4 text-center">Score</th>
+                  <th class="py-3 px-4">Player 2</th>
+                  <th class="py-3 px-4 text-center">Format</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-parchment-border">${rows}</tbody>
+            </table>
+          </div>
+        `;
+      }
+      lucide.createIcons();
+    }
+
+    function filterMatches() {
+      const searchInput = document.getElementById('archiveSearchInput');
+      const clearBtn = document.getElementById('clearArchiveSearch');
+      const query = (searchInput?.value || '').trim().toLowerCase();
+
+      if (clearBtn) {
+        if (query) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+      }
+
+      if (!query) {
+        // Show 10 most recent games by default (reversed to display latest submissions first)
+        const recentTen = [...currentMatches].reverse().slice(0, 10);
+        renderMatchesTable(recentTen, false);
+      } else {
+        // Filter by either player matching the query
+        const filtered = [...currentMatches].reverse().filter(m => {
+          const p1 = normalizeName(m.player1).toLowerCase();
+          const p2 = normalizeName(m.player2).toLowerCase();
+          return p1.includes(query) || p2.includes(query);
+        });
+        renderMatchesTable(filtered, true);
+      }
+    }
+
+    const archiveSearchInput = document.getElementById('archiveSearchInput');
+    const clearArchiveSearch = document.getElementById('clearArchiveSearch');
+
+    if (archiveSearchInput) {
+      archiveSearchInput.addEventListener('input', filterMatches);
+    }
+    if (clearArchiveSearch) {
+      clearArchiveSearch.addEventListener('click', () => {
+        if (archiveSearchInput) {
+          archiveSearchInput.value = '';
+          filterMatches();
+        }
+      });
+    }
+
+    // ==========================================
+    // Render Standings & Match Archive
     // ==========================================
     function renderApp(matches = [], fetchedMembers = []) {
       const allMembersSet = new Set([...defaultMembers]);
@@ -826,48 +943,8 @@
         `;
       });
 
-      const archiveContainer = document.getElementById('matchArchiveContainer');
-      if (matches.length === 0) {
-        archiveContainer.innerHTML = `
-          <div class="bg-parchment-card rounded-2xl border border-parchment-border shadow-sm p-8 text-center max-w-2xl mx-auto">
-            <div class="w-14 h-14 rounded-2xl bg-espresso/5 text-espresso border border-espresso/10 mx-auto flex items-center justify-center mb-4">
-              <i data-lucide="scroll-text" class="w-7 h-7"></i>
-            </div>
-            <h3 class="font-display font-bold text-lg text-espresso">No matches officially recorded yet</h3>
-            <p class="text-xs sm:text-sm text-espresso-soft mt-2 leading-relaxed">
-              Use the "+ Record Match" button to log the first round results.
-            </p>
-          </div>
-        `;
-      } else {
-        let rows = matches.map(m => `
-          <tr class="hover:bg-parchment transition-colors">
-            <td class="py-3 px-4 font-semibold">${normalizeName(m.player1)} <span class="font-mono text-xs text-espresso-soft">(${m.pr1 ? 'PR ' + m.pr1 : '—'})</span></td>
-            <td class="py-3 px-4 text-center font-mono font-bold text-terracotta">${m.score1} - ${m.score2}</td>
-            <td class="py-3 px-4 font-semibold">${normalizeName(m.player2)} <span class="font-mono text-xs text-espresso-soft">(${m.pr2 ? 'PR ' + m.pr2 : '—'})</span></td>
-            <td class="py-3 px-4 text-center text-xs text-espresso-soft">${m.matchLength} pts</td>
-            <td class="py-3 px-4 text-center text-xs text-espresso-soft">${m.format}</td>
-          </tr>
-        `).join('');
-
-        archiveContainer.innerHTML = `
-          <div class="overflow-x-auto rounded-2xl border border-parchment-border bg-parchment-card shadow-sm">
-            <table class="w-full text-left text-sm text-espresso border-collapse">
-              <thead class="bg-espresso text-parchment font-display uppercase text-xs tracking-wider">
-                <tr>
-                  <th class="py-3 px-4">Player 1</th>
-                  <th class="py-3 px-4 text-center">Score</th>
-                  <th class="py-3 px-4">Player 2</th>
-                  <th class="py-3 px-4 text-center">Length</th>
-                  <th class="py-3 px-4 text-center">Format</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-parchment-border">${rows}</tbody>
-            </table>
-          </div>
-        `;
-      }
-      lucide.createIcons();
+      // Render the matches archive based on search state or default 10
+      filterMatches();
     }
 
     // Load matches and members
