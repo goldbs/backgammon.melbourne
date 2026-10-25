@@ -1,0 +1,235 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const vm = require('node:vm');
+const fs = require('node:fs');
+const crypto = require('node:crypto');
+const source = fs.readFileSync(require('node:path').join(__dirname, '../apps-script/Code.gs'), 'utf8');
+const NOW = Date.parse('2026-10-25T00:00:00Z');
+class Clock extends Date { constructor(...args) { super(...(args.length ? args : [NOW])); } static now() { return NOW; } }
+class Sheet {
+  constructor(rows = []) { this.rows = rows; }
+  getDataRange() { return { getValues: () => this.rows.map(row => [...row]) }; }
+  appendRow(row) { this.rows.push([...row]); }
+  getLastRow() { return this.rows.length; }
+  getRange(row, col) { return {
+    setValue: value => { this.rows[row - 1][col - 1] = value; },
+    setValues: values => values.forEach((items, i) => items.forEach((value, j) => { this.rows[row - 1 + i][col - 1 + j] = value; }))
+  }; }
+}
+function fixture() {
+  const sheets = { Members: new Sheet([['Date', 'Name', 'Email', 'Phone', 'Status'], [new Date(NOW), 'Test Member', 'member@example.com', '', 'Active']]), Sheet1: new Sheet([['Date', 'P1', 'P2', 'S1', 'S2', 'PR1', 'PR2', 'Length', 'Format', 'MatchID', 'Status']]) };
+  const ss = { getSheetByName: name => sheets[name] || null, insertSheet: name => (sheets[name] = new Sheet()), getSheets: () => [sheets.Sheet1] };
+  const mail = []; let locked = false; let failMail = false;
+  const context = vm.createContext({ Date: Clock, console,
+    SpreadsheetApp: { getActiveSpreadsheet: () => ss },
+    ContentService: { MimeType: { JSON: 'json' }, createTextOutput: text => ({ text, setMimeType() { return this; } }) },
+    HtmlService: { createHtmlOutput: html => ({ html }) },
+    LockService: { getScriptLock: () => ({ waitLock: () => { assert.equal(locked, false); locked = true; }, releaseLock: () => { locked = false; } }) },
+    MailApp: { getRemainingDailyQuota: () => 100, sendEmail: message => { if (failMail) throw Error('Mail unavailable'); mail.push(message); } },
+    Utilities: {
+      getUuid: () => crypto.randomUUID(), DigestAlgorithm: { SHA_256: 'sha256' }, Charset: { UTF_8: 'utf8' },
+      computeDigest: (_, text) => [...crypto.createHash('sha256').update(text).digest()],
+      formatDate: (date, zone, pattern) => {
+        const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(date).map(p => [p.type, p.value]));
+        if (pattern === "yyyy") return parts.year;
+        if (pattern === "MM") return parts.month;
+        return pattern === "yyyy-MM-dd'T'HH:mm" ? `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}` : date.toISOString();
+      }
+    }
+  });
+  vm.runInContext(source, context);
+  const post = payload => JSON.parse(context.doPost({ postData: { contents: JSON.stringify(payload) } }).text);
+  const get = () => JSON.parse(context.doGet({ parameter: {} }).text);
+  const event = { action: 'submitEvent', memberEmail: 'member@example.com', title: 'Sunday chouette', venue: 'Test venue', address: '1 Test St, Melbourne VIC', startsAt: '2026-11-01T18:00', endsAt: '2026-11-01T21:00', format: 'Chouette', description: 'All welcome', timeZone: 'Australia/Melbourne' };
+  function confirmParameters() {
+    const url = new URL(mail.at(-1).body.match(/https:\/\/[^\s]+/)[0]);
+    return Object.fromEntries(url.searchParams);
+  }
+  return { context, sheets, mail, post, get, event, confirmParameters, configureMembership: patch => vm.runInContext("Object.assign(MEMBERSHIP_SETTINGS_, " + JSON.stringify(patch) + ")", context), failMail: () => { failMail = true; }, unlocked: () => !locked };
+}
+
+test('member submission stays private until its email token is confirmed; public data excludes private fields', () => {
+  const f = fixture();
+  assert.equal(f.post(f.event).status, 'pending_verification');
+  assert.equal(f.mail.length, 1); assert.equal(f.mail[0].to, 'member@example.com');
+  assert.deepEqual(f.get().events, []); assert.equal(f.sheets.Sheet1.rows.length, 1);
+  const params = f.confirmParameters();
+  assert.notEqual(f.sheets.Events.rows[1][11], params.token);
+  assert.match(f.context.doGet({ parameter: params }).html, /Your event is published/);
+  const published = f.get().events;
+  assert.equal(published.length, 1); assert.equal(published[0].startsAt, '2026-11-01T07:00:00.000Z');
+  assert.equal(published[0].title, f.event.title);
+  for (const privateText of ['member@example.com', params.token, 'TokenHash', 'TokenExpiresAt']) assert.ok(!JSON.stringify(published).includes(privateText));
+  assert.match(f.context.doGet({ parameter: params }).html, /already been used/);
+  assert.equal(f.get().events.length, 1); assert.equal(f.sheets.Events.rows[1][11], ''); assert.ok(f.unlocked());
+});
+
+test('non-members and inactive members receive a neutral response without email or storage', () => {
+  for (const inactive of [false, true]) {
+    const f = fixture(); if (inactive) f.sheets.Members.rows[1][4] = 'Inactive';
+    assert.equal(f.post({ ...f.event, memberEmail: inactive ? f.event.memberEmail : 'unknown@example.com' }).status, 'pending_verification');
+    assert.equal(f.mail.length, 0); assert.equal(f.sheets.Events, undefined);
+  }
+});
+
+test('forged tokens, expired links, and deactivated membership cannot publish events', () => {
+  for (const mode of ['forged', 'expired', 'inactive']) {
+    const f = fixture(); f.post(f.event); const params = f.confirmParameters();
+    if (mode === 'forged') params.token = crypto.randomUUID() + crypto.randomUUID();
+    if (mode === 'expired') f.sheets.Events.rows[1][12] = new Date(NOW - 1);
+    if (mode === 'inactive') f.sheets.Members.rows[1][4] = 'Inactive';
+    assert.match(f.context.doGet({ parameter: params }).html, /Link unavailable/);
+    assert.deepEqual(f.get().events, []); assert.ok(f.unlocked());
+  }
+});
+
+test('expired confirmed events disappear from public feed', () => {
+  const f = fixture(); f.post(f.event); f.context.doGet({ parameter: f.confirmParameters() });
+  f.sheets.Events.rows[1][7] = new Date(NOW - 1); assert.deepEqual(f.get().events, []);
+});
+
+test('invalid dates, DST gaps and repeated times, excessive durations and unsupported formats are rejected without mail', () => {
+  const invalid = [
+    { startsAt: '2026-01-01T12:00' }, { endsAt: '2026-11-01T17:00' },
+    { startsAt: '2027-02-30T12:00' }, { startsAt: '2027-04-04T02:30', endsAt: '2027-04-04T04:00' },
+    { startsAt: '2027-10-03T02:30', endsAt: '2027-10-03T04:00' }, { startsAt: '2026-11-01T25:00' },
+    { endsAt: '2026-11-10T18:00' }, { format: 'Unsupported' }, { timeZone: 'UTC' },
+    { title: ' ' }, { title: 'x'.repeat(101) }, { memberEmail: 'bad' }, { title: 'bad\nheader' }
+  ];
+  for (const patch of invalid) {
+    const f = fixture(); assert.equal(f.post({ ...f.event, ...patch }).status, 'error', JSON.stringify(patch));
+    assert.equal(f.mail.length, 0); assert.equal(f.sheets.Events, undefined);
+  }
+});
+
+test('Melbourne summer and winter times are independent of the runtime timezone', () => {
+  const f = fixture();
+  assert.equal(f.context.eventLocalDate_('2027-01-15T18:00').toISOString(), '2027-01-15T07:00:00.000Z');
+  assert.equal(f.context.eventLocalDate_('2027-06-15T18:00').toISOString(), '2027-06-15T08:00:00.000Z');
+});
+
+test('duplicate submission sends one email; per-member rate limit persists in sheet', () => {
+  const f = fixture(); f.post(f.event); f.post(f.event); assert.equal(f.mail.length, 1);
+  for (let i = 1; i < 5; i++) f.post({ ...f.event, title: 'Event ' + i });
+  assert.equal(f.mail.length, 3); assert.equal(f.sheets.Events.rows.length, 4); assert.ok(f.unlocked());
+});
+
+test('email failure leaves an unpublishable row and releases the lock', () => {
+  const f = fixture(); f.failMail(); assert.equal(f.post(f.event).status, 'error');
+  assert.equal(f.sheets.Events.rows[1][10], 'email_failed'); assert.equal(f.sheets.Events.rows[1][11], '');
+  assert.deepEqual(f.get().events, []); assert.ok(f.unlocked());
+});
+
+test('untrusted event text cannot create spreadsheet formulas or HTML email markup', () => {
+  const f = fixture(); f.post({ ...f.event, title: '=IMPORTXML("test")', description: '<script>alert(1)</script>' });
+  assert.ok(f.sheets.Events.rows[1][3].startsWith("'="));
+  assert.ok(!f.mail[0].htmlBody.includes('<script>')); assert.ok(f.mail[0].htmlBody.includes('&lt;script&gt;'));
+  f.context.doGet({ parameter: f.confirmParameters() }); assert.equal(f.get().events[0].title, '=IMPORTXML("test")');
+});
+
+test('existing match submission, verification, public feed and member registration remain available', () => {
+  const f = fixture();
+  assert.equal(f.post({ action: 'registerMember', fullName: 'Second Member', email: 'second@example.com', phone: '123' }).status, 'success');
+  assert.equal(f.post({ action: 'registerMember', fullName: 'Second Member', email: 'second@example.com', phone: '123' }).status, 'exists');
+  const result = f.post({ action: 'submitMatch', player1: 'Test Member', player2: 'Second Member', score1: 5, score2: 2, format: 'Casual' });
+  assert.equal(result.initialStatus, 'Pending'); assert.equal(f.mail.length, 2); assert.equal(f.get().matches.length, 0);
+  const matchId = f.sheets.Sheet1.rows[1][9];
+  f.context.doGet({ parameter: { action: 'verifyMatch', matchId, decision: 'confirm' } });
+  assert.equal(f.get().matches.length, 1); assert.equal(f.get().members.length, 2); assert.deepEqual(f.get().events, []);
+});
+
+test('unknown POST action cannot write an accidental match', () => {
+  const f = fixture(); assert.equal(f.post({ action: 'typo' }).status, 'error'); assert.equal(f.sheets.Sheet1.rows.length, 1);
+});
+
+const application = {
+  action: 'registerMember', membershipType: 'association', fullName: 'New Applicant', email: 'new@example.com',
+  phone: '0400000000', noticeAddress: '1 Test Street\nMelbourne VIC 3000', ageCategory: '18plus',
+  rulesAgreement: true, signatureAgreement: true, rulesVersion: 'mba-model-rules-proposed-2026-12-01-v1'
+};
+
+test('monthly membership fee includes the joining month, rounds to the nearest five dollars, and uses Melbourne dates', () => {
+  const f = fixture();
+  const amounts = [10000, 9000, 8500, 7500, 6500, 6000, 5000, 4000, 3500, 2500, 1500, 1000];
+  for (let month = 1; month <= 12; month++) {
+    const quote = f.context.membershipQuote_(new Date(`2026-${String(month).padStart(2, '0')}-15T00:00:00Z`));
+    assert.equal(quote.feeCents, amounts[month - 1]); assert.equal(quote.joiningMonth, month);
+  }
+  assert.equal(f.context.membershipQuote_(new Date('2026-11-30T12:59:59Z')).feeCents, 1500);
+  assert.equal(f.context.membershipQuote_(new Date('2026-11-30T13:00:00Z')).feeCents, 1000);
+  const renewal = f.context.membershipQuote_(new Date('2026-12-31T13:00:00Z'));
+  assert.equal(renewal.feeCents, 10000); assert.equal(renewal.membershipYear, 2027); assert.equal(renewal.renewalDate, '2028-01-01');
+});
+
+test('association interest also creates community participation but no admission, payment or email', () => {
+  const f = fixture(); const response = f.post({ ...application, feeCents: 1, status: 'admitted', paymentReceivedAt: 'today' });
+  assert.equal(response.status, 'application_received'); assert.equal(response.applicationState, 'preincorporation_interest');
+  assert.equal(response.quote.feeCents, 2500); assert.equal(response.paymentInstructionsAvailable, false);
+  assert.equal(f.sheets.Members.rows.length, 3); assert.equal(f.sheets.MembershipApplications.rows.length, 2);
+  const row = f.sheets.MembershipApplications.rows[1];
+  assert.equal(row[8], application.rulesVersion); assert.equal(row[9], true); assert.equal(row[10], application.fullName); assert.equal(row[11], true);
+  assert.deepEqual(row.slice(16), ['', '', '']); assert.equal(f.mail.length, 0); assert.ok(f.unlocked());
+  const publicData = JSON.stringify(f.get());
+  for (const privateValue of [application.email, application.noticeAddress, response.applicationId, response.paymentReference]) assert.ok(!publicData.includes(privateValue));
+});
+
+test('existing community users can express interest repeatedly without duplicate records or overwriting their registration', () => {
+  const f = fixture(); const payload = { ...application, email: 'member@example.com' };
+  const first = f.post(payload), second = f.post(payload);
+  assert.equal(second.applicationId, first.applicationId); assert.equal(second.paymentReference, first.paymentReference);
+  assert.equal(f.sheets.Members.rows.length, 2); assert.equal(f.sheets.Members.rows[1][1], 'Test Member');
+  assert.equal(f.sheets.MembershipApplications.rows.length, 2);
+});
+
+test('rules consent, signature intent, version and complete application are required before any registration writes', () => {
+  for (const patch of [{rulesAgreement:false}, {signatureAgreement:false}, {rulesVersion:'old'}, {noticeAddress:''}, {ageCategory:'invalid'}, {fullName:' '}, {email:'bad'}]) {
+    const f = fixture(); assert.equal(f.post({...application,...patch}).status, 'error', JSON.stringify(patch));
+    assert.equal(f.sheets.Members.rows.length, 2); assert.equal(f.sheets.MembershipApplications, undefined);
+  }
+});
+
+test('community-only registration needs no association consent and leaves application records untouched', () => {
+  const f = fixture();
+  assert.equal(f.post({ action: 'registerMember', fullName: 'Community Player', email: 'community@example.com', phone: '123' }).status, 'success');
+  assert.equal(f.sheets.MembershipApplications, undefined); assert.equal(f.get().members.includes('Community Player'), true);
+});
+
+test('opening applications requires adopted rules; opening alone never admits a member', () => {
+  const f = fixture(); f.configureMembership({ applicationsOpen: true });
+  assert.equal(f.get().registration.associationApplicationsOpen, false);
+  f.configureMembership({ rulesAdopted: true });
+  const response = f.post(application);
+  assert.equal(response.applicationState, 'pending_committee'); assert.equal(response.paymentInstructionsAvailable, false);
+  assert.deepEqual(f.sheets.MembershipApplications.rows[1].slice(16), ['', '', '']);
+});
+
+test('fresh consent can promote recorded interest to a formal pending application once rules are adopted', () => {
+  const f = fixture(); const initial = f.post(application);
+  f.configureMembership({ applicationsOpen: true, rulesAdopted: true, rulesVersion: 'adopted-v1' });
+  assert.equal(f.post(application).status, 'error');
+  const updated = f.post({ ...application, rulesVersion: 'adopted-v1' });
+  assert.equal(updated.applicationState, 'pending_committee'); assert.equal(updated.applicationId, initial.applicationId);
+  assert.equal(f.sheets.MembershipApplications.rows.length, 2); assert.equal(f.sheets.MembershipApplications.rows[1][8], 'adopted-v1');
+});
+
+test('payment is requested only after a recorded committee approval; admission fields remain untouched', () => {
+  const f = fixture(); f.configureMembership({ applicationsOpen:true, rulesAdopted:true, bankAccount:{accountName:'Test association',bsb:'123-456',accountNumber:'12345678', privateExtra:'not-public'} });
+  const response = f.post(application);
+  assert.equal(response.applicationState, 'pending_committee');
+  assert.equal(response.paymentInstructionsAvailable, false);
+  assert.equal(f.get().registration.bankAccount.accountName, 'Test association'); assert.ok(!JSON.stringify(f.get()).includes('not-public'));
+  const row = f.sheets.MembershipApplications.rows[1];
+  row[14] = 'approved_awaiting_payment';
+  assert.equal(f.post(application).paymentInstructionsAvailable, false);
+  row[17] = new Date(NOW);
+  assert.equal(f.post(application).paymentInstructionsAvailable, true);
+  row[14] = 'admitted'; row[17] = 'committee decision'; row[18] = 'admission date';
+  const duplicate = f.post(application); assert.equal(duplicate.applicationState, 'admitted'); assert.equal(duplicate.paymentInstructionsAvailable, false);
+  assert.equal(row[17], 'committee decision'); assert.equal(row[18], 'admission date');
+  f.configureMembership({bankAccount:{accountName:'Incomplete'}}); assert.equal(f.get().registration.bankAccount,null);
+});
+
+test('inactive community registration cannot be reactivated through an association application', () => {
+  const f = fixture(); f.sheets.Members.rows[1][4]='Inactive';
+  assert.equal(f.post({...application,email:'member@example.com'}).status,'error'); assert.equal(f.sheets.MembershipApplications,undefined);
+});
