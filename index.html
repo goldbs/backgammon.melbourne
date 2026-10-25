@@ -767,6 +767,17 @@
     // ==========================================
     // Match Archive Filter & Autocomplete Logic
     // ==========================================
+    function formatMatchDate(dateVal) {
+      if (!dateVal) return '—';
+      const d = new Date(dateVal);
+      if (isNaN(d.getTime())) return String(dateVal);
+      return d.toLocaleDateString('en-AU', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+
     function getUniqueHistoricalPlayers() {
       const playerSet = new Set(registeredMembers);
       currentMatches.forEach(m => {
@@ -846,23 +857,33 @@
           </div>
         `;
       } else {
-        const rows = matchesToDisplay.map(m => `
-          <tr class="hover:bg-parchment transition-colors">
-            <td class="py-3 px-4 font-semibold">${normalizeName(m.player1)} <span class="font-mono text-xs text-espresso-soft">(${m.pr1 ? 'PR ' + m.pr1 : '—'})</span></td>
-            <td class="py-3 px-4 text-center font-mono font-bold text-terracotta">${m.score1} - ${m.score2}</td>
-            <td class="py-3 px-4 font-semibold">${normalizeName(m.player2)} <span class="font-mono text-xs text-espresso-soft">(${m.pr2 ? 'PR ' + m.pr2 : '—'})</span></td>
-            <td class="py-3 px-4 text-center text-xs text-espresso-soft">${m.format || 'Casual'}</td>
-          </tr>
-        `).join('');
+        const rows = matchesToDisplay.map(m => {
+          const matchDate = formatMatchDate(m.date || m.timestamp);
+          const p1 = normalizeName(m.player1);
+          const p2 = normalizeName(m.player2);
+          const pr1Str = m.pr1 ? ` <span class="font-mono text-[11px] text-espresso-soft/80">(PR ${m.pr1})</span>` : '';
+          const pr2Str = m.pr2 ? ` <span class="font-mono text-[11px] text-espresso-soft/80">(PR ${m.pr2})</span>` : '';
+
+          return `
+            <tr class="hover:bg-parchment transition-colors">
+              <td class="py-3 px-4 text-xs font-medium text-espresso-soft whitespace-nowrap">${matchDate}</td>
+              <td class="py-3 px-4 font-semibold text-espresso">
+                ${p1}${pr1Str} <span class="text-espresso-soft font-normal px-1">vs.</span> ${p2}${pr2Str}
+              </td>
+              <td class="py-3 px-4 text-center font-mono font-bold text-terracotta whitespace-nowrap">${m.score1} - ${m.score2}</td>
+              <td class="py-3 px-4 text-center text-xs text-espresso-soft whitespace-nowrap">${m.format || 'Casual'}</td>
+            </tr>
+          `;
+        }).join('');
 
         archiveContainer.innerHTML = `
           <div class="overflow-x-auto rounded-2xl border border-parchment-border bg-parchment-card shadow-sm">
             <table class="w-full text-left text-sm text-espresso border-collapse">
               <thead class="bg-espresso text-parchment font-display uppercase text-xs tracking-wider">
                 <tr>
-                  <th class="py-3 px-4">Player 1</th>
+                  <th class="py-3 px-4">Date</th>
+                  <th class="py-3 px-4">Opponents</th>
                   <th class="py-3 px-4 text-center">Score</th>
-                  <th class="py-3 px-4">Player 2</th>
                   <th class="py-3 px-4 text-center">Format</th>
                 </tr>
               </thead>
