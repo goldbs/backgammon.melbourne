@@ -46,6 +46,24 @@ export function overlayCode(contentDir, source) {
   return { target, fileCount: before.size };
 }
 
+export function failureReason(error) {
+  // Match known failures without printing command output, credentials or source.
+  const detail = [error.message, error.stderr, error.stdout].map(value => String(value || '')).join(' ').toLowerCase();
+  const reasons = [
+    [/script api.*disabled|apps script api.*not.*enabled|accessnotconfigured|service_disabled|script.googleapis.com.*disabled/, 'Enable Google Apps Script API at https://script.google.com/home/usersettings for the signed-in account.'],
+    [/invalid_grant|invalid.*refresh.*token|token.*expired|token.*revoked/, 'Google authorisation expired or was revoked. Sign in again and replace CLASP_CREDENTIALS.'],
+    [/permission.denied|permission_denied|caller does not have permission|insufficient.*permission|insufficient.*scope|403/, 'Google denied access. Check that the login account owns or can edit this script and that the Apps Script API is enabled.'],
+    [/not found|requested entity|404|invalid script id/, 'The script project could not be found. Check the configured script ID against the Apps Script editor URL.'],
+    [/project file already exists/, 'clasp found an existing staging project unexpectedly. The deployment helper needs correction.'],
+    [/unknown option|unknown command/, 'The installed clasp command rejected a helper option. The deployment helper needs correction.'],
+    [/enoent/, 'A required local executable or staging path was not found. The deployment helper needs correction.'],
+    [/invalid_client|unauthorized_client/, 'Google rejected the OAuth client. Repeat the documented clasp login and replace CLASP_CREDENTIALS.'],
+    [/not logged in|could not load.*credential|no.*credential/, 'clasp could not load the Google login. Replace CLASP_CREDENTIALS with the complete clasp auth file.'],
+  ];
+  for (const [pattern, message] of reasons) if (pattern.test(detail)) return message;
+  return 'Google/clasp returned an unrecognised error. Use the documented local read-only diagnostic to obtain its message privately.';
+}
+
 export function deploy({ mode = 'plan', root = repository, authFile = process.env.CLASP_AUTH_FILE, run, log = console.log } = {}) {
   if (!['plan', 'check', 'deploy'].includes(mode)) throw new Error('Use --plan, --check or --deploy.');
   const config = configuration(root);
@@ -68,7 +86,7 @@ export function deploy({ mode = 'plan', root = repository, authFile = process.en
       return output.trim() ? JSON.parse(output) : {};
     } catch (error) {
       // Avoid dumping credentials or remote file contents from command output.
-      throw new Error(`clasp ${args[0]} failed. Check the Google authorisation/API settings and deployment ownership.`, { cause: error });
+      throw new Error(`clasp ${args[0]} failed. ${failureReason(error)}`, { cause: error });
     }
   };
   try {

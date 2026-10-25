@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync, symlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { deploy, configuration, repository } from './deploy.mjs';
+import { deploy, configuration, repository, failureReason } from './deploy.mjs';
 
 function fixture(t, { missingManifest = false, duplicateCode = false, wrongDeployment = false, backupFails = false, symlink = false } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'mba-clasp-test-'));
@@ -86,4 +86,11 @@ test('missing Google auth fails before invoking clasp', t => {
   const f = fixture(t);
   assert.throws(() => deploy({ ...f.options, authFile: join(tmpdir(), 'nonexistent-mba-auth'), mode: 'deploy' }), /authorisation/);
   assert.deepEqual(f.calls, []);
+});
+
+test('diagnostics identify known failures without leaking raw output', () => {
+  assert.match(failureReason({ stderr: 'Apps Script API has not been used or it is disabled. PRIVATE_TOKEN' }), /Enable Google Apps Script API/);
+  assert.match(failureReason({ stderr: 'invalid_grant PRIVATE_TOKEN' }), /expired or was revoked/);
+  assert.match(failureReason({ stderr: 'Requested entity was not found PRIVATE_TOKEN' }), /script project could not be found/);
+  assert.ok(!failureReason({ stderr: 'unrecognised PRIVATE_TOKEN' }).includes('PRIVATE_TOKEN'));
 });
