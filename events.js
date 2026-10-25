@@ -68,6 +68,33 @@
     return typeof event.address === 'string' && Boolean(event.address.trim());
   }
 
+  const clockFormat = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Australia/Melbourne', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+  });
+  function minutes(time) {
+    const [hour, minute] = time.split(':').map(Number);
+    return hour * 60 + minute;
+  }
+  function nextOccurrence(rule) {
+    const timePattern = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
+    if (!rule || !Number.isInteger(rule.weekday) || rule.weekday < 0 || rule.weekday > 6 ||
+        !timePattern.test(rule.startTime) || (rule.endTime && (!timePattern.test(rule.endTime) || minutes(rule.endTime) <= minutes(rule.startTime))) ||
+        (rule.weeksOfMonth && (!Array.isArray(rule.weeksOfMonth) || !rule.weeksOfMonth.length || rule.weeksOfMonth.some(n => !Number.isInteger(n) || n < 1 || n > 5)))) return null;
+    const now = new Date();
+    const today = dayFormat.format(now);
+    const date = calendarDate(today);
+    for (let i = 0; i < 70; i++, date.setUTCDate(date.getUTCDate() + 1)) {
+      const day = date.toISOString().slice(0, 10);
+      if (date.getUTCDay() !== rule.weekday ||
+          (rule.weeksOfMonth && !rule.weeksOfMonth.includes(Math.ceil(date.getUTCDate() / 7))) ||
+          (Array.isArray(rule.excludeDates) && rule.excludeDates.includes(day))) continue;
+      // Retain an ongoing session when its published end time is known.
+      if (day === today && minutes(clockFormat.format(now)) >= minutes(rule.endTime || rule.startTime)) continue;
+      return day;
+    }
+    return null;
+  }
+
   const association = (Array.isArray(config.associationEvents) ? config.associationEvents : [])
     .filter(event => event && event.approved === true && event.host === 'association' &&
       typeof event.title === 'string' && event.title.trim() && typeof event.venue === 'string' &&
@@ -78,21 +105,26 @@
       dateLabel: dateTimeFormat.format(new Date(event.startsAt)),
       endLabel: `Until ${dateTimeFormat.format(new Date(event.endsAt))}`,
       sortDate: dayFormat.format(new Date(event.startsAt)),
-      sortTime: Date.parse(event.startsAt), source: safeSource(event.sourceUrl)
+      sortTime: minutes(clockFormat.format(new Date(event.startsAt))), source: safeSource(event.sourceUrl)
     }));
 
   const today = dayFormat.format(new Date());
   const otherClubs = (Array.isArray(config.sisterClubTournaments) ? config.sisterClubTournaments : [])
+    .map(event => {
+      if (!event || !event.recurrence) return event;
+      const nextDate = nextOccurrence(event.recurrence);
+      return nextDate ? { ...event, startDate: nextDate, endDate: nextDate } : null;
+    })
     .filter(event => event && event.approved === true && typeof event.title === 'string' && event.title.trim() &&
       typeof event.organiser === 'string' && event.organiser.trim() && hasLocation(event) &&
       calendarDate(event.startDate) && calendarDate(event.endDate || event.startDate) &&
       (event.endDate || event.startDate) >= event.startDate &&
       (event.endDate || event.startDate) >= today && safeSource(event.sourceUrl))
     .map(event => ({ ...event,
-      dateLabel: dateFormat.format(calendarDate(event.startDate)) +
+      dateLabel: (event.recurrence ? 'Next: ' : '') + dateFormat.format(calendarDate(event.startDate)) +
         (event.endDate && event.endDate !== event.startDate
           ? ` – ${dateFormat.format(calendarDate(event.endDate))}` : ''),
-      endLabel: '', sortDate: event.startDate, sortTime: 0, source: safeSource(event.sourceUrl)
+      endLabel: '', sortDate: event.startDate, sortTime: event.recurrence ? minutes(event.recurrence.startTime) : 0, source: safeSource(event.sourceUrl)
     }));
 
   // One approved calendar: MBA events and other clubs share ordering and map selection.
@@ -112,6 +144,7 @@
     card.append(element('span', 'block text-xs font-bold text-terracotta', event.dateLabel));
     card.append(element('span', 'block text-lg font-display font-bold mt-2', event.title));
     card.append(element('span', 'block text-xs text-slateNavy font-semibold mt-2', `Hosted by ${event.organiser}`));
+    if (event.schedule) card.append(element('span', 'block text-sm font-semibold mt-2', String(event.schedule)));
     if (event.venue) card.append(element('span', 'block text-sm font-semibold mt-2', String(event.venue)));
     card.append(element('span', 'block text-xs text-espresso-soft mt-1', event.address));
     if (event.endLabel) card.append(element('span', 'block text-xs text-espresso-soft mt-2', event.endLabel));

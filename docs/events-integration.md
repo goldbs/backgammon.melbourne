@@ -4,10 +4,10 @@ Public event submissions have been removed. Only the association maintains its h
 
 ## Website data
 
-`events-config.js` contains two public arrays, both currently empty:
+`events-config.js` contains two public arrays:
 
 - `associationEvents`: association-hosted events approved for publication.
-- `sisterClubTournaments`: externally hosted tournaments explicitly approved for listing. Both arrays are combined in the same public calendar; the separate arrays record organiser provenance rather than separate website sections.
+- `sisterClubTournaments`: externally hosted tournaments and recurring club sessions explicitly approved for listing. Both arrays are combined in the same public calendar; the separate arrays record organiser provenance rather than separate website sections.
 
 Research candidates must stay outside the public checkout, not in these arrays. The website does not import external calendars or legacy member events automatically.
 
@@ -51,13 +51,13 @@ External listings require a verified map address. Date-only listings do not inve
 
 Before adding a real tournament, obtain an official source and confirm its title, actual organiser, future date(s), venue/location and entry details. Include any uncertainty or cancellation/update notice in the shortlist sent to the website organiser. Do not infer a future edition from a past tournament, treat an undated recurring social session as a dated tournament, or label a club a formal sister/partner without confirmation.
 
-No real external tournament has been added in this revision. Research on 25 October 2026 was blocked: Google’s search response supplied a JavaScript challenge rather than usable results, while the environment proxy denied Bing/ANZBGF with HTTP 403 CONNECT errors. The saved draft includes research domains, but that does not establish they are active in the running machine. Retry only after publication/runtime application or another meaningful access change; do not invent a shortlist.
+Initial event research was blocked: Google’s search response supplied a JavaScript challenge rather than usable results, while the environment proxy denied Bing/ANZBGF with HTTP 403 CONNECT errors. The saved draft includes research domains, but that does not establish they are active in the running machine. Access subsequently became available; see the approved recurring listings below.
 
 ## Backend closure and deployment
 
 The updated `apps-script/Code.gs` rejects every `submitEvent` POST without sending email or writing sheets. Old `verifyEvent` links return a closed notice and cannot publish. Public GET retains an empty `events` array and advertises `eventSubmissionsOpen: false` for compatibility. Existing Sheets data is preserved; legacy confirmed member events are not automatically republished. Match handling, community registration and association-membership requests remain supported.
 
-**The owner must deploy this updated Apps Script as a new version on the existing deployment URL.** Publishing website files removes the submission UI but does not update the separately deployed Google script. Until that script is redeployed, its old public endpoint may still accept event submissions/confirmation links. Do not claim live server-side closure based only on the frontend removal.
+**Apps Script deployment is now automated through the clasp GitHub workflow, and the owner confirmed a successful deployment on 25 October 2026.** Publishing website files removes the submission UI but does not update the separately deployed Google script. Future backend source changes must also pass the separate Apps Script deployment workflow. Do not claim live server-side closure based only on the frontend removal.
 
 The source update also removes the event-submission dialog, handlers and prompts from `index.html`/`events.js`, and updates the association page’s community-participation wording. Website changes are deployed through GitHub main/Cloudflare; Apps Script remains a separate deployment.
 
@@ -66,3 +66,11 @@ The source update also removes the event-submission dialog, handlers and prompts
 `node --test tests/events-backend.test.cjs` exercises server rejection, old-link closure, preservation of legacy records, and existing membership/match behavior with fake Apps Script services. No live writes or emails are performed.
 
 With the local static server running, `python3 tests/events-browser.py` checks mobile/desktop association-only rendering, absence of event submission controls and POSTs, external listing approval/date/source filtering, safe text, and empty calendars. All event examples exist only inside test fixtures, not in public listing data. Native Chromium’s proxy trust limitation is handled by certificate-verified curl transport for external styling/scripts; the map itself is a test double.
+
+## Approved recurring listings — 25 October 2026
+
+The organiser approved VBA Monday tournaments, Melbourne Backgammon Club Thursday matches, and Melbourne North second/fourth Sunday sessions. The Masters Tournament was not approved and is not published. Sources and public entry details are included in each configuration entry.
+
+Recurring external entries use `recurrence: { weekday: 0..6, startTime: 'HH:mm', endTime: 'HH:mm', weeksOfMonth: [2, 4], excludeDates: ['YYYY-MM-DD'] }`. Sunday is 0. End time, weeks and exclusions are optional. `weeksOfMonth` means the ordinal occurrence of that weekday, not calendar week numbers. The calendar computes the next scheduled date in Melbourne time, displays the published recurring schedule, and advances after the start (or after the end when the organiser publishes an end time). These are schedule-derived dates, not individually reconfirmed sessions. Melbourne Backgammon Club's announced 24 and 31 December 2026 closures are excluded. Other cancellations are not imported automatically; retain links to the organisers for updates.
+
+`python3 tests/recurring-events-browser.py` checks the three approved listings, next-date ordering, Christmas exclusions and map selection on mobile/desktop using fixed dates and read-only test doubles.
