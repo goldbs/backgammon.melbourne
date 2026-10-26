@@ -129,6 +129,21 @@
     #hideEventMap { min-height: 44px; padding: .4rem .6rem; border-radius: .5rem; }
     #hideEventMap:hover { background: #2E4A6210; }
     @media (min-width: 1024px) { #eventsList { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); } #melbourneMap { height: 380px; } }
+    .archive-table { width: 100%; table-layout: fixed; text-align: left; border-collapse: collapse; font-size: .875rem; }
+    .archive-table thead { background: #1D1612; color: #F7F4EE; font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; }
+    .archive-table thead th { padding: .85rem 1rem; }
+    .archive-pr-column { width: 5.5rem; }
+    .archive-score-column { width: 4.5rem; }
+    .archive-match + .archive-match { border-top: 1px solid #D8CDBE; }
+    .archive-match-meta { padding: 1rem 1rem .55rem; font-size: .7rem; color: #543D32; }
+    .archive-player { padding: .3rem 1rem; font-weight: 600; overflow-wrap: anywhere; }
+    .archive-pr, .archive-score { padding: .3rem 1rem; text-align: right; font-variant-numeric: tabular-nums; }
+    .archive-pr { color: #796A60; font-size: .8rem; }
+    .archive-score { font-weight: 800; }
+    .archive-score-winner { color: #C2593F; }
+    .archive-analysis { padding: .65rem 1rem 1rem; font-size: .7rem; color: #796A60; }
+    .archive-player-row:hover { background: #FCFAF680; }
+    @media (max-width: 420px) { .archive-pr-column { width: 4rem; } .archive-score-column { width: 4rem; } .archive-table thead th, .archive-player, .archive-pr, .archive-score { padding-left: .7rem; padding-right: .7rem; } }
   </style>
 </head>
 <body class="bg-parchment text-espresso font-sans antialiased selection:bg-terracotta selection:text-white">
@@ -654,10 +669,28 @@
       const d = new Date(dateVal);
       if (isNaN(d.getTime())) return String(dateVal);
       return d.toLocaleDateString('en-AU', {
+        timeZone: 'Australia/Melbourne',
         day: 'numeric',
         month: 'short',
         year: 'numeric'
       });
+    }
+
+    function recordedPr(value) {
+      if ((typeof value !== 'number' && typeof value !== 'string') || String(value).trim() === '') return null;
+      const number = Number(value);
+      return Number.isFinite(number) && number >= 0 ? number : null;
+    }
+
+    function archiveText(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    }
+
+    function blissAnalysisUrl(value) {
+      try {
+        const url = new URL(value);
+        return url.protocol === 'https:' && !url.username && !url.password ? url.href : null;
+      } catch (_) { return null; }
     }
 
     function getUniqueHistoricalPlayers() {
@@ -690,11 +723,11 @@
           if (isP1) {
             if (Number(m.score1) > Number(m.score2)) wins++;
             else if (Number(m.score2) > Number(m.score1)) losses++;
-            if (m.pr1) { prSum += Number(m.pr1); prCount++; }
+            if (recordedPr(m.pr1) !== null) { prSum += recordedPr(m.pr1); prCount++; }
           } else if (isP2) {
             if (Number(m.score2) > Number(m.score1)) wins++;
             else if (Number(m.score1) > Number(m.score2)) losses++;
-            if (m.pr2) { prSum += Number(m.pr2); prCount++; }
+            if (recordedPr(m.pr2) !== null) { prSum += recordedPr(m.pr2); prCount++; }
           }
         });
 
@@ -740,38 +773,44 @@
         `;
       } else {
         const rows = matchesToDisplay.map(m => {
-          const matchDate = formatMatchDate(m.date || m.timestamp);
           const p1 = normalizeName(m.player1);
           const p2 = normalizeName(m.player2);
-          const pr1Str = m.pr1 ? ` <span class="font-mono text-[11px] text-espresso-soft/80">(PR ${m.pr1})</span>` : '';
-          const pr2Str = m.pr2 ? ` <span class="font-mono text-[11px] text-espresso-soft/80">(PR ${m.pr2})</span>` : '';
-
+          const pr1 = recordedPr(m.pr1);
+          const pr2 = recordedPr(m.pr2);
+          const analysisUrl = blissAnalysisUrl(m.blissAnalysisUrl);
+          const hasPr = pr1 !== null || pr2 !== null;
+          const score1 = Number(m.score1);
+          const score2 = Number(m.score2);
+          const score = value => value === null || value === undefined || String(value).trim() === '' ? '—' : archiveText(value);
+          const playerRow = (name, pr, value, winner) => `
+            <tr class="archive-player-row">
+              <th scope="row" class="archive-player">${archiveText(name)}</th>
+              <td class="archive-pr"${pr === null ? ' aria-label="PR not recorded"' : ''}>${pr === null ? '—' : pr.toFixed(2)}</td>
+              <td class="archive-score${winner ? ' archive-score-winner' : ''}">${score(value)}</td>
+            </tr>`;
+          const analysis = analysisUrl
+            ? `<a href="${archiveText(analysisUrl)}" target="_blank" rel="noopener noreferrer" class="font-semibold text-slateNavy underline">View analysis on Bliss ↗</a>`
+            : hasPr ? '<span>Bliss analysis · <span class="italic">Link can be added</span></span>'
+              : '<span>No PR recorded</span>';
           return `
-            <tr class="hover:bg-parchment transition-colors">
-              <td class="py-3 px-4 text-xs font-medium text-espresso-soft whitespace-nowrap">${matchDate}</td>
-              <td class="py-3 px-4 font-semibold text-espresso">
-                ${p1}${pr1Str} <span class="text-espresso-soft font-normal px-1">vs.</span> ${p2}${pr2Str}
-              </td>
-              <td class="py-3 px-4 text-center font-mono font-bold text-terracotta whitespace-nowrap">${m.score1} - ${m.score2}</td>
-              <td class="py-3 px-4 text-center text-xs text-espresso-soft whitespace-nowrap">${m.format || 'Casual'}</td>
-            </tr>
-          `;
+            <tbody class="archive-match">
+              <tr><td colspan="3" class="archive-match-meta">${archiveText(formatMatchDate(m.date || m.timestamp))}<span aria-hidden="true" class="mx-2">·</span>${archiveText(m.format || 'Casual')}${m.matchLength ? ` · ${archiveText(m.matchLength)} points` : ''}</td></tr>
+              ${playerRow(p1, pr1, m.score1, score1 > score2)}
+              ${playerRow(p2, pr2, m.score2, score2 > score1)}
+              <tr><td colspan="3" class="archive-analysis">${analysis}</td></tr>
+            </tbody>`;
         }).join('');
 
         archiveContainer.innerHTML = `
-          <div class="overflow-x-auto rounded-2xl border border-parchment-border bg-parchment-card shadow-sm">
-            <table class="w-full text-left text-sm text-espresso border-collapse">
-              <thead class="bg-espresso text-parchment font-display uppercase text-xs tracking-wider">
-                <tr>
-                  <th class="py-3 px-4">Date</th>
-                  <th class="py-3 px-4">Opponents</th>
-                  <th class="py-3 px-4 text-center">Score</th>
-                  <th class="py-3 px-4 text-center">Format</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-parchment-border">${rows}</tbody>
+          <div class="rounded-2xl border border-parchment-border overflow-hidden bg-parchment-card">
+            <table class="archive-table">
+              <caption class="sr-only">Match archive. Each player’s PR and score appear on the same row. A dash means PR was not recorded.</caption>
+              <colgroup><col><col class="archive-pr-column"><col class="archive-score-column"></colgroup>
+              <thead><tr><th scope="col">Player</th><th scope="col" class="text-right">PR</th><th scope="col" class="text-right">Score</th></tr></thead>
+              ${rows}
             </table>
           </div>
+          <p class="text-xs text-espresso-soft mt-3">PR is shown where recorded; — means no PR supplied. Transcribed matches can include a link to analysis on Bliss.</p>
         `;
       }
       lucide.createIcons();
@@ -948,8 +987,8 @@
           statsMap[p1].losses++;
         }
 
-        if (m.pr1) statsMap[p1].prList.push(Number(m.pr1));
-        if (m.pr2) statsMap[p2].prList.push(Number(m.pr2));
+        if (recordedPr(m.pr1) !== null) statsMap[p1].prList.push(recordedPr(m.pr1));
+        if (recordedPr(m.pr2) !== null) statsMap[p2].prList.push(recordedPr(m.pr2));
       });
 
       const membersArray = Object.values(statsMap).map(item => {
