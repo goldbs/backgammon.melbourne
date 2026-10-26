@@ -2,7 +2,7 @@
 
 The archive groups each match into two player rows, with PR and score aligned on the right. Date, format and match length (when supplied) appear above the players. Missing/invalid PR renders as a dash; valid PR, including zero, uses two decimals and contributes to averages.
 
-PR-recorded matches display `Bliss analysis · Link can be added` when no URL is supplied. This is informational text, not an inactive link or a claim that analysis is available. Matches without PR display `No PR recorded`.
+PR-recorded matches display `Bliss analysis · Link can be added` when no URL is supplied. This is informational text, not an inactive link or a claim that analysis is available. Matches without PR omit the analysis row; the PR dashes indicate missing values. The table is centred at a maximum width of 700px, with a Powered by Bliss logo treatment below it.
 
 The renderer accepts an optional `blissAnalysisUrl` in each match object. A valid HTTPS URL without embedded credentials displays `View analysis on Bliss`; unsafe URLs are omitted. No real Bliss URL or hostname has been assumed, and no example/test URL is published in listing data.
 

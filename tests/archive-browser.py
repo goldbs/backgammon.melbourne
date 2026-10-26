@@ -35,6 +35,10 @@ with sync_playwright() as p:
   for heading in archive.locator('thead th').all():
    assert heading.evaluate('(e)=>e.scrollWidth<=e.clientWidth')
   assert archive.locator('tbody').count()==4
+  assert archive.bounding_box()['width']<=700
+  assert archive.locator('img[src="bliss.jpeg"]').count()==1
+  assert 'Powered by Bliss' in archive.inner_text()
+  assert archive.locator('tbody').nth(1).locator('.archive-analysis').count()==0
   assert archive.locator('.archive-player-row').count()==8
   assert archive.locator('tbody').nth(0).locator('.archive-pr').all_text_contents()==['5.20','6.40']
   assert archive.locator('tbody').nth(1).locator('.archive-pr').all_text_contents()==['—','—']
@@ -52,7 +56,7 @@ with sync_playwright() as p:
   assert '0.00' in page.locator('#archivePlayerSummary').inner_text()
   # Text and URLs in the new archive must not become executable markup.
   page.evaluate('()=>renderMatchesTable([{player1:"<img src=x onerror=alert(1)>",player2:"Test",score1:1,score2:0,pr1:0,format:"<b>Casual</b>",blissAnalysisUrl:"https://name:password@example.test/match"}])')
-  assert archive.locator('img,b,a').count()==0
+  assert archive.locator('tbody img, tbody b, tbody a').count()==0
   assert '<img' in archive.inner_text()
   print(width,'PASS: aligned player/PR/score rows, missing/partial/zero PR, Bliss link/placeholder, safe rendering and no overflow',flush=True)
  assert not errors,errors
