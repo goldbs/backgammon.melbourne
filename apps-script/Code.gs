@@ -3,6 +3,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyOBLAPmwyTMyJUbDHj6
 function doPost(e) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (e && e.parameter && e.parameter.action === 'confirmMatch') return confirmMatch_(ss, e.parameter);
     const data = JSON.parse(e.postData.contents);
     
     if (data.action === "submitEvent") return eventJson_({ status: "error", error: "Event submissions are closed. Events are managed by the association." });
@@ -11,85 +12,7 @@ function doPost(e) {
 
     if (data.action !== "submitMatch") return eventJson_({ status: "error", error: "Unknown action." });
 
-    // ACTION 2: Submit Match Result
-    const matchSheet = ss.getSheetByName("Sheet1") || ss.getSheets()[0];
-    const matchId = "m_" + Utilities.getUuid().slice(0, 8);
-    const p1 = (data.player1 || "").trim();
-    const p2 = (data.player2 || "").trim();
-    const s1 = Number(data.score1);
-    const s2 = Number(data.score2);
-    const matchLength = data.matchLength || Math.max(s1, s2);
-    const format = data.format || "Casual";
-
-    // Lookup player emails from Members tab
-    const memberSheet = ss.getSheetByName("Members");
-    let p1Email = "", p2Email = "";
-    if (memberSheet) {
-      const mData = memberSheet.getDataRange().getValues();
-      for (let i = 1; i < mData.length; i++) {
-        const name = (mData[i][1] || "").toString().trim().toLowerCase();
-        if (name === p1.toLowerCase()) p1Email = (mData[i][2] || "").toString().trim();
-        if (name === p2.toLowerCase()) p2Email = (mData[i][2] || "").toString().trim();
-      }
-    }
-
-    // Default to Confirmed if neither player has an email registered (e.g. guests)
-    const initialStatus = (p1Email || p2Email) ? "Pending" : "Confirmed";
-
-    // Row: [Date, P1, P2, S1, S2, PR1, PR2, Length, Format, MatchID, Status]
-    matchSheet.appendRow([
-      new Date(),
-      p1,
-      p2,
-      s1,
-      s2,
-      data.pr1 ? Number(data.pr1) : "",
-      data.pr2 ? Number(data.pr2) : "",
-      matchLength,
-      format,
-      matchId,
-      initialStatus
-    ]);
-
-    // Send 1-Click Verification Email if email exists
-    if (initialStatus === "Pending") {
-      const confirmUrl = `${SCRIPT_URL}?action=verifyMatch&matchId=${matchId}&decision=confirm`;
-      const disputeUrl = `${SCRIPT_URL}?action=verifyMatch&matchId=${matchId}&decision=dispute`;
-      
-      const emailBodyHtml = `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 520px; margin: auto; padding: 24px; border: 1px solid #E5DCce; border-radius: 16px; background-color: #F7F4EE; color: #1D1612;">
-          <h2 style="color: #C2593F; margin-top: 0;">Melbourne Backgammon Association</h2>
-          <p style="font-size: 15px; line-height: 1.5;">A match result involving you was just submitted:</p>
-          <div style="background: #ffffff; padding: 16px; border-radius: 12px; border: 1px solid #E5DCce; margin: 16px 0; text-align: center;">
-            <div style="font-size: 14px; color: #543D32; text-transform: uppercase; font-weight: bold;">${format} (${matchLength} pts)</div>
-            <div style="font-size: 22px; font-weight: 800; margin: 8px 0;">
-              ${p1} <span style="color: #C2593F;">${s1} - ${s2}</span> ${p2}
-            </div>
-          </div>
-          <p style="font-size: 14px; color: #543D32;">Tap below to confirm this result for the official club ladder:</p>
-          <div style="margin: 24px 0; text-align: center;">
-            <a href="${confirmUrl}" style="background-color: #2E4A62; color: #ffffff; padding: 12px 28px; font-size: 14px; font-weight: bold; border-radius: 9999px; text-decoration: none; display: inline-block;">
-              ✓ Confirm Match Result
-            </a>
-          </div>
-          <p style="font-size: 12px; color: #888; text-align: center;">
-            Score incorrect? <a href="${disputeUrl}" style="color: #C2593F; text-decoration: underline;">Flag as Disputed</a>
-          </p>
-        </div>
-      `;
-
-      // Send to both players if emails exist
-      [p1Email, p2Email].filter(Boolean).forEach(toEmail => {
-        MailApp.sendEmail({
-          to: toEmail,
-          subject: `MBA Match Verification: ${p1} vs ${p2} (${s1}-${s2})`,
-          htmlBody: emailBodyHtml
-        });
-      });
-    }
-
-    return ContentService.createTextOutput(JSON.stringify({ status: "success", initialStatus }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return submitVerifiedMatch_(ss, data);
 
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ status: "error", error: err.message }))
@@ -104,64 +27,18 @@ function doGet(e) {
     return HtmlService.createHtmlOutput('<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Association events</title></head><body><h1>Event submissions are closed</h1><p>Events are managed by Melbourne Backgammon Association. This confirmation link cannot publish an event.</p><a href="https://backgammon.melbourne/#events">View association events</a></body></html>');
   }
 
-  // 1. Handle 1-Click Email Action
-  if (e && e.parameter && e.parameter.action === "verifyMatch") {
-    const targetId = e.parameter.matchId;
-    const decision = e.parameter.decision;
-    const matchSheet = ss.getSheetByName("Sheet1") || ss.getSheets()[0];
-    const data = matchSheet.getDataRange().getValues();
-
-    let found = false;
-    let matchDesc = "";
-
-    for (let i = 1; i < data.length; i++) {
-      if (data[i][9] === targetId) { // Column J = Match ID
-        const newStatus = decision === "confirm" ? "Confirmed" : "Disputed";
-        matchSheet.getRange(i + 1, 11).setValue(newStatus); // Column K = Status
-        matchDesc = `${data[i][1]} (${data[i][3]}) vs ${data[i][2]} (${data[i][4]})`;
-        found = true;
-        break;
-      }
-    }
-
-    const title = decision === "confirm" ? "Match Verified!" : "Match Disputed";
-    const message = found 
-      ? (decision === "confirm" ? `The score for <b>${matchDesc}</b> has been confirmed and updated on the MBA leaderboard.` : `The match <b>${matchDesc}</b> has been flagged for committee review.`)
-      : "Match ID not found or already verified.";
-
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>MBA Match Verification</title>
-      </head>
-      <body style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #F7F4EE; color: #1D1612; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; padding: 16px; box-sizing: border-box;">
-        <div style="background: white; border: 1px solid #E5DCce; padding: 32px; border-radius: 20px; max-width: 440px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
-          <div style="width: 56px; height: 56px; border-radius: 50%; background: ${decision === 'confirm' ? '#E3EAF0' : '#F8E9E5'}; color: ${decision === 'confirm' ? '#2E4A62' : '#C2593F'}; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 28px; font-weight: bold;">
-            ${decision === 'confirm' ? '✓' : '!'}
-          </div>
-          <h2 style="margin: 0 0 12px; font-size: 22px;">${title}</h2>
-          <p style="font-size: 14px; color: #543D32; line-height: 1.5; margin-bottom: 24px;">${message}</p>
-          <a href="https://backgammon.melbourne" style="display: inline-block; background: #1D1612; color: #F7F4EE; text-decoration: none; font-size: 13px; font-weight: bold; padding: 12px 24px; border-radius: 9999px;">
-            Return to Leaderboard
-          </a>
-        </div>
-      </body>
-      </html>
-    `;
-    return HtmlService.createHtmlOutput(html);
-  }
+  if (e && e.parameter && e.parameter.action === 'verifyMatch') return reviewMatch_(ss, e.parameter);
 
   // 2. Fetch Confirmed Matches (Pending matches are excluded from leaderboard calculations)
   const matchSheet = ss.getSheetByName("Sheet1") || ss.getSheets()[0];
   const matchRows = matchSheet.getDataRange().getValues();
   const matches = [];
+  let approvalRows = [];
+  try { const sheet = matchApprovalSheet_(ss, false); approvalRows = sheet ? sheet.getDataRange().getValues().slice(1) : []; } catch (_) { /* New matches fail closed if the proof ledger is unavailable. */ }
 
   for (let i = 1; i < matchRows.length; i++) {
     const r = matchRows[i];
-    const status = (r[10] || "Confirmed").toString().trim(); // Column K
-    if (r[1] && r[2] && status.toLowerCase() === "confirmed") {
+    if (r[1] && r[2] && approvedMatchForFeed_(r, approvalRows) && (!String(r[9]).startsWith("m2_") || matchRows.filter(row => row[9] === r[9]).length === 1)) {
       matches.push({
         date: r[0],
         player1: r[1],
@@ -190,7 +67,7 @@ function doGet(e) {
     }
   }
 
-  return ContentService.createTextOutput(JSON.stringify({ matches, members, events: [], eventsVersion: 1, eventSubmissionsOpen: false, registration: publicMembershipSettings_() }))
+  return ContentService.createTextOutput(JSON.stringify({ matches, members, events: [], eventsVersion: 1, eventSubmissionsOpen: false, matchConfirmationVersion: 2, registration: publicMembershipSettings_() }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -350,4 +227,155 @@ function registerMbaParticipant_(ss, data) {
   } finally {
     lock.releaseLock();
   }
+}
+
+// Independent email approvals for new matches. Confirmation secrets stay private.
+const MATCH_APPROVAL_HEADERS_ = ['MatchID', 'Player1TokenHash', 'Player2TokenHash', 'Player1ConfirmedAt', 'Player2ConfirmedAt', 'ExpiresAt', 'PayloadHash', 'EmailState', 'RequestID'];
+
+function matchHash_(value) {
+  return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(value), Utilities.Charset.UTF_8)
+    .map(byte => ('0' + ((byte + 256) % 256).toString(16)).slice(-2)).join('');
+}
+function matchHtml_(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+}
+function matchPayloadHash_(row) { return matchHash_(JSON.stringify(row.slice(1, 9).map(value => String(value == null ? '' : value)))); }
+function matchApprovalSheet_(ss, create) {
+  let sheet = ss.getSheetByName('MatchConfirmations');
+  if (!sheet && create) sheet = ss.insertSheet('MatchConfirmations');
+  if (!sheet) return null;
+  if (!sheet.getLastRow()) {
+    if (!create) return null;
+    sheet.appendRow(MATCH_APPROVAL_HEADERS_);
+  }
+  const header = sheet.getDataRange().getValues()[0];
+  if (!MATCH_APPROVAL_HEADERS_.every((name, index) => header[index] === name)) throw new Error('Match verification is unavailable. Please contact the committee.');
+  return sheet;
+}
+function matchPr_(value) {
+  if (value == null || (typeof value === 'string' && !value.trim())) return '';
+  if (!['number', 'string'].includes(typeof value) || !Number.isFinite(Number(value)) || Number(value) < 0) throw new Error('PR must be a non-negative number, or left blank.');
+  return Number(value);
+}
+function submitVerifiedMatch_(ss, data) {
+  const name1 = eventText_(data.player1, 'Player 1', 120);
+  const name2 = eventText_(data.player2, 'Player 2', 120);
+  const score = value => {
+    if (!['number','string'].includes(typeof value) || String(value).trim() === '' || !Number.isInteger(Number(value)) || Number(value) < 0 || Number(value) > 99) throw new Error('Scores must be whole numbers from 0 to 99.');
+    return Number(value);
+  };
+  const s1 = score(data.score1), s2 = score(data.score2);
+  if (s1 === s2) throw new Error('A finished match must have a winner. Check both scores.');
+  const length = data.matchLength == null ? Math.max(s1, s2) : score(data.matchLength);
+  if (length !== Math.max(s1, s2)) throw new Error('The winning score must equal the match length.');
+  const format = data.format || 'Casual';
+  if (!['Casual','Tournament'].includes(format)) throw new Error('Choose a valid match format.');
+  const pr1 = matchPr_(data.pr1), pr2 = matchPr_(data.pr2);
+  const requestId = data.requestId == null ? Utilities.getUuid() : eventText_(data.requestId, 'Submission reference', 80);
+  if (!/^[a-zA-Z0-9_-]{16,80}$/.test(requestId)) throw new Error('Invalid submission reference. Refresh the page and try again.');
+  const lock = LockService.getScriptLock(); lock.waitLock(10000);
+  try {
+    const memberSheet = ss.getSheetByName('Members');
+    const members = memberSheet ? memberSheet.getDataRange().getValues().slice(1) : [];
+    const lookup = name => {
+      const candidates = members.filter(row => String(row[1] || '').trim().toLowerCase() === name.toLowerCase() && String(row[4] || 'Active').trim().toLowerCase() === 'active');
+      if (candidates.length !== 1) throw new Error('Both players must be active community participants. Choose their registered names; contact the committee if a name is ambiguous.');
+      const row = candidates[0];
+      const email = String(row[2] || '').trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Both players need registered email addresses before a result can be submitted.');
+      return { name: String(row[1]).trim(), email };
+    };
+    const p1 = lookup(name1), p2 = lookup(name2);
+    if (p1.name.toLowerCase() === p2.name.toLowerCase() || p1.email === p2.email) throw new Error('Choose two different players with separate registered email addresses.');
+    const matchSheet = ss.getSheetByName('Sheet1') || ss.getSheets()[0];
+    const row = [new Date(), eventSheetText_(p1.name), eventSheetText_(p2.name), s1, s2, pr1, pr2, length, format, 'm2_' + Utilities.getUuid(), 'Pending'];
+    const payloadHash = matchPayloadHash_(row);
+    const approvals = matchApprovalSheet_(ss, true);
+    const existing = approvals.getDataRange().getValues().slice(1).filter(entry => entry[8] === requestId);
+    if (existing.length) {
+      if (existing.length !== 1 || existing[0][6] !== payloadHash) throw new Error('This submission reference was already used. Start a new match entry.');
+      if (existing[0][7] !== 'Sent') throw new Error('Email delivery was incomplete. Contact the committee before submitting this match again.');
+      return eventJson_({ status: 'success', initialStatus: 'Pending', requiredConfirmations: 2, duplicate: true });
+    }
+    if (MailApp.getRemainingDailyQuota() < 2) throw new Error('Confirmation emails are temporarily unavailable. Please try again later.');
+    const tokens = [Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, ''), Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '')];
+    const approval = [row[9], matchHash_(tokens[0]), matchHash_(tokens[1]), '', '', new Date(Date.now() + 7 * 86400000), payloadHash, 'Sending', requestId];
+    approvals.appendRow(approval);
+    const approvalRow = approvals.getLastRow();
+    matchSheet.appendRow(row);
+    const matchRow = matchSheet.getLastRow();
+    try {
+      [p1, p2].forEach((player, index) => {
+        const base = `${SCRIPT_URL}?action=verifyMatch&matchId=${encodeURIComponent(row[9])}&token=${tokens[index]}`;
+        const description = `${p1.name} (${s1}) vs ${p2.name} (${s2})`;
+        MailApp.sendEmail({
+          to: player.email,
+          subject: `MBA: confirm your match — ${description}`,
+          body: `Please review ${description}. ${format}, ${length} points. PR: ${pr1 === '' ? 'not recorded' : pr1} / ${pr2 === '' ? 'not recorded' : pr2}.\nBoth players must confirm before this result appears publicly.\nReview and confirm: ${base}&decision=confirm\nDispute: ${base}&decision=dispute\nYour private link expires in 7 days. Opening it alone does not confirm the result.`,
+          htmlBody: `<div style="font-family:system-ui;max-width:520px;margin:auto;padding:24px;color:#1D1612"><h2>Confirm your MBA match</h2><p>${matchHtml_(description)}</p><p>${matchHtml_(format)} · ${length} points</p><p>PR: ${pr1 === '' ? 'not recorded' : pr1} / ${pr2 === '' ? 'not recorded' : pr2}</p><p>Both players must independently confirm before the result appears in the archive or leaderboard.</p><p><a href="${matchHtml_(base + '&decision=confirm')}">Review and confirm your result →</a></p><p><a href="${matchHtml_(base + '&decision=dispute')}">Report an incorrect result</a></p><p>Your private link expires in 7 days. Opening it alone does not confirm anything. Do not share it.</p></div>`
+        });
+      });
+      approvals.getRange(approvalRow, 8).setValue('Sent');
+    } catch (_) {
+      approvals.getRange(approvalRow, 8).setValue('Failed');
+      matchSheet.getRange(matchRow, 11).setValue('EmailFailed');
+      throw new Error('Could not send both confirmation emails. The result is not published. Please contact the committee before resubmitting.');
+    }
+    return eventJson_({ status: 'success', initialStatus: 'Pending', requiredConfirmations: 2 });
+  } finally { lock.releaseLock(); }
+}
+function matchConfirmationContext_(ss, params) {
+  if (!/^m2_[a-zA-Z0-9-]{20,}$/.test(String(params.matchId || '')) || !/^[a-f0-9]{64}$/.test(String(params.token || ''))) throw new Error('This confirmation link is invalid or from the old confirmation system. Please resubmit an unconfirmed match using the website.');
+  const sheet = matchApprovalSheet_(ss, false);
+  const entries = sheet ? sheet.getDataRange().getValues().map((row,index) => ({row,index})).filter(entry => entry.index && entry.row[0] === params.matchId) : [];
+  const matchSheet = ss.getSheetByName('Sheet1') || ss.getSheets()[0];
+  const matches = matchSheet.getDataRange().getValues().map((row,index) => ({row,index})).filter(entry => entry.index && entry.row[9] === params.matchId);
+  if (entries.length !== 1 || matches.length !== 1) throw new Error('This match cannot be verified. Please contact the committee.');
+  const entry = entries[0], match = matches[0];
+  const hash = matchHash_(params.token);
+  const player = entry.row[1] === hash ? 0 : entry.row[2] === hash ? 1 : -1;
+  if (player < 0) throw new Error('This confirmation link is invalid.');
+  if (!Number.isFinite(new Date(entry.row[5]).getTime()) || new Date(entry.row[5]).getTime() <= Date.now()) throw new Error('This confirmation link has expired. Please contact the committee or resubmit the unconfirmed match.');
+  if (entry.row[7] !== 'Sent' || entry.row[6] !== matchPayloadHash_(match.row)) throw new Error('This result cannot be verified because delivery was incomplete or the recorded details changed. Please contact the committee.');
+  return { sheet, entry, matchSheet, match, player };
+}
+function matchMessage_(title, message, form) {
+  return HtmlService.createHtmlOutput(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>MBA match confirmation</title></head><body style="font-family:system-ui;background:#F7F4EE;color:#1D1612;padding:24px"><main style="max-width:520px;margin:32px auto"><h1>${matchHtml_(title)}</h1><p>${matchHtml_(message)}</p>${form || ''}<p><a href="https://backgammon.melbourne/#matches">Return to MBA</a></p></main></body></html>`);
+}
+function reviewMatch_(ss, params) {
+  try {
+    const ctx = matchConfirmationContext_(ss, params), row = ctx.match.row;
+    if (!['Pending','Confirmed'].includes(row[10])) throw new Error('This match is disputed or unavailable. It cannot be confirmed using this link.');
+    const description = `${row[1]} (${row[3]}) vs ${row[2]} (${row[4]}). ${row[8]}, ${row[7]} points. PR: ${row[5] === '' ? 'not recorded' : row[5]} / ${row[6] === '' ? 'not recorded' : row[6]}.`;
+    const form = `<form method="post" target="_top" action="${matchHtml_(SCRIPT_URL)}"><input type="hidden" name="action" value="confirmMatch"><input type="hidden" name="matchId" value="${matchHtml_(params.matchId)}"><input type="hidden" name="token" value="${matchHtml_(params.token)}"><p>Confirm only if these details are correct. Both players must confirm separately.</p><button type="submit" name="decision" value="confirm">Confirm my result</button> <button type="submit" name="decision" value="dispute">Dispute this result</button></form>`;
+    return matchMessage_('Review your result', description, form);
+  } catch (err) { return matchMessage_('Unable to confirm', err.message); }
+}
+function confirmMatch_(ss, params) {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+    if (!['confirm','dispute'].includes(params.decision)) throw new Error('Choose confirm or dispute.');
+    const ctx = matchConfirmationContext_(ss, params), row = ctx.match.row, entry = ctx.entry.row;
+    if (!['Pending','Confirmed'].includes(row[10])) throw new Error('This match is disputed or unavailable. It cannot be confirmed.');
+    if (params.decision === 'dispute') {
+      ctx.matchSheet.getRange(ctx.match.index + 1, 11).setValue('Disputed');
+      return matchMessage_('Result disputed', 'The result is withheld from the archive and leaderboard. Please contact the committee about the correction.');
+    }
+    if (!entry[3 + ctx.player]) {
+      ctx.sheet.getRange(ctx.entry.index + 1, 4 + ctx.player).setValue(new Date());
+      entry[3 + ctx.player] = new Date();
+    }
+    const both = Boolean(entry[3] && entry[4]);
+    ctx.matchSheet.getRange(ctx.match.index + 1, 11).setValue(both ? 'Confirmed' : 'Pending');
+    return matchMessage_(both ? 'Both players confirmed' : 'Your confirmation is recorded', both ? 'This result can now appear in the archive and leaderboard.' : 'The result remains private until the other player also confirms.');
+  } catch (err) { return matchMessage_('Unable to confirm', err.message); }
+  finally { if (lock.hasLock ? lock.hasLock() : true) lock.releaseLock(); }
+}
+function approvedMatchForFeed_(row, entries) {
+  if (String(row[10] || '').trim().toLowerCase() !== 'confirmed') return false;
+  // Preserve historical published matches; all new m2_ matches need independent proofs.
+  if (!String(row[9] || '').startsWith('m2_')) return true;
+  const approvals = entries.filter(entry => entry[0] === row[9]);
+  return approvals.length === 1 && Boolean(approvals[0][3] && approvals[0][4]) && approvals[0][7] === 'Sent' && approvals[0][6] === matchPayloadHash_(row);
 }

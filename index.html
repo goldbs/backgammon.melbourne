@@ -145,6 +145,7 @@
     .archive-analysis { padding: .5rem 1rem .75rem; font-size: .7rem; color: #796A60; }
     .archive-player-row:hover { background: #FCFAF680; }
     @media (max-width: 420px) { .archive-pr-column { width: 4rem; } .archive-score-column { width: 4rem; } .archive-table thead th, .archive-player, .archive-pr, .archive-score { padding-left: .7rem; padding-right: .7rem; } }
+    .hero-logo { image-rendering: -webkit-optimize-contrast; }
   </style>
 </head>
 <body class="bg-parchment text-espresso font-sans antialiased selection:bg-terracotta selection:text-white">
@@ -225,12 +226,12 @@
             </div>
             <div>
               <label class="block text-espresso-soft mb-1">Score</label>
-              <input type="number" id="score1Input" min="0" required placeholder="Pts" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-terracotta">
+              <input type="number" id="score1Input" min="0" max="99" step="1" required placeholder="Pts" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-terracotta">
             </div>
           </div>
           <div>
             <label class="block text-espresso-soft mb-1">Performance Rating (PR) <span class="font-normal text-espresso-soft/60">(Optional)</span></label>
-            <input type="number" step="0.01" id="pr1Input" placeholder="e.g. 5.42" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-terracotta">
+            <input type="number" min="0" step="0.01" id="pr1Input" placeholder="e.g. 5.42" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-terracotta">
           </div>
         </div>
 
@@ -245,12 +246,12 @@
             </div>
             <div>
               <label class="block text-espresso-soft mb-1">Score</label>
-              <input type="number" id="score2Input" min="0" required placeholder="Pts" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
+              <input type="number" id="score2Input" min="0" max="99" step="1" required placeholder="Pts" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
             </div>
           </div>
           <div>
             <label class="block text-espresso-soft mb-1">Performance Rating (PR) <span class="font-normal text-espresso-soft/60">(Optional)</span></label>
-            <input type="number" step="0.01" id="pr2Input" placeholder="e.g. 6.18" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
+            <input type="number" min="0" step="0.01" id="pr2Input" placeholder="e.g. 6.18" class="w-full px-3 py-2 rounded-lg border border-parchment-border bg-parchment font-medium focus:outline-none focus:border-slateNavy">
           </div>
         </div>
 
@@ -263,6 +264,8 @@
           </select>
         </div>
 
+        <p class="text-xs text-espresso-soft leading-relaxed">Both players need separate registered email addresses. Each will receive a private confirmation link; the result stays pending until both confirm.</p>
+        <p id="matchFormStatus" role="status" aria-live="polite" class="text-xs font-medium text-slateNavy leading-relaxed"></p>
         <button type="submit" id="submitBtn" class="w-full py-3.5 mt-2 rounded-xl bg-espresso text-parchment font-bold text-xs uppercase tracking-wider hover:bg-terracotta transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer">
           <span>Submit Result</span>
         </button>
@@ -305,7 +308,8 @@
           <img 
             src="logo_graphic.png"
             alt="Melbourne Backgammon Association" 
-            class="w-36 h-36 sm:w-44 sm:h-44 md:w-52 md:h-52 rounded-full object-cover shadow-2xl border-4 border-brass/40 p-1.5 bg-parchment-light transition-transform duration-500 group-hover:scale-105"
+            width="1254" height="1254" fetchpriority="high" decoding="sync"
+            class="hero-logo w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 rounded-full object-contain border border-brass/30 bg-white"
           >
         </div>
 
@@ -535,6 +539,7 @@
 
     let registeredMembers = [...defaultMembers];
     let currentMatches = [];
+    let matchConfirmationVersion = 0;
 
     // Map nicknames / shorthand to official member list
     function normalizeName(inputName) {
@@ -1075,6 +1080,7 @@
       try {
         const res = await fetch(SCRIPT_URL);
         const data = await res.json();
+        matchConfirmationVersion = data?.matchConfirmationVersion || 0;
         
         let matches = [];
         let members = [];
@@ -1093,46 +1099,49 @@
       }
     }
 
-    // Handle Match Submit (1-Click Email Verification workflow)
+    // Match results stay private until two independent email approvals arrive.
+    let matchSubmission = null;
     document.getElementById('matchForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const btn = document.getElementById('submitBtn');
-      btn.innerText = "Submitting...";
+      const feedback = document.getElementById('matchFormStatus');
+      if (btn.disabled || !this.reportValidity()) return;
+      feedback.textContent = '';
       btn.disabled = true;
-
-      const s1 = Number(document.getElementById('score1Input').value);
-      const s2 = Number(document.getElementById('score2Input').value);
-      const inferredLength = Math.max(s1, s2);
-
-      const payload = {
-        action: "submitMatch",
-        player1: document.getElementById('player1Input').value.trim(),
-        player2: document.getElementById('player2Input').value.trim(),
-        score1: s1,
-        score2: s2,
-        pr1: document.getElementById('pr1Input').value,
-        pr2: document.getElementById('pr2Input').value,
-        matchLength: inferredLength,
-        format: document.getElementById('formatSelect').value
-      };
-
-      if (SCRIPT_URL) {
-        try {
-          await fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-        } catch (err) {}
+      btn.textContent = 'Submitting…';
+      try {
+        if (!SCRIPT_URL || matchConfirmationVersion !== 2) throw new Error('Match verification is temporarily unavailable. Refresh the page and try again shortly.');
+        const player1 = normalizeName(document.getElementById('player1Input').value.trim());
+        const player2 = normalizeName(document.getElementById('player2Input').value.trim());
+        if (player1.toLowerCase() === player2.toLowerCase()) throw new Error('Choose two different players.');
+        if (![player1,player2].every(name => registeredMembers.some(member => member.toLowerCase() === name.toLowerCase()))) throw new Error('Both players must join the community first. Choose their registered names.');
+        const s1 = Number(document.getElementById('score1Input').value);
+        const s2 = Number(document.getElementById('score2Input').value);
+        if (![s1,s2].every(score => Number.isInteger(score) && score >= 0 && score <= 99) || s1 === s2) throw new Error('Enter whole-number scores from 0 to 99, with a winner.');
+        const pr1 = document.getElementById('pr1Input').value;
+        const pr2 = document.getElementById('pr2Input').value;
+        if ([pr1,pr2].some(value => value.trim() && recordedPr(value) === null)) throw new Error('PR must be a non-negative number, or left blank.');
+        const payload = { action: 'submitMatch', player1, player2, score1: s1, score2: s2, pr1, pr2, matchLength: Math.max(s1,s2), format: document.getElementById('formatSelect').value };
+        const fingerprint = JSON.stringify(payload);
+        if (!matchSubmission || matchSubmission.fingerprint !== fingerprint) {
+          const bytes = crypto.getRandomValues(new Uint8Array(24));
+          matchSubmission = { fingerprint, requestId: Array.from(bytes, byte => byte.toString(16).padStart(2,'0')).join('') };
+        }
+        payload.requestId = matchSubmission.requestId;
+        const response = await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+        if (!response.ok) throw new Error('We couldn’t confirm submission. Check for confirmation emails before retrying.');
+        const result = await response.json();
+        if (result.status === 'error') throw new Error(result.error || 'Please check the match details.');
+        if (result.status !== 'success' || result.initialStatus !== 'Pending' || result.requiredConfirmations !== 2) throw new Error('We couldn’t verify the submission. Check for emails and contact the committee before retrying.');
+        this.reset();
+        matchSubmission = null;
+        feedback.textContent = 'Submitted for verification. Each player has a separate email link. The result stays out of the archive and leaderboard until both players confirm.';
+      } catch (err) {
+        feedback.textContent = err instanceof TypeError ? 'We couldn’t confirm submission. Check for confirmation emails before retrying.' : err.message || 'We couldn’t confirm submission. Check your emails before retrying.';
+      } finally {
+        btn.textContent = 'Submit Result';
+        btn.disabled = false;
       }
-
-      closeModal(uploadModal);
-      document.getElementById('matchForm').reset();
-      btn.innerText = "Submit Result";
-      btn.disabled = false;
-      alert("Match recorded! A 1-click confirmation email has been dispatched to verify the score.");
-      setTimeout(fetchAppData, 1500);
     });
 
     fetchAppData();

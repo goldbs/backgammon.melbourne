@@ -75,7 +75,12 @@ test('existing match submission, verification, public feed and member registrati
   const result = f.post({ action: 'submitMatch', player1: 'Test Member', player2: 'Second Member', score1: 5, score2: 2, format: 'Casual' });
   assert.equal(result.initialStatus, 'Pending'); assert.equal(f.mail.length, 2); assert.equal(f.get().matches.length, 0);
   const matchId = f.sheets.Sheet1.rows[1][9];
-  f.context.doGet({ parameter: { action: 'verifyMatch', matchId, decision: 'confirm' } });
+  const params = matchParams(f.mail[0]);
+  f.context.doGet({ parameter: params });
+  assert.equal(f.get().matches.length, 0, 'opening an email link cannot approve a match');
+  approve(f, 0);
+  assert.equal(f.get().matches.length, 0, 'one player is not enough');
+  approve(f, 1);
   assert.equal(f.get().matches.length, 1); assert.equal(f.get().members.length, 2); assert.deepEqual(f.get().events, []);
 });
 
@@ -173,4 +178,138 @@ test('payment is requested only after a recorded committee approval; admission f
 test('inactive community registration cannot be reactivated through an association application', () => {
   const f = fixture(); f.sheets.Members.rows[1][4]='Inactive';
   assert.equal(f.post({...application,email:'member@example.com'}).status,'error'); assert.equal(f.sheets.MembershipApplications,undefined);
+});
+
+// New matches require two distinct, expiring, payload-bound email approvals.
+function matchParams(message) {
+  const url = new URL(message.body.match(/https:\/\/script\.google\.com\/[^\s]+/)[0]);
+  return Object.fromEntries(url.searchParams);
+}
+function approve(f, player, decision = 'confirm') {
+  return f.context.doPost({parameter:{...matchParams(f.mail[player]), action:'confirmMatch', decision}}).html;
+}
+function matchFixture(patch = {}) {
+  const f = fixture();
+  f.post({action:'registerMember',fullName:'Second Member',email:'second@example.com',phone:'123'});
+  const payload = {action:'submitMatch',player1:'Test Member',player2:'Second Member',score1:7,score2:3,pr1:0,pr2:'4.20',matchLength:7,format:'Tournament',...patch};
+  return {...f,payload};
+}
+
+test('two independent tokens and two POST approvals gate the public feed; GETs and repeats do not count', () => {
+  const f=matchFixture(); const result=f.post(f.payload);
+  assert.equal(result.requiredConfirmations,2);assert.equal(result.initialStatus,'Pending');
+  assert.equal(f.mail.length,2);assert.notEqual(matchParams(f.mail[0]).token,matchParams(f.mail[1]).token);
+  assert.equal(f.sheets.Sheet1.rows[1][5],0);
+  const snapshot=JSON.stringify(f.sheets.MatchConfirmations.rows);
+  assert.match(f.context.doGet({parameter:matchParams(f.mail[0])}).html,/Confirm my result/);
+  assert.equal(JSON.stringify(f.sheets.MatchConfirmations.rows),snapshot);
+  approve(f,0);approve(f,0);assert.equal(f.get().matches.length,0);
+  assert.ok(f.sheets.MatchConfirmations.rows[1][3]);assert.equal(f.sheets.MatchConfirmations.rows[1][4],'');
+  approve(f,1);assert.equal(f.get().matches.length,1);
+  approve(f,1);assert.equal(f.get().matches.length,1);
+  assert.ok(!JSON.stringify(f.sheets.MatchConfirmations.rows).includes(matchParams(f.mail[0]).token));
+  assert.ok(!JSON.stringify(f.get()).includes('TokenHash'));assert.ok(!JSON.stringify(f.get()).includes('second@example.com'));
+  assert.equal(f.get().matchConfirmationVersion,2);assert.ok(f.unlocked());
+});
+
+for (const patch of [
+ {player2:'Guest'}, {player2:'Test Member'}, {score1:3,score2:3}, {score1:-1}, {score2:1.5},
+ {score1:''}, {score1:true}, {score1:100}, {pr1:-1}, {pr2:'bad'}, {pr1:true}, {matchLength:9}, {format:'Unknown'}
+]) test('invalid match is rejected before records/email: '+JSON.stringify(patch), () => {
+  const f=matchFixture(patch);assert.equal(f.post(f.payload).status,'error');
+  assert.equal(f.sheets.Sheet1.rows.length,1);assert.equal(f.mail.length,0);
+});
+
+test('missing, inactive, shared or ambiguous registered email identities cannot bypass approval', () => {
+  for(const change of ['missing','inactive','shared','duplicate']) {
+    const f=matchFixture();const second=f.sheets.Members.rows[2];
+    if(change==='missing')second[2]='';
+    if(change==='inactive')second[4]='Inactive';
+    if(change==='shared')second[2]='MEMBER@example.com';
+    if(change==='duplicate')f.sheets.Members.rows.push([...second]);
+    assert.equal(f.post(f.payload).status,'error',change);assert.equal(f.mail.length,0);assert.equal(f.sheets.Sheet1.rows.length,1);
+  }
+});
+
+test('guests never auto-publish and legacy tokenless links can no longer change status', () => {
+  const f=fixture();assert.equal(f.post({action:'submitMatch',player1:'Guest A',player2:'Guest B',score1:5,score2:2}).status,'error');
+  f.sheets.Sheet1.rows.push([new Date(NOW),'Old A','Old B',5,2,'','',5,'Casual','m_old','Pending']);
+  f.context.doGet({parameter:{action:'verifyMatch',matchId:'m_old',decision:'confirm'}});
+  f.context.doPost({parameter:{action:'confirmMatch',matchId:'m_old',decision:'confirm'}});
+  assert.equal(f.sheets.Sheet1.rows[1][10],'Pending');assert.equal(f.get().matches.length,0);
+});
+
+test('historical explicitly confirmed matches remain published, blank and pending statuses do not', () => {
+  const f=fixture();for(const status of ['Confirmed','','Pending'])f.sheets.Sheet1.rows.push([new Date(NOW),'Old A','Old B',5,2,'','',5,'Casual','m_old_'+status,status]);
+  assert.equal(f.get().matches.length,1);
+});
+
+test('either player can dispute; subsequent or repeated confirmations cannot republish it', () => {
+  for(const player of [0,1]) {
+    const f=matchFixture();f.post(f.payload);approve(f,0);approve(f,1);assert.equal(f.get().matches.length,1);
+    approve(f,player,'dispute');assert.equal(f.get().matches.length,0);assert.equal(f.sheets.Sheet1.rows[1][10],'Disputed');
+    approve(f,0);approve(f,1);assert.equal(f.get().matches.length,0);
+  }
+});
+
+test('forged, missing, expired and cross-match tokens cannot approve', () => {
+  for(const change of ['forged','missing','expired','crossmatch','invalid-decision']) {
+    const f=matchFixture();f.post(f.payload);const params={...matchParams(f.mail[0]),action:'confirmMatch',decision:'confirm'};
+    if(change==='forged')params.token='a'.repeat(64);
+    if(change==='missing')delete params.token;
+    if(change==='expired')f.sheets.MatchConfirmations.rows[1][5]=new Date(NOW-1);
+    if(change==='crossmatch')params.matchId='m2_'+crypto.randomUUID();
+    if(change==='invalid-decision')params.decision='anything';
+    assert.match(f.context.doPost({parameter:params}).html,/Unable to confirm/);
+    assert.equal(f.sheets.MatchConfirmations.rows[1][3],'');assert.equal(f.get().matches.length,0);
+  }
+});
+
+test('new results need proof even if status is manually set to Confirmed; changed payloads invalidate approvals', () => {
+  const f=matchFixture();f.post(f.payload);f.sheets.Sheet1.rows[1][10]='Confirmed';assert.equal(f.get().matches.length,0);
+  approve(f,0);approve(f,1);assert.equal(f.get().matches.length,1);
+  f.sheets.Sheet1.rows[1][5]=9;assert.equal(f.get().matches.length,0);
+  assert.match(approve(f,0),/details changed/);
+});
+
+test('proof expiry prevents further actions but does not erase an already doubly confirmed result', () => {
+  const f=matchFixture();f.post(f.payload);approve(f,0);approve(f,1);
+  f.sheets.MatchConfirmations.rows[1][5]=new Date(NOW-1);assert.equal(f.get().matches.length,1);
+});
+
+test('email delivery failures remain private and quota failure writes no match', () => {
+  const f=matchFixture();f.failMail();assert.equal(f.post(f.payload).status,'error');
+  assert.equal(f.sheets.Sheet1.rows[1][10],'EmailFailed');assert.equal(f.get().matches.length,0);
+  const q=matchFixture();q.context.MailApp.getRemainingDailyQuota=()=>1;
+  assert.equal(q.post(q.payload).status,'error');assert.equal(q.sheets.Sheet1.rows.length,1);assert.equal(q.mail.length,0);
+});
+
+test('a retried submission reference creates one match and two emails, while a changed payload is rejected', () => {
+  const f=matchFixture({requestId:crypto.randomUUID()});assert.equal(f.post(f.payload).status,'success');
+  assert.equal(f.post(f.payload).duplicate,true);assert.equal(f.sheets.Sheet1.rows.length,2);assert.equal(f.mail.length,2);
+  assert.equal(f.post({...f.payload,score2:2}).status,'error');
+});
+
+test('email HTML escapes participant names and confirmations show the submitted PR and score', () => {
+  const f=matchFixture();f.sheets.Members.rows[1][1]='<b>Player</b>';f.payload.player1='<b>Player</b>';
+  f.post(f.payload);assert.ok(f.mail[0].htmlBody.includes('&lt;b&gt;Player&lt;/b&gt;'));
+  const page=f.context.doGet({parameter:matchParams(f.mail[0])}).html;
+  assert.ok(page.includes('&lt;b&gt;Player&lt;/b&gt;'));assert.match(page,/PR: 0 \/ 4.2/);
+});
+
+test('failure sending the second email blocks even the first player’s valid link', () => {
+  const f=matchFixture();const send=f.context.MailApp.sendEmail;let calls=0;
+  f.context.MailApp.sendEmail=message=>{if(++calls===2)throw Error('second email failed');send(message);};
+  assert.equal(f.post(f.payload).status,'error');assert.equal(f.mail.length,1);
+  assert.equal(f.sheets.Sheet1.rows[1][10],'EmailFailed');assert.equal(f.get().matches.length,0);
+  assert.match(approve(f,0),/delivery was incomplete/);assert.equal(f.get().matches.length,0);
+});
+
+test('duplicate match IDs or a broken proof ledger fail closed for new matches', () => {
+  for(const change of ['duplicate-id','broken-ledger']) {
+    const f=matchFixture();f.post(f.payload);approve(f,0);approve(f,1);assert.equal(f.get().matches.length,1);
+    if(change==='duplicate-id')f.sheets.Sheet1.rows.push([...f.sheets.Sheet1.rows[1]]);
+    else f.sheets.MatchConfirmations.rows[0][0]='Unexpected header';
+    assert.equal(f.get().matches.length,0);assert.match(approve(f,0),/Unable to confirm/);
+  }
 });
