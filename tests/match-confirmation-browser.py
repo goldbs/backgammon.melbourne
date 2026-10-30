@@ -31,8 +31,8 @@ with sync_playwright() as p:
   page.set_viewport_size({'width':width,'height':1000})
   page.goto(BASE_URL,wait_until='networkidle',timeout=60000)
   logo=page.locator('.hero-logo')
-  assert logo.get_attribute('src')=='assets/logo-graphic.svg'
-  assert logo.evaluate('(e)=>e.naturalWidth')==640
+  assert logo.get_attribute('src')=='logo_graphic.png'
+  assert logo.evaluate('(e)=>e.naturalWidth')==1254
   assert logo.evaluate('(e)=>getComputedStyle(e).objectFit')=='contain'
   logo.hover()
   assert logo.evaluate('(e)=>getComputedStyle(e).transform')=='none'
