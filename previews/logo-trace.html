@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Original logo and SVG trace | MBA</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#F7F4EE;color:#1D1612;font:16px/1.6 system-ui,sans-serif}main{max-width:1040px;margin:auto;padding:32px 20px}h1{font-size:28px;margin:0 0 10px}p{max-width:750px;color:#543D32}.comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin:28px 0}figure{margin:0;text-align:center}figcaption{font-weight:700;margin-bottom:16px}img{width:min(100%,var(--logo-size,224px));height:auto;display:block;margin:auto;border-radius:50%}.controls{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}button{font:inherit;padding:8px 16px;border:1px solid #E5DCCE;border-radius:8px;background:#FCFAF6;color:#2E4A62;cursor:pointer}a{color:#2E4A62}footer{font-size:14px;margin-top:32px}button[aria-pressed=true]{border-color:#2E4A62;background:#E3EAF0}@media(max-width:600px){.comparison{grid-template-columns:1fr}}
+</style></head><body><main>
+<h1>Original artwork, traced as SVG</h1>
+<p>The original PNG is restored on the website. This SVG was traced directly from it to retain its shapes, proportions and colours. It is here for review and has not replaced the live logo.</p>
+<div class="controls" aria-label="Preview size"><button type="button" aria-pressed="true" data-size="224">Website size</button><button type="button" aria-pressed="false" data-size="448">Enlarge</button></div>
+<div class="comparison"><figure><figcaption>Original PNG</figcaption><img src="../logo_graphic.png" alt="Original MBA emblem"></figure><figure><figcaption>Traced SVG</figcaption><img src="logo-graphic-traced.svg" alt="Vector trace of the original MBA emblem"></figure></div>
+<p>Compare the frame, handle, triangle shapes and record grooves. Automatic tracing can introduce small differences; this comparison is for checking those before any replacement.</p>
+<footer><a href="logo-graphic-traced.svg">Open the traced SVG</a> · <a href="../index.html">Back to the website</a></footer>
+</main><script>document.querySelectorAll('[data-size]').forEach(button=>button.addEventListener('click',()=>{document.documentElement.style.setProperty('--logo-size',button.dataset.size+'px');document.querySelectorAll('[data-size]').forEach(other=>other.setAttribute('aria-pressed',String(other===button)))}));</script></body></html>
