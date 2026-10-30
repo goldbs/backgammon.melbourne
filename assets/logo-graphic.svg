@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640" role="img" aria-labelledby="logo-title">
+  <title id="logo-title">Melbourne Backgammon Association — backgammon and vinyl record emblem</title>
+  <defs>
+    <clipPath id="board-disc"><circle cx="320" cy="250" r="211"/></clipPath>
+    <clipPath id="record-half"><path d="M320 35H545V465H320Z"/></clipPath>
+  </defs>
+  <!-- Handle neck and side grips sit behind the circular frame. -->
+  <g stroke="#211810" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M281 469C283 491 297 495 290 530H350C343 495 357 491 359 469Z" fill="#E8E1D4"/>
+    <path d="M294 488C305 500 306 511 302 529H318V494Z" fill="#B7AC9D" stroke="none"/>
+    <path d="M92 163H71C55 163 46 172 43 187L29 287C26 309 39 331 60 333H92Z" fill="#B8AE9F"/>
+    <path d="M77 178H68C61 178 58 182 56 192L43 287C42 299 46 313 57 317H76" fill="none" stroke="#F8F2E6" stroke-width="5"/>
+    <path d="M548 163H569C585 163 594 172 597 187L611 287C614 309 601 331 580 333H548Z" fill="#B8AE9F"/>
+    <path d="M563 178H572C579 178 582 182 584 192L597 287C598 299 594 313 583 317H564" fill="none" stroke="#F8F2E6" stroke-width="5"/>
+    <!-- Smooth concentric frame rings; no embedded raster or texture. -->
+    <circle cx="320" cy="250" r="238" fill="#B8AE9F"/>
+    <circle cx="320" cy="250" r="230" fill="none" stroke="#FAF5E9" stroke-width="5"/>
+    <circle cx="320" cy="250" r="217" fill="#15110D" stroke-width="7"/>
+  </g>
+  <g clip-path="url(#board-disc)">
+    <circle cx="320" cy="250" r="211" fill="#15110D"/>
+    <path d="M100 30H320V470H100Z" fill="#F5E5BF"/>
+    <!-- Aligned top and bottom points in the website's two brand colours. -->
+    <g fill="#C2593F">
+      <path d="M104 30H140L122 230ZM176 30H212L194 230ZM248 30H284L266 230Z"/>
+      <path d="M104 470H140L122 270ZM176 470H212L194 270ZM248 470H284L266 270Z"/>
+    </g>
+    <g fill="#2E4A62">
+      <path d="M140 30H176L158 230ZM212 30H248L230 230ZM284 30H320L302 230Z"/>
+      <path d="M140 470H176L158 270ZM212 470H248L230 270ZM284 470H320L302 270Z"/>
+    </g>
+    <g clip-path="url(#record-half)">
+      <g fill="none" stroke="#F5E5BF" stroke-width="3.5">
+        <circle cx="320" cy="250" r="200"/>
+        <circle cx="320" cy="250" r="175"/>
+        <circle cx="320" cy="250" r="150"/>
+        <circle cx="320" cy="250" r="125"/>
+        <circle cx="320" cy="250" r="100"/>
+      </g>
+      <circle cx="320" cy="250" r="64" fill="#C2593F"/>
+      <circle cx="320" cy="250" r="28" fill="#F5E5BF"/>
+      <circle cx="320" cy="250" r="11" fill="#15110D"/>
+    </g>
+    <path d="M320 34V466" stroke="#211810" stroke-width="6"/>
+  </g>
+  <!-- Simple grip with broad, solid highlights that remain legible when small. -->
+  <path d="M287 530Q320 515 353 530L371 607Q377 627 355 630H285Q263 627 269 607Z" fill="#38261B" stroke="#211810" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M289 539Q295 536 301 535L291 617H280Z" fill="#685345"/>
+  <path d="M340 535L352 540L363 612Q364 619 354 620Z" fill="#4B382B"/>
+  <path d="M289 530Q320 518 351 530" fill="none" stroke="#F5E5BF" stroke-width="4" stroke-linecap="round"/>
+</svg>
